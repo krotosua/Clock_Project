@@ -8,7 +8,7 @@ const generateJwt = (id, email, role) => {
     return jwt.sign(
         {id, email, role},
         process.env.SECRET_KEY,
-        {expiresIn: '24h'}
+        {expiresIn: '10h'}
     )
 }
 
@@ -17,7 +17,7 @@ class UserLogic {
         try{
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
+            return next(ApiError.badRequest('Некорректный email или пароль'))
         }
         const {email, password, role} = req.body
         if (!email || !password) {
@@ -61,6 +61,10 @@ class UserLogic {
 
 
     async login(req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return next(ApiError.badRequest('Некорректный email'))
+        }
         const {email, password} = req.body
         const user = await User.findOne({where: {email}})
         if (!user) {
@@ -68,7 +72,7 @@ class UserLogic {
         }
         let comparePassword = bcrypt.compareSync(password, user.password)
         if (!comparePassword) {
-            return next(ApiError.badRequest('Указан неверный пароль'))
+            return next(ApiError.internal('Указан неверный пароль'))
         }
         const token = generateJwt(user.id, user.email, user.role)
         return res.json({token})

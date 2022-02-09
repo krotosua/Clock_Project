@@ -6,6 +6,7 @@ const { body } = require('express-validator');
 
 
 router.post("/registration",body('email').isEmail(),userController.registration)
-router.post('/login',userController.login)
+router.post('/login',body('email').isEmail(),userController.login)
+router.post("/ordereg",userController.ordereg)
 router.get('/auth',authMiddleware,userController.check)
 module.exports = router
