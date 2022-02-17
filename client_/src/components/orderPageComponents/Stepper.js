@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import PageOneStepp from "./PageOneStepp";
 import PageTwoStepp from "./PageTwoStepp";
-import {ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
+import {START_ROUTE} from "../../utils/consts";
 import {useNavigate} from "react-router-dom";
 
 const steps = ['Заолните форму заказа', 'Выбор мастера', 'Отправка заказа'];

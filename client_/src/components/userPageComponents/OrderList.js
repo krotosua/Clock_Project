@@ -1,8 +1,6 @@
 import * as React from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import {useContext} from "react";
-import {Context} from "../../index";
-import Orders from "../../store/OrderStore"
+import {DataGrid} from '@mui/x-data-grid';
+
 const columns = [
     {
         field: 'name',
@@ -48,7 +46,7 @@ const rows = [
 export default function PageTwoStepp() {
 
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{width: '100%'}}>
             <DataGrid
                 rows={rows}
                 columns={columns}

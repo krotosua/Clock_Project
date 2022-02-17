@@ -4,12 +4,16 @@ import {
     Card,
     CardContent,
     Container,
-    FormControl, FormGroup,
+    FormControl,
     TextField,
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import {NavLink, useLocation, useNavigate} from "react-router-dom";
+import {
+    NavLink,
+    useLocation,
+    useNavigate
+} from "react-router-dom";
 import {
     ADMIN_ROUTE,
     LOGIN_ROUTE,
@@ -28,35 +32,31 @@ const Auth = observer(() => {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState(null)
 
-    const [error, setError] = useState()
-    let errorEmail = false
-    let errorPassword = false
-    if (error === 500) {
-        errorPassword = true
-    } else if (error === 404) {
-        errorEmail = true
-    }
-
-    const [message, setMassage] = useState('')
     const singIn = async () => {
         try {
-            let dataUser
+            let dataUser;
             if (isLogin) {
                 dataUser = await login(email, password)
             } else {
-                dataUser = await registration(email, password)
+                if (password.length >= 6) {
+                    dataUser = await registration(email, password)
+                } else {
+                    setError(401)
+                    return
+                }
 
             }
-
-
             user.setUser(user)
             user.setIsAuth(true)
+            user.setUserRole(dataUser.role)
+
             dataUser.role === "USER" ?
                 navigate(START_ROUTE) :
                 navigate(ADMIN_ROUTE)
         } catch (e) {
-            setMassage(e.response.data.message)
+
             setError(e.response.status)
 
         }
@@ -92,55 +92,63 @@ const Auth = observer(() => {
 
 
                         <FormControl>
-                            <FormGroup>
-                                <TextField
-                                    error={errorEmail}
-                                    sx={{mb: 2}}
-                                    id="Email"
-                                    label="Email"
-                                    variant="outlined"
-                                    type={"email"}
-                                    value={email}
-                                    helperText={errorEmail ? `${message}` : ""}
-                                    onChange={(e => {
-                                        setEmail(e.target.value)
-                                        setError(false)
-                                    })}
-                                />
 
-                                <TextField
-                                    error={errorPassword}
-                                    id="Password"
-                                    label="Password"
-                                    variant="outlined"
-                                    type={"password"}
-                                    value={password}
-                                    helperText={errorPassword ? `${message}` : ""}
-                                    onChange={(e => {
-                                        setPassword(e.target.value)
-                                        setError(false)
-                                    })}
-                                />
-                            </FormGroup>
+                            <TextField
+                                error={error == 404 || error == 400}
+                                sx={{mb: 2}}
+                                id="Email"
+                                label="Email"
+                                variant="outlined"
+                                type={"email"}
+                                value={email}
+                                helperText={error == 404 ?
+                                    "Пользователя с таким email не найден" :
+                                    error == 400 ? "Введите email формата: clock@clock.com" : ""
+                                }
+
+                                onChange={(e => {
+                                    setEmail(e.target.value)
+                                    setError(null)
+                                })}
+                            />
+
+                            <TextField
+                                error={error == 401}
+                                id="Password"
+                                label="Password"
+                                variant="outlined"
+                                type={"password"}
+                                value={password}
+                                helperText={isLogin ?
+                                    error ? "Неправильный пароль" : ""
+                                    : "Длина пароля должна быть не менее 6 символов"}
+                                onChange={(e => {
+                                    setPassword(e.target.value)
+                                    setError(null)
+                                })}
+                            />
+
+                            <Box
+                                sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                            >
+                                {isLogin ? (
+                                    <div>
+                                        Нет аккаунта? <NavLink to={REGISTRATION_ROUTE}
+                                                               onClick={() => setError("")}>Зарегистрируйся!</NavLink>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        Есть аккаунта? <NavLink to={LOGIN_ROUTE}
+                                                                onClick={() => setError("")}>Войди!</NavLink>
+                                    </div>
+                                )}
+                                <Button type="submit" variant="outlined"
+                                        color={"warning"} onClick={singIn}>
+                                    {isLogin ? "Войти" : "Регистрация"}
+                                </Button>
+                            </Box>
+
                         </FormControl>
-                        <Box
-                            sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
-                        >
-                            {isLogin ? (
-                                <div>
-                                    Нет аккаунта?{" "}
-                                    <NavLink to={REGISTRATION_ROUTE}>Зарегистрируйся!</NavLink>
-                                </div>
-                            ) : (
-                                <div>
-                                    Есть аккаунта? <NavLink to={LOGIN_ROUTE}>Войди!</NavLink>
-                                </div>
-                            )}
-                            <Button disabled={errorEmail || errorPassword} type="submit" variant="outlined"
-                                    color={"warning"} onClick={singIn}>
-                                {isLogin ? "Войти" : "Регистрация"}
-                            </Button>
-                        </Box>
                     </Box>
                 </CardContent>
             </Card>

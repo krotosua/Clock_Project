@@ -1,23 +1,29 @@
-const {City}= require('../models/models')
+const {City} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const cityLogic = require('../businessLogic/cityLogic')
-class CityController{
-    async create(req,res){
-        await cityLogic.create(req,res)
-    }
-    async getAll(req,res){
-        await cityLogic.getAll(req,res)
+
+class CityController {
+    async create(req, res, next) {
+
+        await cityLogic.create(req, res, next)
 
     }
 
-    async getOne(req,res){
-        await cityLogic.getOne(req,res)
+    async getAll(req, res, next) {
+        await cityLogic.getAll(req, res, next)
+
     }
-    async update(req,res){
-        await cityLogic.update(req,res)
-}
-    async deleteOne(req,res){
-        await cityLogic.deleteOne(req,res)
+
+    async getOne(req, res, next) {
+        await cityLogic.getOne(req, res, next)
+    }
+
+    async update(req, res, next) {
+        await cityLogic.update(req, res, next)
+    }
+
+    async deleteOne(req, res, next) {
+        await cityLogic.deleteOne(req, res, next)
     }
 }
 

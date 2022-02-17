@@ -4,13 +4,13 @@ import {
     Container,
 
 } from "@mui/material";
-import React from "react";
+import React, {} from "react";
 
 import Stepper from "../components/orderPageComponents/Stepper"
+import {observer} from "mobx-react-lite";
 
 
-const Order = () => {
-
+const Order = observer(() => {
 
     return (
         <Container
@@ -29,6 +29,6 @@ const Order = () => {
             </Card>
         </Container>
     );
-};
+});
 
 export default Order;

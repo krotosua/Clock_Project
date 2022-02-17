@@ -9,34 +9,37 @@ import {Context} from "./index";
 import {check} from "./http/userAPI";
 
 
-const App= observer(()=> {
-    const {user}=useContext(Context)
-    const [loading,setLoading]=useState(true)
-    useEffect(()=>{
-        check().then(data=>{
+const App = observer(() => {
+    const {user} = useContext(Context)
+    const [loading, setLoading] = useState(true)
+    useEffect(() => {
+        check().then(data => {
             user.setUser(true)
             user.setIsAuth(true)
-        }).finally(()=>setLoading(false))
-    },[])
-    if(loading){
-        return <CircularProgress />
+            user.setUserRole(data.role)
+
+        }).finally(() => setLoading(false))
+    }, [])
+
+    if (loading) {
+        return <CircularProgress/>
     }
-  return (
+    return (
 
-    <BrowserRouter >
+        <BrowserRouter>
 
-        <NavBar/>
-        <Box sx={{ bgcolor: '#fafafa' }}>
-        <React.Fragment>
-            <CssBaseline />
-            <Container sx={{ bgcolor: '#fff',mt:6 }} >
-                <AppRouter/>
+            <NavBar/>
+            <Box sx={{bgcolor: '#eceaea'}}>
 
-            </Container>
-        </React.Fragment>
-        </Box>
-    </BrowserRouter>
-  );
+                <CssBaseline/>
+                <Container sx={{bgcolor: '#fff', mt: 6}}>
+                    <AppRouter/>
+
+                </Container>
+
+            </Box>
+        </BrowserRouter>
+    );
 })
 
 export default App;

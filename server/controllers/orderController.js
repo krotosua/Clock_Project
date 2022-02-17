@@ -5,18 +5,18 @@ const orderLogic = require('../businessLogic/orderLogic')
 
 class OrderController {
     async create(req, res, next) {
-        const user = await userLogic.GetOrCreateUser(req,res)
+        const user = await userLogic.GetOrCreateUser(req, res)
         const userId = user.dataValues.id
-        await orderLogic.create(req, res, next,userId)
+        await orderLogic.create(req, res, next, userId)
 
     }
 
-    async getUserOrders(req, res) {
-        await orderLogic.getUserOrders(req, res)
+    async getUserOrders(req, res, next) {
+        await orderLogic.getUserOrders(req, res, next)
     }
 
-    async getAllOrders(req, res) {
-        await orderLogic.getAllOrders(req, res)
+    async getAllOrders(req, res, next) {
+        await orderLogic.getAllOrders(req, res, next)
 
     }
 
@@ -24,8 +24,9 @@ class OrderController {
         await orderLogic.update(req, res, next)
     }
 
-    async deleteOne(req, res) {
-        await orderLogic.deleteOne(req, res)
+    async deleteOne(req, res, next) {
+        await orderLogic.deleteOne(req, res, next)
     }
 }
+
 module.exports = new OrderController()

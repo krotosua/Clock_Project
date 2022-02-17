@@ -1,25 +1,22 @@
-
 const userLogic = require('../businessLogic/userLogic');
 
 
-class UserController{
-    async registration(req,res,next){
-           await userLogic.registration(req,res,next)
+class UserController {
+    async registration(req, res, next) {
+        await userLogic.registration(req, res, next)
+    }
+
+    async login(req, res, next) {
+        await userLogic.login(req, res, next)
+    }
+
+    async ordeReg(req, res, next) {
+        await userLogic.GetOrCreateUser(req, res, next)
 
     }
 
-    async login(req,res,next){
-            await userLogic.login(req,res, next)
-
-    }
-    async ordereg(req,res){
-           await  userLogic.GetOrCreateUser(req,res)
-
-    }
-    async check(req,res){
-       await userLogic.check(req,res)
-
-
+    async check(req, res, next) {
+        await userLogic.check(req, res, next)
     }
 }
 

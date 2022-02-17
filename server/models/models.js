@@ -1,28 +1,47 @@
 const sequelize = require('../db')
-const {DataTypes}= require('sequelize')
+const {DataTypes} = require('sequelize')
 
-const User = sequelize.define('user',{
-    id:{type:DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    email:{type:DataTypes.STRING, unique:true,allowNull: false},
-    password:{type:DataTypes.STRING},
+const User = sequelize.define('user', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    email: {
+        type: DataTypes.STRING, unique: true, allowNull: false,
+        validate: {
+            isEmail: true,
+        }
+    },
+    password: {
+        type: DataTypes.STRING,
+    },
     role: {type: DataTypes.STRING, defaultValue: "USER"},
 })
 
-const Order = sequelize.define('order',{
-    id:{type:DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name:{type:DataTypes.STRING},
-    date:{type:DataTypes.DATE},
-    sizeClock: {type:DataTypes.INTEGER}
+const Order = sequelize.define('order', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING,
+        validate: {
+            notEmpty: true,
+            len: [3, 10]
+        }
+    },
+    date: {type: DataTypes.DATE},
+    sizeClock: {type: DataTypes.INTEGER}
 })
 
-const Master = sequelize.define('master',{
-    id:{type:DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name:{type:DataTypes.STRING,allowNull: false},
-    rating: {type:DataTypes.INTEGER,allowNull: false}
+const Master = sequelize.define('master', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING, allowNull: false,
+        validate: {notEmpty: true}
+    },
+    rating: {type: DataTypes.INTEGER, allowNull: false}
 })
-const City = sequelize.define('city',{
-    id:{type:DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name:{type:DataTypes.STRING,unique:true}
+const City = sequelize.define('city', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING, unique: true, allowNull: false,
+        validate: {notEmpty: true}
+    }
 })
 User.hasMany(Order)
 Order.belongsTo(User)
@@ -34,10 +53,7 @@ City.hasMany(Master)
 Master.belongsTo(City)
 
 
-
-
-
-module.exports={
+module.exports = {
     User,
     Order,
     City,

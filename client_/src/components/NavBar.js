@@ -17,8 +17,11 @@ const NavBar = observer(() => {
     const logOut = () => {
         user.setUser({})
         user.setIsAuth(false)
+        user.setUserRole("")
+        localStorage.setItem('token', "")
+        navigate(START_ROUTE)
     }
-    console.log(user)
+
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -27,12 +30,11 @@ const NavBar = observer(() => {
                     {user.isAuth ?
                         <Toolbar>
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
+                                <span onClick={() => navigate(START_ROUTE)}
+                                      style={{cursor: "pointer"}}>Clockwise Clockware</span>
 
-                                <Link href={START_ROUTE} underline="none" color="white">
-                                    {'  Clockwise Clockware'}
-                                </Link>
                             </Typography>
-                            {user.user.role === "ADMIN" ?
+                            {user.userRole === "ADMIN" ?
                                 <Button variant="outlined" color="inherit" onClick={() => navigate(ADMIN_ROUTE)}>
                                     Админ панель
                                 </Button> :
@@ -46,9 +48,9 @@ const NavBar = observer(() => {
 
                         <Toolbar>
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
-                                <Link href={START_ROUTE} underline="none" color="white">
-                                    {'  Clockwise Clockware'}
-                                </Link>
+                                <span onClick={() => navigate(START_ROUTE)}
+                                      style={{cursor: "pointer"}}>Clockwise Clockware</span>
+
                             </Typography>
                             <Button variant="outlined" color="inherit"
                                     onClick={() => navigate(LOGIN_ROUTE)}>Войти</Button>

@@ -1,55 +1,69 @@
-const {Master, City}= require('../models/models')
+const {Master, City} = require('../models/models')
 const ApiError = require('../error/ApiError')
-class MasterLogic{
-    async create(req,res,next){
-        try{
-            const {name,rating,cityId} = req.body
-            const master = await Master.create({name,rating,cityId})
+
+class MasterLogic {
+    async create(req, res, next) {
+        try {
+            const {name, rating, cityId} = req.body
+            const master = await Master.create({name, rating, cityId})
             return res.json(master)
-        }catch (e){
+        } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
 
-    async getAll(req,res,next){
-        let {cityId,limit,page}=req.query
-        page=page || 1
+    async getAll(req, res, next) {
+        let {cityId, limit, page} = req.query
+        page = page || 1
         limit = limit || 12
-        let offset= page* limit-limit
+        let offset = page * limit - limit
         let masters
-        if(cityId){
-            masters = await Master.findAndCountAll({where:{cityId},limit,offset})
+        if (cityId) {
+            masters = await Master.findAndCountAll({where: {cityId}, limit, offset})
 
-        }else{
-            masters = await Master.findAndCountAll({limit,offset})}
-        if(!masters.count){
-            return next(ApiError.internal('Список пуст'))
+        } else {
+            masters = await Master.findAndCountAll({limit, offset})
+        }
+        if (!masters.count) {
+            return res.status(204).json({message: "List is empty"})
         }
         return res.json(masters)
     }
-    async getOne(req,res,next){
+
+    async getOne(req, res, next) {
         const {id} = req.params
         const master = await Master.findOne({where: {id}})
-        if(!master){
-            return next(ApiError.badRequest('Нет такого пользователя'))
+        if (!master) {
+            return next(ApiError.badRequest('User doesn`t exist'))
         }
         return res.json(master)
 
     }
-    async update(req,res,next){
-        try{
-            const {id,name,rating,cityId}=req.body
-            await Master.findByPk(id).then((master)=>{master.update({
-                name:name,
-                rating:rating,
-                cityId:cityId
-            })})
-            return res.json(Master)}catch (e){ return next(ApiError.badRequest("Не верный Id"))}
+
+    async update(req, res, next) {
+        try {
+            const {id, name, rating, cityId} = req.body
+            const master = await Master.findOne({where: id})
+            await master.update({
+                name: name,
+                rating: rating,
+                cityId: cityId
+            })
+            return res.status(200).json({message: "success"})
+        } catch (e) {
+            return next(ApiError.badRequest("Invalid ID"))
+        }
     }
-    async deleteOne(req,res){
-        const {id}=req.params
-        await Master.findByPk(id).then((master)=>{master.destroy()})
-        return res.json(Master)
+
+    async deleteOne(req, res, next) {
+        try {
+            const {id} = req.body
+            const master = await Master.findOne({where: id})
+            await master.destroy()
+            return res.status(204).json({message: "success"})
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
     }
 
 }
