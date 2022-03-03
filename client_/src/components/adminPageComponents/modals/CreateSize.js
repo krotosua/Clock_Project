@@ -6,6 +6,8 @@ import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
 import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
+import {createSize, fetchSize} from "../../../http/sizeAPI";
+import Stack from "@mui/material/Stack";
 
 
 const style = {
@@ -19,25 +21,25 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateCity = ({open, onClose, alertMessage}) => {
+const CreateSize = ({open, onClose, alertMessage}) => {
     const [value, setValue] = useState("")
-
+    const [time, setTime] = useState("")
     const [error, setError] = useState(false)
-    let {cities} = useContext(Context)
-    const addCity = () => {
-        createCity({name: value}).then(res => {
+    let {size} = useContext(Context)
+
+    const addSize = () => {
+        
+
+        createSize({name: value, date: time}).then(res => {
                 setValue('')
                 onClose()
-                cities.setIsEmpty(false)
-                alertMessage("Город успешно создан", false)
-                fetchCity().then(res => {
-                    cities.setCities(res.data.rows)
-
-                })
+                size.setIsEmpty(false)
+                fetchSize().then(res => size.setSize(res.data.rows))
+                alertMessage("Размер часов добавлен", false)
             },
             err => {
                 setError(true)
-                alertMessage("Не удалось создать город", true)
+                alertMessage("Не удалось добавить размер часов", true)
             })
     }
 
@@ -52,17 +54,17 @@ const CreateCity = ({open, onClose, alertMessage}) => {
                 <Box sx={style}>
 
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Добавить название города
+                        Добавить новые размеры часов
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
                                 error={error}
-                                helperText={error && value == "" ? "Введите название города" :
-                                    error ? "Город с таким именем уже существует" : ""}
-                                sx={{mt: 1}}
+                                helperText={error && value == "" ? "Введите название часов" :
+                                    error ? "Часы с таким именем уже существуют" : ""}
+                                sx={{my: 2}}
                                 id="city"
-                                label="Введите город"
+                                label="Введите название часов"
                                 variant="outlined"
                                 value={value}
                                 onChange={e => {
@@ -70,12 +72,31 @@ const CreateCity = ({open, onClose, alertMessage}) => {
                                     setError(false)
                                 }}
                             />
+                            <Stack component="form" noValidate spacing={3}>
+
+                                <TextField
+                                    id="datetime-local"
+                                    label="Количество времени для ремонта "
+                                    type="time"
+                                    open="hours"
+                                    views="hours"
+                                    defaultValue="01:00"
+                                    sx={{width: 250}}
+
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                    onChange={e => {
+                                        setTime(e.target.value)
+                                    }}
+                                />
+                            </Stack>
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                    onClick={addCity}> Добавить</Button>
+                                    onClick={addSize}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={onClose}> Закрыть</Button>
                         </Box>
@@ -87,4 +108,4 @@ const CreateCity = ({open, onClose, alertMessage}) => {
     );
 };
 
-export default CreateCity;
+export default CreateSize;

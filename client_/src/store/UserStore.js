@@ -5,6 +5,8 @@ export default class UserStore {
         this._isAuth = false
         this._user = {}
         this._userRole = ""
+        this._usersList = []
+        this._isEmpty = false
         makeAutoObservable(this)
     }
 
@@ -20,8 +22,20 @@ export default class UserStore {
         this._userRole = role
     }
 
+    setUsersList(users) {
+        this._usersList = users
+    }
+
+    setIsEmpty(bool) {
+        this._isEmpty = bool
+    }
+
     get isAuth() {
         return this._isAuth
+    }
+
+    get IsEmpty() {
+        return this._isEmpty
     }
 
     get user() {
@@ -30,5 +44,9 @@ export default class UserStore {
 
     get userRole() {
         return this._userRole
+    }
+
+    get usersList() {
+        return this._usersList
     }
 }

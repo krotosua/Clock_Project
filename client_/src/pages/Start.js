@@ -14,6 +14,7 @@ const Start = () => {
         <Box sx={{display: 'flex', flexDirection: 'column', mb: 5}}>
             <AboutCompany/>
             <Cards/>
+        
             <Button variant="outlined" color={"warning"} onClick={() => navigate(ORDER_ROUTE)}>
                 Сделать заказ
             </Button>

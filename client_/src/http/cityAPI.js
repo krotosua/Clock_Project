@@ -12,7 +12,7 @@ export const fetchCity = async () => {
 }
 
 export const deleteCity = async (id) => {
-    await $authHost.delete('api/city/delete', id)
+    await $authHost.delete(`api/city/delete/`, {data: {id}})
 
 
 }

@@ -1,7 +1,7 @@
 import Admin from "./pages/Admin";
 import {
     ADMIN_CITY_LIST_ROUTE, ADMIN_MASTER_LIST_ROUTE, ADMIN_ORDER_LIST_ROUTE,
-    ADMIN_ROUTE,
+    ADMIN_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
     LOGIN_ROUTE,
     ORDER_ROUTE,
     REGISTRATION_ROUTE,
@@ -25,7 +25,15 @@ export const adminRoutes = [{
 }, {
     path: ADMIN_ORDER_LIST_ROUTE,
     Component: Admin
-}]
+},
+    {
+        path: ADMIN_USERS_ROUTE,
+        Component: Admin
+    }, {
+        path: ADMIN_SIZES_ROUTE,
+        Component: Admin
+    }
+]
 export const authRoutes = [
 
     {

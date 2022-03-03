@@ -1,4 +1,5 @@
 const userLogic = require('../businessLogic/userLogic');
+const cityLogic = require("../businessLogic/cityLogic");
 
 
 class UserController {
@@ -18,6 +19,16 @@ class UserController {
     async check(req, res, next) {
         await userLogic.check(req, res, next)
     }
+
+    async getAll(req, res, next) {
+        await userLogic.getAll(req, res, next)
+    }
+
+    async deleteOne(req, res, next) {
+        await userLogic.deleteOne(req, res, next)
+    }
+
 }
+
 
 module.exports = new UserController()

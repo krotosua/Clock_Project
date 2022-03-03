@@ -1,5 +1,3 @@
-const {Master, City} = require('../models/models')
-const ApiError = require('../error/ApiError')
 const masterLogic = require('../businessLogic/masterLogic')
 
 class MasterController {

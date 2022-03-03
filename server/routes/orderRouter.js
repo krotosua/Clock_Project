@@ -8,7 +8,7 @@ router.post("/", orderController.create)
 router.get('/:id', orderController.getUserOrders)
 router.get('/', checkRole("ADMIN"), orderController.getAllOrders)
 router.put("/", orderController.update)
-router.delete("/id:", orderController.deleteOne)
+router.delete("/", orderController.deleteOne)
 
 
 module.exports = router

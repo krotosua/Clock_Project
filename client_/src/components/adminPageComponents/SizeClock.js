@@ -12,30 +12,42 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
-import {deleteCity} from "../../http/cityAPI";
-import CreateCity from "./modals/CreateCity";
+import {deleteCity, fetchCity} from "../../http/cityAPI";
+
 import {Tooltip} from "@mui/material";
-import EditCity from "./modals/EditCity";
+
+import {deleteSize, fetchSize} from "../../http/sizeAPI";
+import CreateSize from "./modals/CreateSize";
 
 
-const CityList = observer(({alertMessage, getValue}) => {
-    let {cities} = useContext(Context)
-    const [cityVisible, setCityVisible] = useState(false)
+const SizeList = observer(() => {
+    let {size} = useContext(Context)
+    const [sizeVisible, setSizeVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
+    useEffect(() => {
+        fetchSize().then(res => {
+            if (res.status === 204) {
+                return size.setIsEmpty(true)
+            }
+          
+            return size.setSize(res.data.rows)
+        }, (err) => {
+            size.setIsEmpty(true)
+        })
+    }, [])
 
-
-    const delCity = (id) => {
-        deleteCity(id).then((res) => {
-            cities.setCities(cities.cities.filter(obj => obj.id !== id));
-            alertMessage('Успешно удаленно', false)
-            if (cities.cities.length === 0) {
-                cities.setIsEmpty(true)
+//delete size
+    const delSize = (id) => {
+        deleteSize(id).then((res) => {
+            size.setSize(size.size.filter(obj => obj.id !== id));
+            if (size.size.length === 0) {
+                size.setIsEmpty(true)
             } else {
-                cities.setIsEmpty(false)
+                size.setIsEmpty(false)
             }
         }, (err) => {
-            alertMessage('Не удалось удалить, так как в городе присутствуют мастера', true)
+            return console.error(err)
         })
 
     }
@@ -44,20 +56,20 @@ const CityList = observer(({alertMessage, getValue}) => {
 
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
             <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
-                Города
+                Размеры часов
             </Typography>
             <List disablePadding>
                 <ListItem
                     key={1}
                     divider
                     secondaryAction={
-                        <Tooltip title={'Добавить город'}
+                        <Tooltip title={'Добавить размер часов'}
                                  placement="top"
                                  arrow>
                             <IconButton sx={{width: 20}}
                                         edge="end"
                                         aria-label="addCity"
-                                        onClick={() => setCityVisible(true)}
+                                        onClick={() => setSizeVisible(true)}
                             >
                                 <AddIcon/>
                             </IconButton>
@@ -68,16 +80,19 @@ const CityList = observer(({alertMessage, getValue}) => {
                                   primary="№"
                     />
                     <ListItemText sx={{width: 10}}
-                                  primary="Название города"
+                                  primary="Название часов"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Количество времени"
                     />
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {cities.IsEmpty ? <h1>Список пуст</h1> :
-                    cities.cities.map((city, index) => {
+                {size.IsEmpty ? <h1>Список пуст</h1> :
+                    size.size.map((size, index) => {
 
                         return (<ListItem
-                                key={city.id}
+                                key={size.id}
                                 divider
 
                                 secondaryAction={
@@ -87,7 +102,7 @@ const CityList = observer(({alertMessage, getValue}) => {
                                         <IconButton sx={{width: 10}}
                                                     edge="end"
                                                     aria-label="delete"
-                                                    onClick={() => delCity(city.id)}
+                                                    onClick={() => delSize(size.id)}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
@@ -98,41 +113,28 @@ const CityList = observer(({alertMessage, getValue}) => {
                                               primary={index + 1}
                                 />
                                 <ListItemText sx={{width: 10}}
-                                              primary={city.name}
+                                              primary={size.name}
                                 />
-                                <Tooltip title={'Изменить навзвание города'}
+                                <ListItemText sx={{width: 10}}
+                                              primary={size.date}
+                                />
+                                <Tooltip title={'Изменить параметры часов'}
                                          placement="left"
                                          arrow>
                                     <IconButton sx={{width: 5}}
                                                 edge="end"
                                                 aria-label="Edit"
-                                                onClick={() => {
-                                                    setEditVisible(true)
-                                                    setIdToEdit(city.id)
-                                                }}
+
                                     >
                                         <EditIcon/>
                                     </IconButton>
                                 </Tooltip>
                             </ListItem>
-
                         )
                     })}
-
             </List>
-
-
-            <EditCity
-                open={editVisible}
-                onClose={() => setEditVisible(false)}
-                idToEdit={idToEdit}
-                alertMessage={alertMessage}
-                getValue={getValue}
-            />
-            <CreateCity open={cityVisible}
-                        onClose={() => setCityVisible(false)}
-                        alertMessage={alertMessage}/>
+            <CreateSize open={sizeVisible} onClose={() => setSizeVisible(false)}/>
         </Box>
     );
 })
-export default CityList;
+export default SizeList;

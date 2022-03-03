@@ -15,30 +15,47 @@ import {observer} from "mobx-react-lite";
 import {deleteMaster, fetchMaster} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 
+import EditMaster from "./modals/EditMaster";
+import {Tooltip} from "@mui/material";
 
-const MasterList = observer(() => {
+
+const MasterList = observer(({alertMessage, getValue}) => {
     let {masters} = useContext(Context)
     const [masterVisible, setMasterVisible] = useState(false)
+    const [editVisible, setEditVisible] = useState(false)
+    const [idToEdit, setIdToEdit] = useState(null);
 
     useEffect(() => {
         fetchMaster().then(res => {
             if (res.status === 204) {
-                masters.setIsEmpty(true)
-                return
+                return masters.setIsEmpty(true)
             }
-            masters.setMasters(res.data.rows)
+            masters.setIsEmpty(false)
+            return masters.setMasters(res.data.rows)
+        }, (err) => {
+            masters.setIsEmpty(true)
+            return
         })
     }, [])
+
 //Удаление мастера
     const delMaster = (id) => {
-        deleteMaster({id: id}).then(data => console.log(data))
-        masters.setMasters(masters.masters.filter(obj => obj.id !== id));
-        if (masters.masters.length === 0) {
-            masters.setIsEmpty(true)
-        } else {
-            masters.setIsEmpty(false)
-        }
+        deleteMaster(id).then((res) => {
+                masters.setMasters(masters.masters.filter(obj => obj.id !== id));
+                alertMessage('Успешно удаленно', false)
+                if (masters.masters.length === 0) {
+                    masters.setIsEmpty(true)
+                } else {
+                    masters.setIsEmpty(false)
+                }
+            }, (err) => {
+                alertMessage('Не удалось удалить, так как у мастера есть еще заказы', true)
+            }
+        )
+
+
     }
+
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -46,17 +63,22 @@ const MasterList = observer(() => {
                 Мастера
             </Typography>
             <List disablePadding>
+
                 <ListItem
                     key={1}
                     divider
                     secondaryAction={
-                        <IconButton sx={{width: 20}}
-                                    edge="end"
-                                    aria-label="Add"
-                                    onClick={() => setMasterVisible(true)}>
+                        <Tooltip title={'Добавить мастера'}
+                                 placement="top"
+                                 arrow>
+                            <IconButton sx={{width: 20}}
+                                        edge="end"
+                                        aria-label="Add"
+                                        onClick={() => setMasterVisible(true)}>
 
-                            <AddIcon/>
-                        </IconButton>
+                                <AddIcon/>
+                            </IconButton>
+                        </Tooltip>
                     }
                 >
                     <ListItemText sx={{width: 10}}
@@ -91,10 +113,14 @@ const MasterList = observer(() => {
                                 <ListItemText sx={{width: 10}}
                                               primary={master.rating}/>
                                 <ListItemText sx={{width: 10}}
-                                              primary={master.cityId}/>
+                                              primary={master.city.name}/>
                                 <IconButton sx={{width: 5}}
                                             edge="end"
                                             aria-label="Edit"
+                                            onClick={() => {
+                                                setEditVisible(true)
+                                                setIdToEdit(master.id)
+                                            }}
                                 >
                                     <EditIcon/>
                                 </IconButton>
@@ -102,7 +128,14 @@ const MasterList = observer(() => {
                         )
                     })}
             </List>
-            <CreateMaster open={masterVisible} onClose={() => setMasterVisible(false)}/>
+            <EditMaster open={editVisible}
+                        onClose={() => setEditVisible(false)}
+                        idToEdit={idToEdit}
+                        alertMessage={alertMessage}
+                        getValue={getValue}/>
+            <CreateMaster open={masterVisible}
+                          alertMessage={alertMessage}
+                          onClose={() => setMasterVisible(false)}/>
         </Box>
     );
 })

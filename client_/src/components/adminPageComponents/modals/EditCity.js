@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import {createCity, fetchCity, updateCity,} from "../../../http/cityAPI";
+import {updateCity} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
 
@@ -19,7 +19,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditCity = ({open, onClose, idToEdit}) => {
+const EditCity = ({open, onClose, idToEdit, alertMessage, getValue}) => {
     const [nameCity, setNameCity] = useState("")
     const [error, setError] = useState(false)
     let {cities} = useContext(Context)
@@ -29,17 +29,13 @@ const EditCity = ({open, onClose, idToEdit}) => {
             change("name", nameCity)
             setNameCity("")
             onClose()
+            alertMessage('Название изменено успешно', false)
         }, err => {
             setError(true)
+            alertMessage('Не удалось изменить название', true)
         })
     }
 
-
-    function getValue(prop, event) { // получение значения свойства
-        return cities.cities.reduce(
-            (res, obj) => obj.id == idToEdit ? obj[prop] : res
-            , '');
-    }
 
     function change(prop, value) { // изменение input поля
         cities.setCities(cities.cities.map(obj =>
@@ -56,7 +52,7 @@ const EditCity = ({open, onClose, idToEdit}) => {
                 <Box sx={style}>
 
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Изменить название города {getValue('name')}
+                        Изменить название города {getValue('name', cities.cities, idToEdit)}
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>

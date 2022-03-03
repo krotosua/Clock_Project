@@ -5,6 +5,8 @@ import UserStore from './store/UserStore';
 import OrderStore from "./store/OrderStore";
 import CityStore from "./store/CityStore";
 import MasterStore from "./store/MasterStore";
+import SizeStore from "./store/SizeStore";
+import "./style.css"
 
 
 export const Context = createContext(null)
@@ -14,7 +16,8 @@ ReactDOM.render(
         user: new UserStore(),
         orders: new OrderStore(),
         cities: new CityStore(),
-        masters: new MasterStore()
+        masters: new MasterStore(),
+        size: new SizeStore()
     }}>
 
         <App/>,

@@ -1,6 +1,5 @@
-const {City} = require('../models/models')
-const ApiError = require('../error/ApiError')
 const cityLogic = require('../businessLogic/cityLogic')
+const masterLogic = require('../businessLogic/masterLogic')
 
 class CityController {
     async create(req, res, next) {
@@ -19,6 +18,7 @@ class CityController {
     }
 
     async update(req, res, next) {
+
         await cityLogic.update(req, res, next)
     }
 

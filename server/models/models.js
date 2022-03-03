@@ -24,8 +24,7 @@ const Order = sequelize.define('order', {
             len: [3, 10]
         }
     },
-    date: {type: DataTypes.DATE},
-    sizeClock: {type: DataTypes.INTEGER}
+    date: {type: DataTypes.DATE}
 })
 
 const Master = sequelize.define('master', {
@@ -43,6 +42,14 @@ const City = sequelize.define('city', {
         validate: {notEmpty: true}
     }
 })
+const SizeClock = sequelize.define('sizeClock', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING, unique: true, allowNull: false,
+        validate: {notEmpty: true,}
+    },
+    date: {type: DataTypes.TIME}
+})
 User.hasMany(Order)
 Order.belongsTo(User)
 
@@ -50,12 +57,13 @@ Master.hasMany(Order)
 Order.belongsTo(Master)
 
 City.hasMany(Master)
-Master.belongsTo(City)
+Master.belongsTo(City, {onUpdate: "cascade"})
 
-
+Order.belongsTo(SizeClock)
 module.exports = {
     User,
     Order,
     City,
-    Master
+    Master,
+    SizeClock
 }

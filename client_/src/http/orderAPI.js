@@ -7,7 +7,7 @@ export const createOrder = async (order) => {
 }
 
 export const fetchAlLOrders = async () => {
-    const {data} = await $authHost.get('api/order/')
+    const data = await $authHost.get('api/order/')
     return data
 }
 

@@ -4,11 +4,16 @@ export default class OrderStore {
     constructor() {
         this._cities = []
         this._isEmpty = false
+        this._selectedCity = {}
         makeAutoObservable(this)
     }
 
     setCities(cities) {
         this._cities = cities
+    }
+
+    setSelectedCity(type) {
+        this._selectedCity = type
     }
 
     setIsEmpty(bool) {
@@ -24,4 +29,7 @@ export default class OrderStore {
         return this._isEmpty
     }
 
+    get selectedCity() {
+        return this._selectedCity
+    }
 }

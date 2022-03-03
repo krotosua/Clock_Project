@@ -18,30 +18,34 @@ const MenuProps = {
         },
     },
 };
-export default function SelectorCity() {
-    const [cityCheck, setCity] = useState('');
+
+export default function SelectorCity({Edit}) {
     let {cities} = useContext(Context)
+    const [city, setCity] = useState(Edit || "");
+
+
     const handleChange = (event) => {
         setCity(event.target.value);
+        cities.setSelectedCity(event.target.value)
     };
+
     return (
-        <Box sx={{minWidth: 120,}}>
+        <Box sx={{minWidth: 120}}>
             <FormControl fullWidth>
                 <InputLabel id="citySel">Выберите город</InputLabel>
                 <Select
                     labelId="citySel"
-                    id="demo-simple-select"
-
-                    value={cityCheck}
+                    value={city}
                     label="Выберите город"
-                    onChange={e => setCity(e.target.value)}
+                    onChange={handleChange}
                     MenuProps={MenuProps}
                 >
-                    {cities.cities.map(city =>
+                    {cities.cities.map((city) =>
                         <MenuItem
                             key={city.id}
                             value={city.id}
-                        >{city.name}
+                        >
+                            {city.name}
                         </MenuItem>
                     )}
                 </Select>

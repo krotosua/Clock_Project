@@ -1,44 +1,85 @@
-const {Master, City} = require('../models/models')
+const {Master, City, Order} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const {Op} = require("sequelize");
 
 class MasterLogic {
     async create(req, res, next) {
         try {
             const {name, rating, cityId} = req.body
-            const master = await Master.create({name, rating, cityId})
-            return res.json(master)
+            if (cityId) {
+                const master = await Master.create({name, rating, cityId})
+                return res.json(master)
+            } else {
+                next(ApiError.badRequest({message: "cityId is empty"}))
+            }
+
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
 
     async getAll(req, res, next) {
-        let {cityId, limit, page} = req.query
-        page = page || 1
-        limit = limit || 12
-        let offset = page * limit - limit
-        let masters
-        if (cityId) {
-            masters = await Master.findAndCountAll({where: {cityId}, limit, offset})
+        try {
+            let {cityId, endOfOrder, startOrder, limit, page} = req.query
+            console.log(req.query)
+            page = page || 1
+            limit = limit || 12
+            let offset = page * limit - limit
+            let masters
+            if (cityId) {
+                masters = await Master.findAndCountAll({
+                    where: {
+                        cityId,
 
-        } else {
-            masters = await Master.findAndCountAll({limit, offset})
+                    },
+                    include: [{
+                        model: City,
+                        attributes: ['name'],
+                    }, {
+                        model: Order,
+                        where:
+                            {
+                                date: {
+                                    [Op.notBetween]: [startOrder, endOfOrder]
+                                }
+                            },
+
+
+                    }]
+                    ,
+                    limit, offset
+                })
+
+            } else {
+                masters = await Master.findAndCountAll({
+                    include: [{
+                        model: City,
+                        attributes: ['name']
+                    },
+
+
+                    ], limit, offset
+                })
+            }
+            if (!masters.count) {
+                return res.status(204).json({message: "List is empty"})
+            }
+
+            return res.json(masters)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
         }
-        if (!masters.count) {
-            return res.status(204).json({message: "List is empty"})
-        }
-        return res.json(masters)
     }
 
     async getOne(req, res, next) {
-        const {id} = req.params
+        const id = req.body.masterId
         const master = await Master.findOne({where: {id}})
         if (!master) {
-            return next(ApiError.badRequest('User doesn`t exist'))
+            return next(ApiError.badRequest('Master doesn`t exist'))
         }
-        return res.json(master)
-
+        return res.status(200)
     }
+
 
     async update(req, res, next) {
         try {
@@ -58,9 +99,19 @@ class MasterLogic {
     async deleteOne(req, res, next) {
         try {
             const {id} = req.body
-            const master = await Master.findOne({where: id})
-            await master.destroy()
-            return res.status(204).json({message: "success"})
+            const master = await Master.findOne({
+                where: id,
+                include: {
+                    model: Order,
+                    attributes: ['id']
+                }
+            })
+            if (master.orders.length == 0) {
+                await master.destroy()
+                return res.status(204).json({message: "success"})
+            } else {
+                return next(ApiError.Conflict({message: "City isn`t empty"}))
+            }
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }

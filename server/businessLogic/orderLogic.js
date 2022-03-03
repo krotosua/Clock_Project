@@ -1,12 +1,12 @@
-const {Order, City} = require('../models/models')
+const {Order, City, Master, SizeClock} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 
 class OrderLogic {
     async create(req, res, next, userId) {
         try {
-            const {name, sizeClock, date, masterId} = req.body
-            await Order.create({name, sizeClock, date, userId, masterId})
+            const {name, sizeClockId, date, masterId} = req.body
+            await Order.create({name, sizeClockId, date, userId, masterId})
             return res.status(201).json({message: "Created"})
 
         } catch (e) {
@@ -38,7 +38,20 @@ class OrderLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let orders
-            orders = await Order.findAndCountAll({limit, offset})
+            orders = await Order.findAndCountAll({
+                include: [{
+                    model: Master,
+                    attributes: ['name'],
+                    include: {
+                        model: City,
+                        attributes: ['name']
+                    }
+                }, {
+                    model: SizeClock,
+                    attributes: ['name'],
+
+                }], limit, offset
+            })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
             }

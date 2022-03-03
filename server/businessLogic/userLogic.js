@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const {validationResult} = require("express-validator");
 const ApiError = require("../error/ApiError");
 const {User} = require("../models/models");
 const bcrypt = require("bcrypt");
@@ -86,6 +85,35 @@ class UserLogic {
         await user.update({password: hashPassword})
 
     }
+
+    async getAll(req, res, next) {
+        try {
+            let {limit, page} = req.query
+            page = page || 1
+            limit = limit || 12
+            let offset = page * limit - limit
+            let users
+            users = await User.findAndCountAll({limit, offset})
+            if (!users.count) {
+                return res.status(204).json({message: "List is empty"})
+            }
+            return res.status(200).json(users)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async deleteOne(req, res, next) {
+        try {
+            const {id} = req.body
+            const user = await User.findOne({where: id})
+            await user.destroy({onDelete: "cascade"})
+            return res.status(204).json({message: "success"})
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
+    }
 }
+
 
 module.exports = new UserLogic()

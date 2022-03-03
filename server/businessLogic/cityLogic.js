@@ -48,15 +48,32 @@ class CityLogic {
 
     async deleteOne(req, res, next) {
         try {
-            const {id} = req.body
-            const city = await City.findOne({where: id})
-            await city.destroy()
 
-            return res.status(204).json({message: "success"})
+            const {id} = req.body
+            if (id) {
+                const city = await City.findOne({
+                    where: id,
+                    include: {
+                        model: Master,
+                        attributes: ['id']
+                    }
+                })
+                if (city.masters.length == 0) {
+                    await city.destroy()
+                    return res.status(204).json({message: "success"})
+                } else {
+                    return next(ApiError.Conflict({message: "City isn`t empty"}))
+                }
+
+
+            } else {
+                return next(ApiError.badRequest({message: "Id is empty"}))
+            }
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
     }
+
 
 }
 

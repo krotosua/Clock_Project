@@ -11,22 +11,50 @@ import {useContext, useEffect} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
+import {deleteOrder, fetchAlLOrders} from "../../http/orderAPI";
 
-import {fetchAlLOrders} from "../../http/orderAPI";
 
-
-const OrderList = observer(() => {
+const OrderList = observer(({alertMessage}) => {
     let {orders} = useContext(Context)
 
     useEffect(() => {
-        fetchAlLOrders().then(data => {
-            data.map(item => {
-                let date = new Date(Date.parse(item.date))
-                item.date = `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()} ${date.getHours()}:00:00`
+        fetchAlLOrders().then(res => {
+            console.log(res.data.rows)
+            if (res.status === 204) {
+                orders.setIsEmpty(true)
+                return
+            }
+            res.data.rows.map(item => {
+                let date = new Date(item.date)
+                item.date = formatDate(date)
             })
-            orders.setOrders(data)
+
+            orders.setOrders(
+                res.data.rows)
         })
     }, [])
+
+    function formatDate(date) {
+        let orderDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        return orderDate
+    }
+
+
+    const delOrder = (id) => {
+        deleteOrder(id).then((res) => {
+            orders.setOrders(orders.orders.filter(obj => obj.id !== id));
+            alertMessage('Успешно удаленно', false)
+            if (orders.orders.length === 0) {
+                orders.setIsEmpty(true)
+            } else {
+                orders.setIsEmpty(false)
+            }
+        }, (err) => {
+            alertMessage('Не удалось удалить, так как в городе присутствуют мастера', true)
+        })
+
+    }
+
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -71,7 +99,7 @@ const OrderList = observer(() => {
 
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.orders.map((order, index) => {
+                {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
                     return (<ListItem
                         key={order.id}
                         divider
@@ -79,6 +107,7 @@ const OrderList = observer(() => {
                             <IconButton sx={{width: 5}}
                                         edge="end"
                                         aria-label="delete"
+                                        onClick={delOrder}
                             >
                                 <DeleteIcon/>
                             </IconButton>
@@ -93,12 +122,12 @@ const OrderList = observer(() => {
                         <ListItemText sx={{width: 10}}
                                       primary={(order.date)}
                         /> <ListItemText sx={{width: 10}}
-                                         primary={order.sizeClock}
+                                         primary={order.sizeClock.name}
                     /><ListItemText sx={{width: 10}}
-                                    primary={order.masterId}
+                                    primary={order.master.name}
                     />
                         <ListItemText sx={{width: 10}}
-                                      primary={order.cityId}
+                                      primary={order.master.city.name}
                         />
 
                     </ListItem>)

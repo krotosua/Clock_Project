@@ -4,12 +4,27 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import {Context} from "../../index";
+import {useContext} from "react";
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
 
 export default function SelectorSize() {
-    const [size, setSize] = React.useState('');
-
+    const [clock, setClock] = React.useState('');
+  
+    const {size} = useContext(Context)
     const handleChange = (event) => {
-        setSize(event.target.value);
+        setClock(event.target.value);
+        size.setSelectedSize(event.target.value)
     };
 
 
@@ -20,13 +35,19 @@ export default function SelectorSize() {
                 <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={size}
+                    value={clock}
                     label="Выберите размер часов"
                     onChange={handleChange}
                 >
-                    <MenuItem value={1}>Маленькие</MenuItem>
-                    <MenuItem value={2}>Средние</MenuItem>
-                    <MenuItem value={3}>Большие</MenuItem>
+                    {size.size.map(clock =>
+                        <MenuItem
+                            key={clock.id}
+                            value={clock}
+                        >
+                            {clock.name}
+                        </MenuItem>
+                    )}
+
                 </Select>
             </FormControl>
         </Box>
