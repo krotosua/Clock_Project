@@ -107,7 +107,7 @@ const OrderList = observer(({alertMessage}) => {
                             <IconButton sx={{width: 5}}
                                         edge="end"
                                         aria-label="delete"
-                                        onClick={delOrder}
+                                        onClick={() => delOrder(order.id)}
                             >
                                 <DeleteIcon/>
                             </IconButton>

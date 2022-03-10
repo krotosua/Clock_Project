@@ -16,11 +16,9 @@ const Order = observer(() => {
     const {size} = useContext(Context)
     useEffect(() => {
         fetchSize().then(res => {
-
             if (res.status === 204) {
                 return size.setIsEmpty(true)
             }
-          
             return size.setSize(res.data.rows)
         }, (err) => {
             size.setIsEmpty(true)

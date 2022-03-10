@@ -30,19 +30,21 @@ class MasterLogic {
                 masters = await Master.findAndCountAll({
                     where: {
                         cityId,
-
                     },
                     include: [{
                         model: City,
                         attributes: ['name'],
                     }, {
                         model: Order,
-                        where:
-                            {
-                                date: {
-                                    [Op.notBetween]: [startOrder, endOfOrder]
+                        [Op.or]: [{
+                            where:
+                                {
+                                    date: {
+                                        [Op.notBetween]: [startOrder, endOfOrder]
+                                    }
                                 }
-                            },
+                        },
+                            {require: false}],
 
 
                     }]

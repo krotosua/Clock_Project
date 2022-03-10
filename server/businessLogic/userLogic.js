@@ -16,6 +16,7 @@ class UserLogic {
         try {
 
             const {email, password, role} = req.body
+      
             if (!email || !password) {
                 return next(ApiError.badRequest('Incorrect email or password'))
             }
@@ -23,8 +24,8 @@ class UserLogic {
             if (candidate) {
                 if (candidate.password !== null) {
                     return next(ApiError.badRequest('User with this email already exists'))
-                } else if (candidate.password === null) {
-                    await this.update(candidate, candidate.password)
+                } else {
+                    await this.update(candidate, password)
                     const token = generateJwt(candidate.id, candidate.email, candidate.role)
                     return res.json({token})
                 }

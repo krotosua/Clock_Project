@@ -1,6 +1,6 @@
 import React from 'react';
 import {Snackbar} from "@mui/material";
-import {Alert} from "@mui/lab";
+import {Alert} from "@mui/material";
 
 const MyAlert = ({open, onClose, message, isError}) => {
     return (

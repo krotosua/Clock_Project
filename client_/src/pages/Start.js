@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 import Cards from "../components/startPageComponents/cards"
 import AboutCompany from "../components/startPageComponents/aboutCompany";
 import Button from "@mui/material/Button";

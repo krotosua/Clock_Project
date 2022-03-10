@@ -37,7 +37,7 @@ export const adminRoutes = [{
 export const authRoutes = [
 
     {
-        path: USER_ORDER_ROUTE,
+        path: USER_ORDER_ROUTE + '/:id',
         Component: User
     },
 

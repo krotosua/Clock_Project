@@ -38,7 +38,10 @@ const NavBar = observer(() => {
                                 <Button variant="outlined" color="inherit" onClick={() => navigate(ADMIN_ROUTE)}>
                                     Админ панель
                                 </Button> :
-                                <Button variant="outlined" color="inherit" onClick={() => navigate(USER_ORDER_ROUTE)}>
+                                <Button variant="outlined" color="inherit"
+                                        onClick={() => {
+                                            navigate(`${USER_ORDER_ROUTE}/${user.user.id}`)
+                                        }}>
                                     Список заказов
                                 </Button>
                             }

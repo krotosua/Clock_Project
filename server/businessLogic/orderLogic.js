@@ -16,12 +16,27 @@ class OrderLogic {
 
     async getUserOrders(req, res, next) {
         try {
-            let {userId, limit, page} = req.query
+            let {id, limit, page} = req.params
+            console.log(req.params)
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
             let orders
-            orders = await Order.findAndCountAll({where: {userId}, limit, offset})
+            orders = await Order.findAndCountAll({
+                where: {userId: id},
+                include: [{
+                    model: Master,
+                    attributes: ['name'],
+                    include: {
+                        model: City,
+                        attributes: ['name']
+                    }
+                }, {
+                    model: SizeClock,
+                    attributes: ['name'],
+
+                }], limit, offset
+            })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
             }

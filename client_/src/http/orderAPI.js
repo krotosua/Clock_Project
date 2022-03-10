@@ -10,9 +10,14 @@ export const fetchAlLOrders = async () => {
     const data = await $authHost.get('api/order/')
     return data
 }
+export const fetchUserOrders = async (id) => {
+    const data = await $authHost.get('api/order/' + id)
+    return data
+}
 
-export const deleteOrder = async () => {
-    await $authHost.delete('api/order/')
+
+export const deleteOrder = async (id) => {
+    await $authHost.delete('api/order/', {data: {id}})
 
 }
 export const updateOrder = async () => {

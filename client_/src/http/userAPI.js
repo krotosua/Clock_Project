@@ -20,7 +20,7 @@ export const check = async () => {
 }
 export const fetchUsers = async () => {
     const res = await $host.get('api/user/')
-    console.log(res)
+
     return res
 }
 export const deleteUser = async (id) => {

@@ -23,12 +23,10 @@ import Divider from "@mui/material/Divider";
 import {fetchMaster} from "../../http/masterAPI";
 import IconButton from "@mui/material/IconButton";
 import * as PropTypes from "prop-types";
+import {createOrder} from "../../http/orderAPI";
 
 const steps = ["Заолните форму заказа", "Выбор мастера", "Отправка заказа"];
 
-function AddIcon() {
-    return null;
-}
 
 function MyFormControlLabel(props) {
     return null;
@@ -46,41 +44,53 @@ const HorizontalLinearStepper = observer(() => {
 
     const {cities, size, masters} = useContext(Context);
     const [time, setTime] = useState(new Date().setHours(9, 0, 0));
-    const [date, setDate] = useState(null);
+    console.log(time)
+    const [chosenMaster, setMaster] = useState(null);
     const navigate = useNavigate();
     const handleNext = () => {
-        // if (name.length > 3 && date && email && cities.selectedCity && size.selectedSize.id && date) {
-        //     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        // }
-        let startOrder = formatDate(time)
-        setDate(startOrder)
-        let endHour = Number(time.getHours()) + Number(size.selectedSize.date.slice(0, 2))
-        let endOfOrder = formatDate(new Date(new Date(time).setHours(endHour, 0, 0)))
-        fetchMaster(cities.selectedCity, endOfOrder, startOrder).then(
-            (res) => {
-                console.log(res.data.rows)
-                if (res.status === 204) {
-                    return masters.setIsEmpty(true);
-                }
-                masters.setIsEmpty(false)
-                return masters.setMasters(res.data.rows);
-            },
-            (err) => {
-                masters.setIsEmpty(true);
-                return;
+        if (activeStep === 0) {
+            if (name.length < 3 || !time && !email || !cities.selectedCity || !size.selectedSize) {
+                return
             }
-        );
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            let startOrder = time
+            let endHour = Number(time.getHours()) + Number(size.selectedSize.date.slice(0, 2))
+            let endOfOrder = new Date(new Date(time).setHours(endHour, 0, 0))
+            fetchMaster(cities.selectedCity, endOfOrder, startOrder).then(
+                (res) => {
+                    if (res.status === 204) {
+                        return masters.setIsEmpty(true);
+                    }
+                    masters.setIsEmpty(false)
+                    return masters.setMasters(res.data.rows);
+                },
+                (err) => {
+                    masters.setIsEmpty(true);
+                    return;
+                }
+            );
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        } else if (activeStep === 1 && chosenMaster) {
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        } else {
+            let order = {
+                name: name,
+                date: time,
+                email: email,
+                cityId: cities.selectedCity,
+                masterId: chosenMaster,
+                sizeClockId: size.selectedSize.id
+            }
+            createOrder(order).then(res => console.log('success'))
+        }
     };
 
     const handleBack = () => {
+        setTime(new Date().setHours(9, 0, 0))
+        cities.setSelectedCity(null)
+        size.setSelectedSize(null)
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
-
-
-    function formatDate(date) {
-        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-    }
+    
 
     const pageOne = (
         <Box component="form">
@@ -128,11 +138,9 @@ const HorizontalLinearStepper = observer(() => {
         </Box>
     );
 
-    const [value, setValue] = useState();
 
-    const handleChange = (event) => {
-        setValue(event.target.value);
-        console.log(event.target.value)
+    const choseMaster = (event) => {
+        setMaster(event.target.value);
     };
     const nextPage = (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -157,8 +165,8 @@ const HorizontalLinearStepper = observer(() => {
                 <RadioGroup
                     aria-labelledby="demo-controlled-radio-buttons-group"
                     name="controlled-radio-buttons-group"
-                    value={value}
-                    onChange={handleChange}
+                    value={chosenMaster}
+                    onChange={choseMaster}
                 >
                     {masters.IsEmpty ? (
                         <h1>Список пуст</h1>
@@ -216,7 +224,7 @@ const HorizontalLinearStepper = observer(() => {
                             Назад
                         </Button>
                         <Box sx={{flex: "1 1 auto"}}/>
-                        <Button onClick={() => navigate(START_ROUTE)}>
+                        <Button onClick={handleNext}>
                             Отправить заказ
                         </Button>
                     </Box>
