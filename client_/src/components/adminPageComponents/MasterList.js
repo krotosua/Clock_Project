@@ -33,8 +33,8 @@ const MasterList = observer(({alertMessage, getValue}) => {
             masters.setIsEmpty(false)
             return masters.setMasters(res.data.rows)
         }, (err) => {
-            masters.setIsEmpty(true)
-            return
+            return masters.setIsEmpty(true)
+
         })
     }, [])
 

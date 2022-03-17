@@ -24,7 +24,8 @@ const Order = sequelize.define('order', {
             len: [3, 10]
         }
     },
-    date: {type: DataTypes.DATE}
+    date: {type: DataTypes.DATEONLY},
+    time: {type: DataTypes.TIME}
 })
 
 const Master = sequelize.define('master', {

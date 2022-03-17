@@ -18,21 +18,6 @@ import {Tooltip} from "@mui/material";
 const OrderList = observer(({alertMessage}) => {
     let {orders} = useContext(Context)
 
-    const delOrder = (id) => {
-        deleteOrder(id).then((res) => {
-            orders.setOrders(orders.orders.filter(obj => obj.id !== id));
-            alertMessage('Успешно удаленно', false)
-            if (orders.orders.length === 0) {
-                orders.setIsEmpty(true)
-            } else {
-                orders.setIsEmpty(false)
-            }
-        }, (err) => {
-            alertMessage('Не удалось удалить', true)
-        })
-
-    }
-
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -44,14 +29,7 @@ const OrderList = observer(({alertMessage}) => {
                 <ListItem
                     key={1}
                     divider
-                    secondaryAction={
-                        <IconButton sx={{width: 5}}
-                                    edge="end"
-                                    aria-label="delete"
-                        >
-                            <AddIcon/>
-                        </IconButton>
-                    }
+
                 >
                     <ListItemText sx={{width: 10}}
                                   primary="№"
@@ -82,19 +60,7 @@ const OrderList = observer(({alertMessage}) => {
                     return (<ListItem
                         key={order.id}
                         divider
-                        secondaryAction={
-                            <Tooltip title={'Удалить заказ'}
-                                     placement="right"
-                                     arrow>
-                                <IconButton sx={{width: 5}}
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => delOrder(order.id)}
-                                >
-                                    <DeleteIcon/>
-                                </IconButton>
-                            </Tooltip>
-                        }
+
                     >
                         <ListItemText sx={{width: 10}}
                                       primary={index + 1}

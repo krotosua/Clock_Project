@@ -48,7 +48,7 @@ const Auth = observer(() => {
                 }
 
             }
-            user.setUser(user)
+            user.setUser(dataUser)
             user.setIsAuth(true)
             user.setUserRole(dataUser.role)
 
@@ -58,7 +58,6 @@ const Auth = observer(() => {
         } catch (e) {
 
             setError(e.response.status)
-
         }
     }
 

@@ -18,9 +18,9 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize() {
+export default function SelectorSize({sizeClock, readOnly}) {
     const {size} = useContext(Context)
-    const [clock, setClock] = React.useState('');
+    const [clock, setClock] = React.useState(sizeClock);
     const handleChange = (event) => {
         setClock(event.target.value);
         size.setSelectedSize(event.target.value)
@@ -35,6 +35,7 @@ export default function SelectorSize() {
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={clock}
+                    readOnly={readOnly}
                     label="Выберите размер часов"
                     onChange={handleChange}
                     MenuProps={MenuProps}

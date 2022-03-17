@@ -4,7 +4,7 @@ export default class OrderStore {
     constructor() {
         this._cities = []
         this._isEmpty = false
-        this._selectedCity = {}
+        this._selectedCity = null
         makeAutoObservable(this)
     }
 

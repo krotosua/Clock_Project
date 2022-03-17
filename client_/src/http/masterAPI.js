@@ -7,8 +7,8 @@ export const createMaster = async (master) => {
 
 }
 
-export const fetchMaster = async (cityId, endOfOrder, startOrder) => {
-    const res = await $host.get('api/master/', {params: {cityId, endOfOrder, startOrder}})
+export const fetchMaster = async (cityId, date) => {
+    const res = await $host.get('api/master/', {params: {cityId, date}})
     return res
 }
 

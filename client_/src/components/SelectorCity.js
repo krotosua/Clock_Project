@@ -19,9 +19,9 @@ const MenuProps = {
     },
 };
 
-export default function SelectorCity({Edit}) {
+export default function SelectorCity({Edit, cityChosen, readOnly}) {
     let {cities} = useContext(Context)
-    const [city, setCity] = useState(Edit || "");
+    const [city, setCity] = useState(Edit || cityChosen || null);
 
 
     const handleChange = (event) => {
@@ -36,6 +36,7 @@ export default function SelectorCity({Edit}) {
                 <Select
                     labelId="citySel"
                     value={city}
+                    readOnly={readOnly}
                     label="Выберите город"
                     onChange={handleChange}
                     MenuProps={MenuProps}

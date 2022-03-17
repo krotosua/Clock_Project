@@ -20,8 +20,7 @@ class MasterLogic {
 
     async getAll(req, res, next) {
         try {
-            let {cityId, endOfOrder, startOrder, limit, page} = req.query
-            console.log(req.query)
+            let {cityId, date, limit, page} = req.query
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
@@ -36,17 +35,10 @@ class MasterLogic {
                         attributes: ['name'],
                     }, {
                         model: Order,
-                        [Op.or]: [{
-                            where:
-                                {
-                                    date: {
-                                        [Op.notBetween]: [startOrder, endOfOrder]
-                                    }
-                                }
+                        where: {
+                            date: {[Op.eq]: date}
                         },
-                            {require: false}],
-
-
+                        required: false
                     }]
                     ,
                     limit, offset

@@ -6,7 +6,6 @@ const ApiError = require("../error/ApiError");
 class OrderController {
     async create(req, res, next) {
         try {
-            console.log(req.body)
             const user = await userLogic.GetOrCreateUser(req, res)
             const userId = user.dataValues.id
             await masterLogic.getOne(req, res, next)

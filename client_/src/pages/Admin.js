@@ -123,20 +123,21 @@ const Admin = observer(() => {
 
                 </Box>
 
-                <Tooltip title={cityList ? "Добавить город" :
-                    masterList ? "Добавить мастера" :
-                        sizeList ? "Добавить размер часов" :
-                            'Добавить заказ'}
-                         placement="top"
-                         arrow>
-                    <Fab color="primary"
-                         aria-label="add"
-                         sx={{position: 'fixed', bottom: 80, right: 400}}
-                         onClick={variantsAdd}
-                    >
-                        <AddIcon/>
-                    </Fab>
-                </Tooltip>
+                {usersList ? null :
+                    <Tooltip title={cityList ? "Добавить город" :
+                        masterList ? "Добавить мастера" :
+                            sizeList ? "Добавить размер часов" :
+                                'Добавить заказ'}
+                             placement="top"
+                             arrow>
+                        <Fab color="primary"
+                             aria-label="add"
+                             sx={{position: 'fixed', bottom: 80, right: 400}}
+                             onClick={variantsAdd}
+                        >
+                            <AddIcon/>
+                        </Fab>
+                    </Tooltip>}
                 <CreateCity open={cityVisible}
                             onClose={() => setCityVisible(false)}
                             alertMessage={alertMessage}/>

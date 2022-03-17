@@ -4,7 +4,7 @@ export default class SizeStore {
     constructor() {
         this._size = []
         this._isEmpty = false
-        this._selectedSize = {}
+        this._selectedSize = {date: "00:00:00"}
         makeAutoObservable(this)
     }
 

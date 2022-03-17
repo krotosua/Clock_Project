@@ -25,19 +25,13 @@ const OrderList = observer(({alertMessage}) => {
                 return
             }
             res.data.rows.map(item => {
-                let date = new Date(item.date)
-                item.date = formatDate(date)
+                item.date = new Date(item.date).toLocaleDateString()
             })
 
             orders.setOrders(
                 res.data.rows)
         })
     }, [])
-
-    function formatDate(date) {
-        let orderDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-        return orderDate
-    }
 
 
     const delOrder = (id) => {
@@ -120,7 +114,7 @@ const OrderList = observer(({alertMessage}) => {
                                       primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={(order.date)}
+                                      primary={`${order.date} ${order.time}`}
                         /> <ListItemText sx={{width: 10}}
                                          primary={order.sizeClock.name}
                     /><ListItemText sx={{width: 10}}

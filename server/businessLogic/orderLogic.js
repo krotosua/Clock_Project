@@ -5,8 +5,8 @@ const ApiError = require('../error/ApiError')
 class OrderLogic {
     async create(req, res, next, userId) {
         try {
-            const {name, sizeClockId, date, masterId} = req.body
-            await Order.create({name, sizeClockId, date, userId, masterId})
+            const {name, sizeClockId, date, time, masterId} = req.body
+            await Order.create({name, sizeClockId, date, userId, time, masterId})
             return res.status(201).json({message: "Created"})
 
         } catch (e) {
@@ -17,7 +17,6 @@ class OrderLogic {
     async getUserOrders(req, res, next) {
         try {
             let {id, limit, page} = req.params
-            console.log(req.params)
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit

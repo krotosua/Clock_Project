@@ -35,8 +35,8 @@ const User = observer(() => {
     }, [])
 
     function formatDate(date) {
-        let orderDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-        return orderDate
+        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
     }
 
     const alertMessage = (message, bool) => {
