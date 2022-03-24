@@ -6,6 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {useContext, useState} from "react";
 import {Context} from "../index";
+import {FormHelperText} from "@mui/material";
 
 
 const ITEM_HEIGHT = 48;
@@ -19,10 +20,9 @@ const MenuProps = {
     },
 };
 
-export default function SelectorCity({Edit, cityChosen, readOnly}) {
+export default function SelectorCity({Edit, cityChosen, readOnly, error}) {
     let {cities} = useContext(Context)
-    const [city, setCity] = useState(Edit || cityChosen || null);
-
+    const [city, setCity] = useState(Edit || cityChosen || "");
 
     const handleChange = (event) => {
         setCity(event.target.value);
@@ -34,6 +34,7 @@ export default function SelectorCity({Edit, cityChosen, readOnly}) {
             <FormControl fullWidth>
                 <InputLabel id="citySel">Выберите город</InputLabel>
                 <Select
+                    error={error && city === ""}
                     labelId="citySel"
                     value={city}
                     readOnly={readOnly}
@@ -41,15 +42,17 @@ export default function SelectorCity({Edit, cityChosen, readOnly}) {
                     onChange={handleChange}
                     MenuProps={MenuProps}
                 >
-                    {cities.cities.map((city) =>
+                    {cities.cities.map((city, index) =>
                         <MenuItem
-                            key={city.id}
+                            key={index}
                             value={city.id}
                         >
                             {city.name}
                         </MenuItem>
                     )}
                 </Select>
+                {error && city === "" ?
+                    <FormHelperText>Укажите город</FormHelperText> : ""}
             </FormControl>
         </Box>
     );

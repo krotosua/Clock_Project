@@ -12,128 +12,148 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
-import {deleteCity, fetchCity} from "../../http/cityAPI";
-
 import {Tooltip} from "@mui/material";
-
 import {deleteSize, fetchSize} from "../../http/sizeAPI";
 import CreateSize from "./modals/CreateSize";
+import EditSize from "./modals/EditSize";
+import Pages from "../Pages";
 
 
-const SizeList = observer(() => {
+const SizeList = observer(({alertMessage, getValue}) => {
     let {size} = useContext(Context)
-    const [sizeVisible, setSizeVisible] = useState(false)
-    const [editVisible, setEditVisible] = useState(false)
+    const [sizeVisible, setSizeVisible] = useState(false);
+    const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
-    useEffect(() => {
-        fetchSize().then(res => {
+    const [nameToEdit, setNameToEdit] = useState(null);
+    const getSize = () => {
+        fetchSize(size.page, 10).then(res => {
             if (res.status === 204) {
                 return size.setIsEmpty(true)
             }
-          
-            return size.setSize(res.data.rows)
+            size.setIsEmpty(false)
+            size.setSize(res.data.rows)
+            size.setTotalCount(res.data.count)
         }, (err) => {
             size.setIsEmpty(true)
         })
-    }, [])
+    }
+    useEffect(() => {
+        getSize()
+    }, [size.page])
 
-//delete size
+
     const delSize = (id) => {
         deleteSize(id).then((res) => {
             size.setSize(size.size.filter(obj => obj.id !== id));
-            if (size.size.length === 0) {
-                size.setIsEmpty(true)
-            } else {
-                size.setIsEmpty(false)
-            }
+            alertMessage('Успешно удаленно', false)
+            getSize()
         }, (err) => {
-            return console.error(err)
+            alertMessage('Не удалось удалить', true)
+            return size.setIsEmpty(true)
         })
 
     }
 
     return (
+        <Box>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", height: 700}}>
+                <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
+                    Размеры часов
+                </Typography>
+                <List disablePadding>
+                    <ListItem
+                        key={1}
+                        divider
+                        secondaryAction={
+                            <Tooltip title={'Добавить размер часов'}
+                                     placement="top"
+                                     arrow>
+                                <IconButton sx={{width: 20}}
+                                            edge="end"
+                                            aria-label="addSize"
+                                            onClick={() => setSizeVisible(true)}
+                                >
+                                    <AddIcon/>
+                                </IconButton>
+                            </Tooltip>
+                        }
+                    >
+                        <ListItemText sx={{width: 10}}
+                                      primary="№"
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary="Название часов"
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary="Количество времени"
+                        />
+                    </ListItem>
+                    <Divider orientation="vertical"/>
 
-        <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
-            <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
-                Размеры часов
-            </Typography>
-            <List disablePadding>
-                <ListItem
-                    key={1}
-                    divider
-                    secondaryAction={
-                        <Tooltip title={'Добавить размер часов'}
-                                 placement="top"
-                                 arrow>
-                            <IconButton sx={{width: 20}}
-                                        edge="end"
-                                        aria-label="addCity"
-                                        onClick={() => setSizeVisible(true)}
-                            >
-                                <AddIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    }
-                >
-                    <ListItemText sx={{width: 10}}
-                                  primary="№"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Название часов"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Количество времени"
-                    />
-                </ListItem>
-                <Divider orientation="vertical"/>
+                    {size.IsEmpty ? <h1>Список пуст</h1> :
+                        size.size.map((size, index) => {
 
-                {size.IsEmpty ? <h1>Список пуст</h1> :
-                    size.size.map((size, index) => {
+                            return (<ListItem
+                                    key={size.id}
+                                    divider
 
-                        return (<ListItem
-                                key={size.id}
-                                divider
-
-                                secondaryAction={
-                                    <Tooltip title={'Удалить город'}
-                                             placement="right"
+                                    secondaryAction={
+                                        <Tooltip title={'Удалить часы'}
+                                                 placement="right"
+                                                 arrow>
+                                            <IconButton sx={{width: 10}}
+                                                        edge="end"
+                                                        aria-label="delete"
+                                                        onClick={() => delSize(size.id)}
+                                            >
+                                                <DeleteIcon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                    }
+                                >
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={index + 1}
+                                    />
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={size.name}
+                                    />
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={size.date}
+                                    />
+                                    <Tooltip title={'Изменить параметры часов'}
+                                             placement="left"
                                              arrow>
-                                        <IconButton sx={{width: 10}}
+                                        <IconButton sx={{width: 5}}
                                                     edge="end"
-                                                    aria-label="delete"
-                                                    onClick={() => delSize(size.id)}
+                                                    aria-label="Edit"
+                                                    onClick={() => {
+                                                        setEditVisible(true)
+                                                        setIdToEdit(size.id)
+                                                        setNameToEdit(size.name)
+                                                    }}
                                         >
-                                            <DeleteIcon/>
+                                            <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
-                                }
-                            >
-                                <ListItemText sx={{width: 10}}
-                                              primary={index + 1}
-                                />
-                                <ListItemText sx={{width: 10}}
-                                              primary={size.name}
-                                />
-                                <ListItemText sx={{width: 10}}
-                                              primary={size.date}
-                                />
-                                <Tooltip title={'Изменить параметры часов'}
-                                         placement="left"
-                                         arrow>
-                                    <IconButton sx={{width: 5}}
-                                                edge="end"
-                                                aria-label="Edit"
-
-                                    >
-                                        <EditIcon/>
-                                    </IconButton>
-                                </Tooltip>
-                            </ListItem>
-                        )
-                    })}
-            </List>
-            <CreateSize open={sizeVisible} onClose={() => setSizeVisible(false)}/>
+                                </ListItem>
+                            )
+                        })}
+                </List>
+                <CreateSize open={sizeVisible}
+                            onClose={() => {
+                                setSizeVisible(false)
+                            }}/>
+                <EditSize
+                    open={editVisible}
+                    onClose={() => setEditVisible(false)}
+                    idToEdit={idToEdit}
+                    alertMessage={alertMessage}
+                    nameToEdit={nameToEdit}
+                />
+            </Box>
+            <Box sx={{position: "relative", left: "35%"}}>
+                <Pages context={size}/>
+            </Box>
         </Box>
     );
 })

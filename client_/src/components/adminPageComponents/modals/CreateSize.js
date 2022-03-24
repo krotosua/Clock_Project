@@ -4,10 +4,11 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 import {createSize, fetchSize} from "../../../http/sizeAPI";
-import Stack from "@mui/material/Stack";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import {TimePicker} from "@mui/lab";
 
 
 const style = {
@@ -22,75 +23,89 @@ const style = {
     p: 4,
 };
 const CreateSize = ({open, onClose, alertMessage}) => {
-    const [value, setValue] = useState("")
-    const [time, setTime] = useState("")
+    const [nameSize, setNameSize] = useState("")
+    const [time, setTime] = useState(null)
     const [error, setError] = useState(false)
     let {size} = useContext(Context)
 
     const addSize = () => {
-        
-
-        createSize({name: value, date: time}).then(res => {
-                setValue('')
-                onClose()
+        if (!nameSize || !time) {
+            setError(true)
+            return
+        }
+        createSize({name: nameSize, date: time.toLocaleTimeString()}).then(res => {
                 size.setIsEmpty(false)
-                fetchSize().then(res => size.setSize(res.data.rows))
+                fetchSize(size.page, 10).then(res => {
+                    size.setIsEmpty(false)
+                    size.setSize(res.data.rows)
+                    size.setTotalCount(res.data.count)
+                }, (err) => {
+                    size.setIsEmpty(true)
+                })
                 alertMessage("Размер часов добавлен", false)
+                close()
             },
             err => {
-                setError(true)
+
+                setError(err.response.status)
                 alertMessage("Не удалось добавить размер часов", true)
             })
     }
-
+    const close = () => {
+        setError(false)
+        setNameSize("")
+        setTime(null)
+        onClose()
+    }
 
     return (
         <div>
 
             <Modal
                 open={open}
-                onClose={onClose}
+                onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                         Добавить новые размеры часов
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={error}
-                                helperText={error && value == "" ? "Введите название часов" :
-                                    error ? "Часы с таким именем уже существуют" : ""}
+                                error={error && nameSize == "" || error ? true : false}
+                                helperText={error && nameSize === "" ? "Введите название часов" :
+                                    error == 400 ? "Такое имя уже существует" : ""}
                                 sx={{my: 2}}
                                 id="city"
                                 label="Введите название часов"
                                 variant="outlined"
-                                value={value}
+
+                                value={nameSize}
                                 onChange={e => {
-                                    setValue(e.target.value)
+                                    setNameSize(e.target.value)
                                     setError(false)
                                 }}
                             />
-                            <Stack component="form" noValidate spacing={3}>
+                            <div>
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                    <TimePicker
+                                        label="Кол-во часов на ремонт"
 
-                                <TextField
-                                    id="datetime-local"
-                                    label="Количество времени для ремонта "
-                                    type="time"
-                                    open="hours"
-                                    views="hours"
-                                    defaultValue="01:00"
-                                    sx={{width: 250}}
+                                        value={time}
+                                        onChange={(newValue) => {
+                                            setTime(newValue);
+                                            setError(false)
+                                        }}
+                                        ampm={false}
+                                        views={["hours"]}
+                                        renderInput={(params) => <TextField
+                                            helperText={error ? "Введите кол-во часов" : ""}
+                                            {...params} />}
 
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                    onChange={e => {
-                                        setTime(e.target.value)
-                                    }}
-                                />
-                            </Stack>
+                                    />
+                                </LocalizationProvider>
+                            </div>
+
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
@@ -98,7 +113,7 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
                                     onClick={addSize}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={onClose}> Закрыть</Button>
+                                    onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
 

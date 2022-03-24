@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import {useContext} from "react";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
-import {Container, CssBaseline, Link} from "@mui/material";
+import {Container, CssBaseline} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, USER_ORDER_ROUTE} from "../utils/consts";
 

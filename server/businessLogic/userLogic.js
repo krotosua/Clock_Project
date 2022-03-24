@@ -3,6 +3,7 @@ const ApiError = require("../error/ApiError");
 const {User} = require("../models/models");
 const bcrypt = require("bcrypt");
 
+
 const generateJwt = (id, email, role) => {
     return jwt.sign(
         {id, email, role},
@@ -16,7 +17,7 @@ class UserLogic {
         try {
 
             const {email, password, role} = req.body
-      
+
             if (!email || !password) {
                 return next(ApiError.badRequest('Incorrect email or password'))
             }
@@ -31,6 +32,7 @@ class UserLogic {
                 }
             }
             const hashPassword = await bcrypt.hash(password, 5)
+
             const user = await User.create({email, role, password: hashPassword})
             const token = generateJwt(user.id, user.email, user.role)
             return res.status(201).json({token})

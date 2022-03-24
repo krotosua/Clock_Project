@@ -16,7 +16,7 @@ class CityLogic {
         try {
             let {limit, page} = req.query
             page = page || 1
-            limit = limit || 12
+            limit = limit || 9
             let offset = page * limit - limit
             let cities
             cities = await City.findAndCountAll({limit, offset})

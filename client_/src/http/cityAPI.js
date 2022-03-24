@@ -2,13 +2,13 @@ import {$authHost, $host} from "./index";
 
 
 export const createCity = async (city) => {
-    await $authHost.post('api/city/', city)
+    await $authHost.post('api/city/create/', city)
 
 }
 
-export const fetchCity = async () => {
-    const res = await $host.get('api/city/')
-    return res
+export const fetchCity = async (page, limit = 10) => {
+    return await $host.get('api/city/allCity/', {params: {page, limit}})
+
 }
 
 export const deleteCity = async (id) => {
@@ -17,8 +17,5 @@ export const deleteCity = async (id) => {
 
 }
 export const updateCity = async ({id, name}) => {
-
-    await $authHost.put('api/city/', {id, name})
-
-
+    await $authHost.put('api/city/update/', {id, name})
 }

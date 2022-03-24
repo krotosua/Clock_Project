@@ -5,6 +5,9 @@ export default class SizeStore {
         this._size = []
         this._isEmpty = false
         this._selectedSize = {date: "00:00:00"}
+        this._page = 1
+        this._totalCount = 0
+        this._limit = 10
         makeAutoObservable(this)
     }
 
@@ -20,6 +23,14 @@ export default class SizeStore {
         this._isEmpty = bool
     }
 
+    setPage(page) {
+        this._page = page
+    }
+
+    setTotalCount(count) {
+        this._totalCount = count
+    }
+
 
     get size() {
         return this._size
@@ -31,5 +42,17 @@ export default class SizeStore {
 
     get selectedSize() {
         return this._selectedSize
+    }
+
+    get totalCount() {
+        return this._totalCount
+    }
+
+    get page() {
+        return this._page
+    }
+
+    get limit() {
+        return this._limit
     }
 }

@@ -93,16 +93,16 @@ const Auth = observer(() => {
                         <FormControl>
 
                             <TextField
-                                error={error == 404 || error == 400}
+                                error={error === 404 || error === 400 && email == ""}
                                 sx={{mb: 2}}
                                 id="Email"
                                 label="Email"
                                 variant="outlined"
                                 type={"email"}
                                 value={email}
-                                helperText={error == 404 ?
+                                helperText={error === 404 ?
                                     "Пользователя с таким email не найден" :
-                                    error == 400 ? "Введите email формата: clock@clock.com" : ""
+                                    error === 400 ? "Введите email формата: clock@clock.com" : ""
                                 }
 
                                 onChange={(e => {
@@ -112,14 +112,14 @@ const Auth = observer(() => {
                             />
 
                             <TextField
-                                error={error == 401}
+                                error={error === 401}
                                 id="Password"
                                 label="Password"
                                 variant="outlined"
                                 type={"password"}
                                 value={password}
                                 helperText={isLogin ?
-                                    error ? "Неправильный пароль" : ""
+                                    error === 401 ? "Неправильный пароль" : ""
                                     : "Длина пароля должна быть не менее 6 символов"}
                                 onChange={(e => {
                                     setPassword(e.target.value)

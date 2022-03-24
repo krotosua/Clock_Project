@@ -1,12 +1,14 @@
 const {Order, City, Master, SizeClock} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const MailService = require("../service/mailService")
 
 
 class OrderLogic {
     async create(req, res, next, userId) {
         try {
-            const {name, sizeClockId, date, time, masterId} = req.body
+            const {name, sizeClockId, date, time, email, masterId} = req.body
             await Order.create({name, sizeClockId, date, userId, time, masterId})
+
             return res.status(201).json({message: "Created"})
 
         } catch (e) {
@@ -103,6 +105,17 @@ class OrderLogic {
             return next(ApiError.badRequest(e.message))
         }
     }
+
+    async sendMessage(req, res, next) {
+        try {
+            const {name, date, time, email, size, masterName, cityName} = req.body
+            await MailService.sendMail(name, date, time, email, size, masterName, cityName)
+            return res.status(200).json({message: "success"})
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
+    }
 }
+
 
 module.exports = new OrderLogic()

@@ -22,37 +22,51 @@ const style = {
     p: 4,
 };
 const CreateMaster = observer(({open, onClose, alertMessage}) => {
-    let {cities} = useContext(Context)
-    let {masters} = useContext(Context)
-    const [name, setName] = useState('')
-    const [rating, setRating] = useState(0)
+    let {cities, masters} = useContext(Context)
+
+    const [name, setName] = useState("")
+    const [rating, setRating] = useState("")
+    const [error, setError] = useState(false)
     const addMaster = () => {
+
         const masterData = {
             name: name,
             rating: rating,
             cityId: cities.selectedCity
         }
         createMaster(masterData).then(res => {
-            setName("")
-            setRating(0)
-            onClose()
+            close()
             alertMessage("Мастер успешно добавлен", false)
-            fetchMaster().then(res => {
-                masters.setMasters(res.data.rows)
+            fetchMaster(null, null, masters.page, 10).then(res => {
+                if (res.status === 204) {
+                    return masters.setIsEmpty(true)
+                }
                 masters.setIsEmpty(false)
+                masters.setMasters(res.data.rows)
+                masters.setTotalCount(res.data.count)
+            }, (err) => {
+                return masters.setIsEmpty(true)
+
             })
         }, err => {
+            setError(true)
             alertMessage("Не удалось добавить мастера", true)
         })
     }
-
+    const close = () => {
+        setName("")
+        setRating("")
+        setError(false)
+        cities.setSelectedCity("")
+        onClose()
+    }
 
     return (
         <div>
 
             <Modal
                 open={open}
-                onClose={onClose}
+                onClose={close}
             >
                 <Box sx={style}>
 
@@ -63,6 +77,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                         <FormControl>
                             <TextField
                                 sx={{mt: 1}}
+                                error={error && name === ""}
                                 id="masterName"
                                 label="Введите имя мастера"
                                 variant="outlined"
@@ -72,6 +87,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                             />
                             <TextField
                                 sx={{my: 2}}
+                                error={error && rating === "" || rating > 5 || rating < 0}
                                 id="masterRating"
                                 label="Укажите рейтинг от 0 до 5"
                                 variant="outlined"
@@ -85,15 +101,19 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                 required
                                 onChange={e => setRating(e.target.value)}
                             />
-                            <SelectorCity/>
+                            <SelectorCity error={error}/>
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
-                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                    onClick={addMaster}> Добавить</Button>
+                            <Button color="success" sx={{flexGrow: 1,}}
+                                    variant="outlined"
+                                    onClick={addMaster}
+                                    disabled={rating > 5 || rating < 0}>
+                                Добавить
+                            </Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={onClose}> Закрыть</Button>
+                                    onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
 

@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -19,35 +19,40 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateCity = ({open, onClose, alertMessage}) => {
-    const [value, setValue] = useState("")
+const CreateCity = ({open, onClose, alertMessage,}) => {
+    const [name, setName] = useState("")
 
     const [error, setError] = useState(false)
     let {cities} = useContext(Context)
     const addCity = () => {
-        createCity({name: value}).then(res => {
-                setValue('')
-                onClose()
+        createCity({name: name}).then(res => {
                 cities.setIsEmpty(false)
                 alertMessage("Город успешно создан", false)
-                fetchCity().then(res => {
+                close()
+                fetchCity(cities.page, 10).then(res => {
+                    cities.setIsEmpty(false)
                     cities.setCities(res.data.rows)
+                    cities.setTotalCount(res.data.count)
+                }, error => cities.setIsEmpty(true))
 
-                })
             },
             err => {
                 setError(true)
                 alertMessage("Не удалось создать город", true)
             })
     }
-
+    const close = () => {
+        setError(false)
+        setName("")
+        onClose()
+    }
 
     return (
         <div>
 
             <Modal
                 open={open}
-                onClose={onClose}
+                onClose={close}
             >
                 <Box sx={style}>
 
@@ -58,15 +63,15 @@ const CreateCity = ({open, onClose, alertMessage}) => {
                         <FormControl>
                             <TextField
                                 error={error}
-                                helperText={error && value == "" ? "Введите название города" :
+                                helperText={error && name == "" ? "Введите название города" :
                                     error ? "Город с таким именем уже существует" : ""}
                                 sx={{mt: 1}}
                                 id="city"
                                 label="Введите город"
                                 variant="outlined"
-                                value={value}
+                                value={name}
                                 onChange={e => {
-                                    setValue(e.target.value)
+                                    setName(e.target.value)
                                     setError(false)
                                 }}
                             />
@@ -77,7 +82,7 @@ const CreateCity = ({open, onClose, alertMessage}) => {
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
                                     onClick={addCity}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={onClose}> Закрыть</Button>
+                                    onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
 

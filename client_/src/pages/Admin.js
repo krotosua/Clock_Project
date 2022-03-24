@@ -45,7 +45,7 @@ const Admin = observer(() => {
 
     function getValue(prop, list, idToEdit) { // получение значения свойства
         return list.reduce(
-            (res, obj) => obj.id == idToEdit ? obj[prop] : res
+            (res, obj) => obj.id === idToEdit ? obj[prop] : res
             , '');
     }
 

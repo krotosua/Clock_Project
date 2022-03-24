@@ -19,21 +19,25 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditCity = ({open, onClose, idToEdit, alertMessage, getValue}) => {
-    const [nameCity, setNameCity] = useState("")
+const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
     const [error, setError] = useState(false)
     let {cities} = useContext(Context)
+    const [nameCity, setNameCity] = useState(null)
 
     const changeCity = () => {
         updateCity({id: idToEdit, name: nameCity}).then(res => {
             change("name", nameCity)
-            setNameCity("")
-            onClose()
+            close()
             alertMessage('Название изменено успешно', false)
         }, err => {
             setError(true)
             alertMessage('Не удалось изменить название', true)
         })
+    }
+    const close = () => {
+        setError(false)
+        setNameCity(null)
+        onClose()
     }
 
 
@@ -43,16 +47,17 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, getValue}) => {
         ));
     }
 
+
     return (
         <div>
             <Modal
                 open={open}
-                onClose={onClose}
+                onClose={close}
             >
                 <Box sx={style}>
 
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Изменить название города {getValue('name', cities.cities, idToEdit)}
+                        Изменить название города {nameToEdit}
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
@@ -64,7 +69,8 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, getValue}) => {
                                 id="city"
                                 label="Введите город"
                                 variant="outlined"
-                                value={nameCity}
+                                defaultValue={nameToEdit}
+
                                 onChange={e => {
                                     setNameCity(e.target.value)
                                     setError(false)
@@ -77,7 +83,7 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, getValue}) => {
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
                                     onClick={changeCity}> Изменить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={onClose}> Закрыть</Button>
+                                    onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
 

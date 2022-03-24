@@ -1,5 +1,6 @@
 const cityLogic = require('../businessLogic/cityLogic')
 const masterLogic = require('../businessLogic/masterLogic')
+const checkRole = require("../middleware/checkRoleMiddleware");
 
 class CityController {
     async create(req, res, next) {

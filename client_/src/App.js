@@ -21,11 +21,12 @@ const App = observer(() => {
             user.setUserRole(data.role)
 
         }).finally(() => setLoading(false))
-        fetchCity().then(res => {
+        fetchCity(1, 10).then(res => {
             if (res.status === 204) {
                 cities.setIsEmpty(true)
             } else {
                 cities.setCities(res.data.rows)
+                cities.setTotalCount(res.data.count)
             }
         })
         fetchSize().then(res => {
@@ -54,6 +55,9 @@ const App = observer(() => {
 
                 </Container>
 
+            </Box>
+            <Box sx={{width: "100%", height: 200, bgcolor: '#eceaea'}}>
+               
             </Box>
         </BrowserRouter>
     );

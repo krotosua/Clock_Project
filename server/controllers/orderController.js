@@ -31,6 +31,10 @@ class OrderController {
     async deleteOne(req, res, next) {
         await orderLogic.deleteOne(req, res, next)
     }
+
+    async sendMessage(req, res, next) {
+        await orderLogic.sendMessage(req, res, next)
+    }
 }
 
 module.exports = new OrderController()

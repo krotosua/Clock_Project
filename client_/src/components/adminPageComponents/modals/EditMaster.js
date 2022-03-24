@@ -20,31 +20,38 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditMaster = (({open, onClose, idToEdit, alertMessage}) => {
+const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit}) => {
     const {cities, masters} = useContext(Context)
-    const [masterName, setName] = useState(getValue('name'))
-    const [masterRating, setRating] = useState(getValue('rating'))
+    const [masterName, setMasterName] = useState(null)
+    const [masterRating, setMasterRating] = useState(null)
     const [error, setError] = useState(false)
 
 
     const changeMaster = () => {
-
         const changeInfo = {
             id: idToEdit,
-            name: masterName,
-            rating: masterRating,
-            cityId: cities.selectedCity
+        }
+        if (masterName) {
+            changeInfo.name = masterName
+            change("name", masterName)
+        }
+        if (masterRating) {
+            if (masterRating < 5 && masterRating > 0) {
+                changeInfo.rating = masterRating
+                change("rating", masterRating)
+            } else {
+                setError(true)
+                return
+            }
         }
 
-        console.log(changeInfo)
+        if (cities.selectedCity) {
+            changeInfo.cityId = cities.selectedCity
+
+        }
         updateMaster(changeInfo)
             .then(res => {
-                change("name", masterName)
-                change("rating", masterRating)
-                change("cityId", cities.selectedCity)
-                setName("")
-                setRating(0)
-                onClose()
+                close()
                 alertMessage('Данные мастера успешно изменены', false)
             }, err => {
                 setError(true)
@@ -52,18 +59,19 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage}) => {
             })
     }
 
-    function getValue(prop) { // получение значения свойства
-        return masters.masters.reduce(
-            (res, obj) => obj.id == idToEdit ? obj[prop] : res
-            , '');
 
-
-    }
-
-    function change(prop, value) { // изменение input поля
+    function change(prop, value) {
         masters.setMasters(masters.masters.map(obj =>
             obj.id == idToEdit ? {...obj, [prop]: value} : obj
         ));
+    }
+
+    function close() {
+        setMasterName(null)
+        setMasterRating(null)
+        cities.setSelectedCity(null)
+        setError(false)
+        onClose()
     }
 
     return (
@@ -71,7 +79,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage}) => {
 
             <Modal
                 open={open}
-                onClose={onClose}
+                onClose={close}
             >
                 <Box sx={style}>
 
@@ -83,28 +91,30 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage}) => {
                             <TextField
                                 sx={{mt: 1}}
                                 id="masterName"
-                                label={`Текущуее имя мастера: ${getValue('name')}`}
+                                label={`Текущуее имя мастера: ${nameToEdit}`}
                                 variant="outlined"
-                                value={masterName}
-                                required
-                                onChange={e => setName(e.target.value)}
+                                defaultValue={nameToEdit}
+                                onChange={e => setMasterName(e.target.value)}
                             />
                             <TextField
                                 sx={{my: 2}}
                                 id="masterRating"
-                                label={`Текущуее рейтинг мастера: ${getValue('rating')}`}
+                                error={error}
+                                helperText='Введите рейтинг от 0 до 5'
+                                label={`Текущуее рейтинг мастера: ${ratingToEdit}`}
                                 variant="outlined"
-                                value={masterRating || getValue('rating')}
+                                defaultValue={ratingToEdit}
                                 type="number"
                                 InputProps={{
+
                                     inputProps: {
                                         max: 5, min: 0
                                     }
                                 }}
-                                required
-                                onChange={e => setRating(e.target.value)}
+
+                                onChange={e => setMasterRating(e.target.value)}
                             />
-                            <SelectorCity Edit={getValue("cityId")}/>
+                            <SelectorCity/>
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
@@ -112,7 +122,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage}) => {
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
                                     onClick={changeMaster}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={onClose}> Закрыть</Button>
+                                    onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
 

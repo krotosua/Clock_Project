@@ -6,10 +6,11 @@ import AddIcon from '@mui/icons-material/Add';
 import {Tooltip} from "@mui/material";
 import {ORDER_ROUTE} from "../utils/consts";
 import {useNavigate, useParams} from "react-router-dom";
-import {fetchUserOrders} from "../http/orderAPI";
+import {fetchAlLOrders, fetchUserOrders} from "../http/orderAPI";
 import MyAlert from "../components/adminPageComponents/MyAlert";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
+import Pages from "../components/Pages";
 
 const User = observer(() => {
     const navigate = useNavigate()
@@ -17,37 +18,34 @@ const User = observer(() => {
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
     let {orders} = useContext(Context)
-
     const {id} = useParams()
     useEffect(() => {
-        fetchUserOrders(id).then(res => {
+        fetchUserOrders(id, orders.page, 10).then(res => {
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
             }
             res.data.rows.map(item => {
-                let date = new Date(item.date)
-                item.date = formatDate(date)
+                item.date = new Date(item.date).toLocaleDateString()
             })
-
+            orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
-        })
-    }, [])
+            orders.setTotalCount(res.data.count)
+        }, error => orders.setIsEmpty(true))
+    }, [orders.page])
 
     function formatDate(date) {
         return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 
     }
 
-    const alertMessage = (message, bool) => {
-        setOpen(true)
-        setMessage(message)
-        setIsError(bool)
-    }
+
     return (
-        <Box sx={{height: window.innerHeight, position: 'relative', pt: 5}}>
+        <Box sx={{height: window.innerHeight, pt: 5}}>
             <h2>Список заказов</h2>
-            <OrderList alertMessage={alertMessage}/>
+            <Box sx={{height: 650}}>
+                <OrderList/>
+            </Box>
             <Tooltip title="Добавить заказ" placement="top" arrow>
                 <Fab onClick={() => navigate(ORDER_ROUTE)}
                      color="primary"
@@ -56,10 +54,9 @@ const User = observer(() => {
                     <AddIcon/>
                 </Fab>
             </Tooltip>
-            <MyAlert open={open}
-                     onClose={() => setOpen(false)}
-                     message={message}
-                     isError={isError}/>
+            <Box sx={{position: "relative", left: "40%"}}>
+                <Pages context={orders}/>
+            </Box>
         </Box>
 
 

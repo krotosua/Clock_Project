@@ -10,11 +10,11 @@ const Start = () => {
     const navigate = useNavigate()
     return (
 
-        <Box sx={{display: 'flex', flexDirection: 'column', mb: 5}}>
+        <Box sx={{display: 'flex', flexDirection: 'column'}}>
             <AboutCompany/>
             <Cards/>
 
-            <Button sx={{mt: 2, mb: 10}} variant="outlined" color={"warning"} onClick={() => navigate(ORDER_ROUTE)}>
+            <Button sx={{mt: 5, mb: 10}} variant="outlined" color={"warning"} onClick={() => navigate(ORDER_ROUTE)}>
                 Сделать заказ
             </Button>
         </Box>

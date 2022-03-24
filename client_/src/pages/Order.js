@@ -4,17 +4,26 @@ import {
     Container,
 
 } from "@mui/material";
-import React, {useContext, useEffect} from "react";
-
-import MyStepper from "../components/orderPageComponents/Stepper"
+import React, {useContext, useEffect, useState} from "react";
+import MyStepper from "../components/orderPageComponents/MyStepper"
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 import {fetchSize} from "../http/sizeAPI";
+import {fetchCity} from "../http/cityAPI";
+import MyAlert from "../components/adminPageComponents/MyAlert";
 
 
 const Order = observer(() => {
-    const {size} = useContext(Context)
+    const {size, cities} = useContext(Context)
+
     useEffect(() => {
+        fetchCity().then(res => {
+            if (res.status === 204) {
+                cities.setIsEmpty(true)
+            } else {
+                cities.setCities(res.data.rows)
+            }
+        })
         fetchSize().then(res => {
             if (res.status === 204) {
                 return size.setIsEmpty(true)
@@ -22,9 +31,9 @@ const Order = observer(() => {
             return size.setSize(res.data.rows)
         }, (err) => {
             size.setIsEmpty(true)
-            return console.error(err)
         })
     }, [])
+
     return (
         <Container
             maxWidth="xl"
@@ -33,13 +42,15 @@ const Order = observer(() => {
                 justifyContent: "center",
                 alignItems: "center",
                 height: window.innerHeight,
+
             }}
         >
-            <Card sx={{width: 1000, p: 1}}>
+            <Card sx={{width: 1000, p: 1, bgcolor: '#f5f5f5'}}>
                 <CardContent>
                     <MyStepper/>
                 </CardContent>
             </Card>
+
         </Container>
     );
 });
