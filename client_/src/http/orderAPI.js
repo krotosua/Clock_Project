@@ -6,11 +6,11 @@ export const createOrder = async (order) => {
 
 }
 
-export const fetchAlLOrders = async (page, limit = 10) => {
+export const fetchAlLOrders = async (page, limit = 8) => {
     return await $authHost.get('api/order/allOrders/', {params: {page, limit}})
 
 }
-export const fetchUserOrders = async (id, page, limit = 10) => {
+export const fetchUserOrders = async (id, page, limit = 8) => {
     return await $authHost.get('api/order/userOrders/' + id, {params: {page, limit}})
 }
 

@@ -18,7 +18,7 @@ import Pages from "../Pages";
 const OrderList = observer(({alertMessage}) => {
     let {orders} = useContext(Context)
     const getOrders = () => {
-        fetchAlLOrders(orders.page, 10).then(res => {
+        fetchAlLOrders(orders.page, 8).then(res => {
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
@@ -92,39 +92,40 @@ const OrderList = observer(({alertMessage}) => {
 
                     </ListItem>
                     <Divider orientation="vertical"/>
-                    {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                        return (<ListItem
-                            key={order.id}
-                            divider
-                            secondaryAction={
-                                <IconButton sx={{width: 5}}
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => delOrder(order.id)}
-                                >
-                                    <DeleteIcon/>
-                                </IconButton>
-                            }
-                        >
-                            <ListItemText sx={{width: 10}}
-                                          primary={index + 1}
+                    {orders.IsEmpty ? <h1>Список пуст</h1> :
+                        orders.orders.map((order, index) => {
+                            return (<ListItem
+                                key={order.id}
+                                divider
+                                secondaryAction={
+                                    <IconButton sx={{width: 5}}
+                                                edge="end"
+                                                aria-label="delete"
+                                                onClick={() => delOrder(order.id)}
+                                    >
+                                        <DeleteIcon/>
+                                    </IconButton>
+                                }
+                            >
+                                <ListItemText sx={{width: 10}}
+                                              primary={index + 1}
+                                />
+                                <ListItemText sx={{width: 10}}
+                                              primary={order.name}
+                                />
+                                <ListItemText sx={{width: 10}}
+                                              primary={`${order.date} ${order.time}`}
+                                /> <ListItemText sx={{width: 10}}
+                                                 primary={order.sizeClock.name}
+                            /><ListItemText sx={{width: 10}}
+                                            primary={order.master.name}
                             />
-                            <ListItemText sx={{width: 10}}
-                                          primary={order.name}
-                            />
-                            <ListItemText sx={{width: 10}}
-                                          primary={`${order.date} ${order.time}`}
-                            /> <ListItemText sx={{width: 10}}
-                                             primary={order.sizeClock.name}
-                        /><ListItemText sx={{width: 10}}
-                                        primary={order.master.name}
-                        />
-                            <ListItemText sx={{width: 10}}
-                                          primary={order.master.city.name}
-                            />
+                                <ListItemText sx={{width: 10}}
+                                              primary={order.master.city.name}
+                                />
 
-                        </ListItem>)
-                    })}
+                            </ListItem>)
+                        })}
                     <Divider/>
                 </List>
 

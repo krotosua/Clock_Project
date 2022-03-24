@@ -14,13 +14,11 @@ import Pages from "../components/Pages";
 
 const User = observer(() => {
     const navigate = useNavigate()
-    const [open, setOpen] = useState(false)
-    const [isError, setIsError] = useState(false)
-    const [message, setMessage] = useState("")
+
     let {orders} = useContext(Context)
     const {id} = useParams()
     useEffect(() => {
-        fetchUserOrders(id, orders.page, 10).then(res => {
+        fetchUserOrders(id, orders.page, 8).then(res => {
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
@@ -33,11 +31,6 @@ const User = observer(() => {
             orders.setTotalCount(res.data.count)
         }, error => orders.setIsEmpty(true))
     }, [orders.page])
-
-    function formatDate(date) {
-        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-
-    }
 
 
     return (
