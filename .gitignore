@@ -1,4 +1,6 @@
-.idea/Clock_Project.iml
+node_modules
+.idea
+idea/Clock_Project.iml
 .idea/modules.xml
 .idea/vcs.xml
 .idea/Clock_Project.iml
