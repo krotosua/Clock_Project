@@ -21,9 +21,9 @@ import Divider from "@mui/material/Divider";
 import {fetchMaster} from "../../http/masterAPI";
 import {createOrder, sendMessage} from "../../http/orderAPI";
 import {DatePicker, TimePicker} from "@mui/lab";
-import {START_ROUTE} from "../../utils/consts";
+import {ORDER_END_ROUTE, START_ROUTE} from "../../utils/consts";
 
-const steps = ["Заолните форму заказа", "Выбор мастера", "Отправка заказа"];
+const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
 const MyStepper = observer(() => {
     const {cities, size, masters} = useContext(Context);
@@ -103,7 +103,7 @@ const MyStepper = observer(() => {
                 cities.setSelectedCity(null)
                 size.setSelectedSize({date: "00:00:00"})
 
-                navigate(START_ROUTE)
+                navigate(ORDER_END_ROUTE)
             }, err => {
 
                 setError(true)
@@ -184,7 +184,7 @@ const MyStepper = observer(() => {
                             error={error}
                             helperText={error ? "Email не подходящий" : ""}
                             id="Email"
-                            label="Ващ Email"
+                            label="Ваш Email"
                             type="email"
                             variant="outlined"
                             value={email}
@@ -282,7 +282,7 @@ const MyStepper = observer(() => {
                                 >
                                     {freeMasters.length == 0 ? (
                                         <Typography sx={{mb: 2}}>
-                                            Список пуст
+                                            Мастеров нет
                                         </Typography>
                                     ) : (
                                         freeMasters.map((master, index) => {
@@ -320,7 +320,7 @@ const MyStepper = observer(() => {
                                     </Typography>
                                     {busyMasters.length == 0 ? (
                                         <Typography sx={{mb: 2}}>
-                                            Список пуст
+                                            Мастеров нет
                                         </Typography>
                                     ) : (
                                         busyMasters.map((master, index) => {

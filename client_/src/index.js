@@ -20,7 +20,7 @@ ReactDOM.render(
         size: new SizeStore()
     }}>
 
-        <App/>,
+        <App/>
 
     </Context.Provider>,
 
