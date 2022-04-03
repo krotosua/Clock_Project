@@ -1,22 +1,17 @@
 require('dotenv').config()
 const express = require("express")
 const sequelize = require('./db')
-const path = require('path');
+const models = require('./models/models')
 const cors = require('cors')
 const router = require("./routes/index")
-const PORT = process.env.PORT || 5000
+const PORT =process.env.PORT || 5000
 const errorHandler = require('./middleware/ErrorHandlingMiddleware')
 
 const app = express()
-app.use(express.static(path.join(__dirname, 'build')));
-
-app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
 app.use(cors())
 app.use(express.json())
-app.use('/api', router)
+app.use('/api',router)
+
 
 
 app.use(errorHandler)
