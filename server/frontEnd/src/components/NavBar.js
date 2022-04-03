@@ -10,7 +10,6 @@ import {Container, CssBaseline} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, USER_ORDER_ROUTE} from "../utils/consts";
 
-
 const NavBar = observer(() => {
     const {user} = useContext(Context)
     const navigate = useNavigate()

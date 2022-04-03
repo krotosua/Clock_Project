@@ -8,6 +8,8 @@ const AppRouter = observer(() => {
     const {user} = useContext(Context)
 
     return (
+
+        
         <Routes>
             {user.userRole === 'ADMIN' && adminRoutes.map(({path, Component}) =>
                 <Route key={path} path={path} element={<Component/>} exact/>

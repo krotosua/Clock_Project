@@ -65,7 +65,7 @@ const Admin = observer(() => {
                 navigate(ORDER_ROUTE)
             } : sizeList ? () => {
                 setSizeVisible(true)
-            } : console.log("")
+            } : null
 
     return (
 

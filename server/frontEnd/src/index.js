@@ -12,6 +12,8 @@ import "./style.css"
 export const Context = createContext(null)
 
 ReactDOM.render(
+
+    
     <Context.Provider value={{
         user: new UserStore(),
         orders: new OrderStore(),
