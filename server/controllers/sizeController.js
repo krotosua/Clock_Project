@@ -2,7 +2,6 @@ const sizeLogic = require('../businessLogic/sizeLogic')
 
 class sizeController {
     async create(req, res, next) {
-        console.log(req.body)
         await sizeLogic.create(req, res, next)
 
     }

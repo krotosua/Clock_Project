@@ -26,6 +26,8 @@ const MasterList = observer(({alertMessage, getValue}) => {
     const [idToEdit, setIdToEdit] = useState(null);
     const [nameToEdit, setNameToEdit] = useState(null)
     const [ratingToEdit, setRatingToEdit] = useState(null)
+    const [cityToEdit, setCityToEdit] = useState(null);
+
 
     function getMasters() {
         fetchMaster(null, null, masters.page, 10).then(res => {
@@ -98,6 +100,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
                     <Divider orientation="vertical"/>
                     {masters.IsEmpty ? <h1>Список пуст</h1> :
                         masters.masters.map((master, index) => {
+
                             return (<ListItem
                                     key={master.id}
                                     divider
@@ -126,6 +129,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
                                                     setIdToEdit(master.id)
                                                     setNameToEdit(master.name)
                                                     setRatingToEdit(master.rating)
+                                                    setCityToEdit(master.cityId)
                                                 }}
                                     >
                                         <EditIcon/>
@@ -139,7 +143,8 @@ const MasterList = observer(({alertMessage, getValue}) => {
                             idToEdit={idToEdit}
                             alertMessage={alertMessage}
                             nameToEdit={nameToEdit}
-                            ratingToEdit={ratingToEdit}/>
+                            ratingToEdit={ratingToEdit}
+                            cityChosen={cityToEdit}/>
 
                 <CreateMaster open={masterVisible}
                               alertMessage={alertMessage}

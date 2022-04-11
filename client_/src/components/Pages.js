@@ -6,12 +6,12 @@ import {useState} from "react";
 
 
 const Pages = observer(({context}) => {
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(context.page);
     const pageCount = Math.ceil(context.totalCount / context.limit)
+    console.log(pageCount)
     const handleChange = (event, value) => {
         setCurrentPage(value);
         context.setPage(value)
-    
     };
 
 

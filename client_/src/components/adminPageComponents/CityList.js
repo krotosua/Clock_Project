@@ -26,6 +26,7 @@ const CityList = observer(({alertMessage, getValue}) => {
     const [nameToEdit, setNameToEdit] = useState("")
     const getCity = () => {
         fetchCity(cities.page, 10).then(res => {
+            console.log(cities.page)
             if (res.status === 204) {
                 return cities.setIsEmpty(true)
             } else {

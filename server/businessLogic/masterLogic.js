@@ -6,12 +6,11 @@ class MasterLogic {
     async create(req, res, next) {
         try {
             const {name, rating, cityId} = req.body
-            if (cityId) {
-                const master = await Master.create({name, rating, cityId})
-                return res.json(master)
-            } else {
+            if (cityId <= 0) {
                 next(ApiError.badRequest({message: "cityId is empty"}))
             }
+            const master = await Master.create({name, rating, cityId})
+            return res.json(master)
 
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -48,7 +47,7 @@ class MasterLogic {
                 masters = await Master.findAndCountAll({
                     include: [{
                         model: City,
-                        attributes: ['name']
+
                     },
 
 

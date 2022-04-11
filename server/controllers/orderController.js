@@ -1,14 +1,20 @@
 const userLogic = require('../businessLogic/userLogic')
 const orderLogic = require('../businessLogic/orderLogic')
 const masterLogic = require("../businessLogic/masterLogic");
+const sizeLogic = require("../businessLogic/sizeLogic")
 const ApiError = require("../error/ApiError");
 
 class OrderController {
     async create(req, res, next) {
         try {
+            const {sizeClockId, masterId} = req.body
+            if (sizeClockId <= 0 || masterId <= 0) {
+                next(ApiError.badRequest("Error creating order"))
+            }
+            await sizeLogic.getOne(req, res, next)
+            await masterLogic.getOne(req, res, next)
             const user = await userLogic.GetOrCreateUser(req, res)
             const userId = user.dataValues.id
-            await masterLogic.getOne(req, res, next)
             await orderLogic.create(req, res, next, userId)
         } catch (e) {
             next(ApiError.badRequest(e.message))

@@ -29,10 +29,13 @@ class CityLogic {
         }
     }
 
-    async getOne(req, res) {
-        const {id} = req.params
+    async getOne(req, res, next) {
+        const id = req.body.cityId
         const city = await City.findOne({where: {id}})
-        return res.json(city)
+        if (!city) {
+            return next(ApiError.badRequest('City doesn`t exist'))
+        }
+        return res.status(200)
     }
 
     async update(req, res, next) {

@@ -20,7 +20,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit}) => {
+const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen}) => {
     const {cities, masters} = useContext(Context)
     const [masterName, setMasterName] = useState(null)
     const [masterRating, setMasterRating] = useState(null)
@@ -114,7 +114,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
 
                                 onChange={e => setMasterRating(e.target.value)}
                             />
-                            <SelectorCity/>
+                            <SelectorCity cityChosen={cityChosen}/>
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}

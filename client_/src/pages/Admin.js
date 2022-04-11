@@ -55,22 +55,11 @@ const Admin = observer(() => {
         setMessage(message)
         setIsError(bool)
     }
-    const variantsAdd = cityList ? () => {
-            setCityVisible(true)
-        } :
-        masterList ? () => {
-                setMasterVisible(true)
-            } :
-            orderList ? () => {
-                navigate(ORDER_ROUTE)
-            } : sizeList ? () => {
-                setSizeVisible(true)
-            } : console.log("")
 
     return (
 
         <Container disableGutters
-                   sx={{height: window.innerHeight, pt: 2}}>
+                   sx={{height: "800px", pt: 2}}>
             <Box sx={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
@@ -109,35 +98,21 @@ const Admin = observer(() => {
                 </List>
                 <Box sx={{gridArea: 'main'}}>
                     {cityList ? <CityList alertMessage={alertMessage}
-                                          getValue={getValue}/> : ""}
+                    /> : ""}
                     {masterList ? <MasterList alertMessage={alertMessage}
-                                              getValue={getValue}/> : ""}
+                    /> : ""}
                     {sizeList ? <SizeList alertMessage={alertMessage}
-                                          getValue={getValue}/> : ""}
+                    /> : ""}
                     {orderList ? <OrderList
                         alertMessage={alertMessage}
-                        getValue={getValue}/> : ""}
+                    /> : ""}
                     {usersList ? <UserList
                         alertMessage={alertMessage}
-                        getValue={getValue}/> : ""}
+                    /> : ""}
 
                 </Box>
 
-                {usersList ? null :
-                    <Tooltip title={cityList ? "Добавить город" :
-                        masterList ? "Добавить мастера" :
-                            sizeList ? "Добавить размер часов" :
-                                'Добавить заказ'}
-                             placement="top"
-                             arrow>
-                        <Fab color="primary"
-                             aria-label="add"
-                             sx={{position: 'fixed', bottom: 80, right: 400}}
-                             onClick={variantsAdd}
-                        >
-                            <AddIcon/>
-                        </Fab>
-                    </Tooltip>}
+
                 <CreateCity open={cityVisible}
                             onClose={() => setCityVisible(false)}
                             alertMessage={alertMessage}/>

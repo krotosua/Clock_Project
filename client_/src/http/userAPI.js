@@ -18,7 +18,7 @@ export const check = async () => {
     localStorage.setItem('token', data.token)
     return jwt_decode(data.token)
 }
-export const fetchUsers = async (page, limit = 10) => {
+export const fetchUsers = async (page, limit = 8) => {
     return await $authHost.get('api/user/allUsers/', {params: {page, limit}})
 }
 export const deleteUser = async (id) => {

@@ -21,7 +21,8 @@ import Divider from "@mui/material/Divider";
 import {fetchMaster} from "../../http/masterAPI";
 import {createOrder, sendMessage} from "../../http/orderAPI";
 import {DatePicker, TimePicker} from "@mui/lab";
-import {ORDER_END_ROUTE, START_ROUTE} from "../../utils/consts";
+import {START_ROUTE} from "../../utils/consts";
+import ruLocale from 'date-fns/locale/ru'
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -30,8 +31,9 @@ const MyStepper = observer(() => {
     const [activeStep, setActiveStep] = useState(0);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [date, setDate] = useState(null);
-    const [time, setTime] = useState(null);
+    const [date, setDate] = useState(new Date());
+    const [time, setTime] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
+    const [minTime, setMinTime] = useState(null)
     const [chosenMaster, setMaster] = useState(null);
     const [sizeClock, setSizeClock] = useState(null);
     const [cityChosen, setCityChosen] = useState(null);
@@ -39,13 +41,10 @@ const MyStepper = observer(() => {
     const [busyMasters, setBusyMasters] = useState([]);
     const [error, setError] = useState(false)
     const navigate = useNavigate();
-
     const handleNext = () => {
         if (activeStep === 0) {
             setSizeClock(size.selectedSize.id)
             setCityChosen(cities.selectedCity)
-
-
             fetchMaster(cities.selectedCity, date).then(
                 (res) => {
                     if (res.status === 204) {
@@ -102,8 +101,7 @@ const MyStepper = observer(() => {
                     })
                 cities.setSelectedCity(null)
                 size.setSelectedSize({date: "00:00:00"})
-
-                navigate(ORDER_END_ROUTE)
+                navigate(START_ROUTE)
             }, err => {
 
                 setError(true)
@@ -146,9 +144,7 @@ const MyStepper = observer(() => {
             }
         }
         return isFree
-
     }
-
 
     return (
         <Box sx={{width: "100%"}}>
@@ -163,6 +159,7 @@ const MyStepper = observer(() => {
                     );
                 })}
             </Stepper>
+
             {activeStep === 0 || activeStep === steps.length - 1 ? (
 
                     <Box sx={{mt: 2}}>
@@ -200,8 +197,9 @@ const MyStepper = observer(() => {
                             <SelectorSize sizeClock={sizeClock} readOnly={activeStep === steps.length - 1}/>
                             <SelectorCity cityChosen={cityChosen} readOnly={activeStep === steps.length - 1}/>
                         </Box>
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                             <DatePicker
+                                mask='__.__.____'
                                 label="Выберите день заказа"
                                 value={date}
                                 readOnly={activeStep === steps.length - 1}
@@ -212,22 +210,27 @@ const MyStepper = observer(() => {
                                 renderInput={(params) => <TextField sx={{mr: 2}} {...params} />}
                             />
                         </LocalizationProvider>
+
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
+
                             <TimePicker
                                 label="Выберите время"
                                 value={time}
                                 onChange={(newValue) => {
                                     setTime(newValue);
                                 }}
-                                okText="OK"
                                 readOnly={activeStep === steps.length - 1}
                                 ampm={false}
                                 views={["hours"]}
-                                minTime={new Date(0, 0, 0, 8)}
-                                maxTime={new Date(0, 0, 0, 22 - Number(size.selectedSize.date.slice(0, 2)))}
-                                renderInput={(params) => <TextField  {...params} />}
+                                minTime={date.toLocaleDateString() == new Date().toLocaleDateString() ?
+                                    new Date(0, 0, 0, new Date().getHours() + 1) :
+                                    new Date(0, 0, 0, 8)}
+                                maxTime={new Date(0, 0, 0, 22)}
+                                renderInput={(params) =>
+                                    <TextField helperText="Заказы принимаются с 8:00 до 22:00"  {...params} />}
                             />
                         </LocalizationProvider>
+
 
                         <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>
                             {activeStep === 0 ? <Button
@@ -282,7 +285,7 @@ const MyStepper = observer(() => {
                                 >
                                     {freeMasters.length == 0 ? (
                                         <Typography sx={{mb: 2}}>
-                                            Мастеров нет
+                                            Список пуст
                                         </Typography>
                                     ) : (
                                         freeMasters.map((master, index) => {
@@ -320,7 +323,7 @@ const MyStepper = observer(() => {
                                     </Typography>
                                     {busyMasters.length == 0 ? (
                                         <Typography sx={{mb: 2}}>
-                                            Мастеров нет
+                                            Список пуст
                                         </Typography>
                                     ) : (
                                         busyMasters.map((master, index) => {

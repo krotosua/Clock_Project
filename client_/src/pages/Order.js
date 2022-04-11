@@ -10,8 +10,6 @@ import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 import {fetchSize} from "../http/sizeAPI";
 import {fetchCity} from "../http/cityAPI";
-import MyAlert from "../components/adminPageComponents/MyAlert";
-
 
 const Order = observer(() => {
     const {size, cities} = useContext(Context)
@@ -41,7 +39,7 @@ const Order = observer(() => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: window.innerHeight,
+                height: "800px",
 
             }}
         >

@@ -18,6 +18,7 @@ import Pages from "../Pages";
 
 const CityList = observer(({alertMessage}) => {
     let {user} = useContext(Context)
+
     const getUsers = () => {
         fetchUsers(user.page, 10).then(res => {
             if (res.status === 204) {
@@ -55,15 +56,7 @@ const CityList = observer(({alertMessage}) => {
                     </Typography>}>
                     <ListItem
                         secondaryAction={
-
-                            <PersonIcon sx={{width: 30}}
-                                        edge="end"
-                                        aria-label="delete"
-
-                            >
-                                <DeleteIcon/>
-                            </PersonIcon>
-
+                            <PersonIcon/>
                         }
                     >
                         <ListItemText sx={{width: "2px",}}
@@ -82,22 +75,24 @@ const CityList = observer(({alertMessage}) => {
 
                     {user.IsEmpty ? <h1>Список пуст</h1> :
                         user.usersList.map((user, index) => {
-
                             return (<ListItem
                                     key={user.id}
                                     divider
                                     secondaryAction={
-                                        <Tooltip title={'Удалить пользователя'}
-                                                 placement="right"
-                                                 arrow>
-                                            <IconButton sx={{width: 10}}
-                                                        edge="end"
-                                                        aria-label="delete"
-                                                        onClick={() => delUser(user.id)}
+                                        user.role === "USER" ?
+                                            <Tooltip title={'Удалить пользователя'}
+                                                     placement="right"
+                                                     arrow>
+                                                <IconButton sx={{width: 10}}
+                                                            edge="end"
+                                                            aria-label="delete"
+                                                            onClick={() => delUser(user.id)}
+                                                >
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            </Tooltip> : <Box sx={{width: 10}}
                                             >
-                                                <DeleteIcon/>
-                                            </IconButton>
-                                        </Tooltip>
+                                            </Box>
                                     }
                                 >
 

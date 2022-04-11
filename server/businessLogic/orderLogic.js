@@ -6,9 +6,8 @@ const MailService = require("../service/mailService")
 class OrderLogic {
     async create(req, res, next, userId) {
         try {
-            const {name, sizeClockId, date, time, email, masterId} = req.body
+            const {name, sizeClockId, date, time, masterId} = req.body
             await Order.create({name, sizeClockId, date, userId, time, masterId})
-
             return res.status(201).json({message: "Created"})
 
         } catch (e) {
@@ -18,7 +17,8 @@ class OrderLogic {
 
     async getUserOrders(req, res, next) {
         try {
-            let {id, limit, page} = req.params
+            let {id} = req.params
+            let {limit, page} = req.query
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit

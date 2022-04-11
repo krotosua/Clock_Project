@@ -1,7 +1,14 @@
 const masterLogic = require('../businessLogic/masterLogic')
+const cityLogic = require('../businessLogic/cityLogic')
+const ApiError = require("../error/ApiError");
 
 class MasterController {
     async create(req, res, next) {
+        const id = req.body.cityId
+        if (id <= 0) {
+            next(ApiError.badRequest("Error creating order"))
+        }
+        await cityLogic.getOne(req, res, next)
         await masterLogic.create(req, res, next)
     }
 

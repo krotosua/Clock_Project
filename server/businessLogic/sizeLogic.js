@@ -1,4 +1,4 @@
-const {SizeClock} = require('../models/models')
+const {SizeClock, Master} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 class SizeLogic {
@@ -28,6 +28,15 @@ class SizeLogic {
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
+    }
+
+    async getOne(req, res, next) {
+        const id = req.body.sizeClockId
+        const sizeClockId = await SizeClock.findOne({where: {id}})
+        if (!sizeClockId) {
+            return next(ApiError.badRequest('Size clock doesn`t exist'))
+        }
+        return res.status(200)
     }
 
     async update(req, res, next) {

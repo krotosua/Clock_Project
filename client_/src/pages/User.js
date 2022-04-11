@@ -6,18 +6,23 @@ import AddIcon from '@mui/icons-material/Add';
 import {Tooltip} from "@mui/material";
 import {ORDER_ROUTE} from "../utils/consts";
 import {useNavigate, useParams} from "react-router-dom";
-import {fetchAlLOrders, fetchUserOrders} from "../http/orderAPI";
-import MyAlert from "../components/adminPageComponents/MyAlert";
+import {fetchUserOrders} from "../http/orderAPI";
+
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../components/Pages";
+import Typography from "@mui/material/Typography";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
 
 const User = observer(() => {
     const navigate = useNavigate()
 
     let {orders} = useContext(Context)
     const {id} = useParams()
-    useEffect(() => {
+    const getOrders = () => {
         fetchUserOrders(id, orders.page, 8).then(res => {
             if (res.status === 204) {
                 orders.setIsEmpty(true)
@@ -26,17 +31,21 @@ const User = observer(() => {
             res.data.rows.map(item => {
                 item.date = new Date(item.date).toLocaleDateString()
             })
+
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
         }, error => orders.setIsEmpty(true))
+    }
+    useEffect(() => {
+        getOrders()
     }, [orders.page])
 
 
     return (
-        <Box sx={{height: window.innerHeight, pt: 5}}>
+        <Box sx={{height: "800px", pt: 5}}>
             <h2>Список заказов</h2>
-            <Box sx={{height: 650}}>
+            <Box sx={{height: "650px"}}>
                 <OrderList/>
             </Box>
             <Tooltip title="Добавить заказ" placement="top" arrow>
@@ -47,7 +56,7 @@ const User = observer(() => {
                     <AddIcon/>
                 </Fab>
             </Tooltip>
-            <Box sx={{position: "relative", left: "40%"}}>
+            <Box sx={{position: "absolute", left: "47%"}}>
                 <Pages context={orders}/>
             </Box>
         </Box>

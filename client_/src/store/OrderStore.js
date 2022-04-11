@@ -7,7 +7,7 @@ export default class OrderStore {
         this._isEmpty = false
         this._page = 1
         this._totalCount = 0
-        this._limit = 10
+        this._limit = 8
         makeAutoObservable(this)
     }
 

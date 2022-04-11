@@ -13,10 +13,14 @@ import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import {deleteOrder, fetchAlLOrders} from "../../http/orderAPI";
 import Pages from "../Pages";
+import {ORDER_ROUTE} from "../../utils/consts";
+import {useNavigate} from "react-router-dom";
+import {Tooltip} from "@mui/material";
 
 
 const OrderList = observer(({alertMessage}) => {
     let {orders} = useContext(Context)
+    const navigate = useNavigate()
     const getOrders = () => {
         fetchAlLOrders(orders.page, 8).then(res => {
             if (res.status === 204) {
@@ -60,12 +64,17 @@ const OrderList = observer(({alertMessage}) => {
                         key={1}
                         divider
                         secondaryAction={
-                            <IconButton sx={{width: 5}}
-                                        edge="end"
-                                        aria-label="delete"
-                            >
-                                <AddIcon/>
-                            </IconButton>
+                            <Tooltip title={'Добавить заказ'}
+                                     placement="top"
+                                     arrow>
+                                <IconButton sx={{width: 5}}
+                                            edge="end"
+                                            aria-label="add"
+                                            onClick={() => navigate(ORDER_ROUTE)}
+                                >
+                                    <AddIcon/>
+                                </IconButton>
+                            </Tooltip>
                         }
                     >
                         <ListItemText sx={{width: 10}}
