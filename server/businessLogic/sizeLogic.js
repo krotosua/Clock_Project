@@ -1,4 +1,4 @@
-const {SizeClock, Master} = require('../models/models')
+const {SizeClock, Order} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 class SizeLogic {
@@ -58,9 +58,15 @@ class SizeLogic {
             const {id} = req.body
 
             if (id) {
-                const size = await SizeClock.findOne({where: id})
-                await size.destroy()
-                return res.status(204).json({message: "success"})
+                const size = await SizeClock.findOne({
+                    where: id,
+                    include: Order,
+                    attributes: ["id"]
+                })
+                if (size.orders.length == 0) {
+                    await size.destroy()
+                    return res.status(204).json({message: "success"})
+                }
             } else {
                 return next(ApiError.badRequest({message: "Id is empty"}))
             }

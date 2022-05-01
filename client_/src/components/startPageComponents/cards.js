@@ -16,7 +16,7 @@ const Cards = () => {
                     component="img"
                     height="300"
                     image={smallClock}
-                    alt="green ds"
+                    alt="clock"
                 />
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div" align='center'>
@@ -39,7 +39,7 @@ const Cards = () => {
                     component="img"
                     height="300"
                     image={normalClock}
-                    alt="green iguana"
+                    alt="clock"
                 />
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div" align='center'>
@@ -62,7 +62,7 @@ const Cards = () => {
                     component="img"
                     height="300"
                     image={largeClock}
-                    alt="green iguana"
+                    alt="clock"
                 />
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div" align='center'>

@@ -56,14 +56,11 @@ const Auth = observer(() => {
                 navigate(START_ROUTE) :
                 navigate(ADMIN_ROUTE)
         } catch (e) {
-
             setError(e.response.status)
         }
     }
 
     return (
-
-
         <Container
             maxWidth="xl"
             sx={{
@@ -88,10 +85,7 @@ const Auth = observer(() => {
                             justifyContent: "center",
                         }}
                     >
-
-
                         <FormControl>
-
                             <TextField
                                 error={error === 404 || error === 400 && email == ""}
                                 sx={{mb: 2}}
@@ -104,7 +98,6 @@ const Auth = observer(() => {
                                     "Пользователя с таким email не найден" :
                                     error === 400 ? "Введите email формата: clock@clock.com" : ""
                                 }
-
                                 onChange={(e => {
                                     setEmail(e.target.value)
                                     setError(null)
@@ -132,13 +125,14 @@ const Auth = observer(() => {
                             >
                                 {isLogin ? (
                                     <div>
-                                        Нет аккаунта? <NavLink to={REGISTRATION_ROUTE}
-                                                               onClick={() => setError("")}>Зарегистрируйся!</NavLink>
+                                        Нет аккаунта?
+                                        <NavLink to={REGISTRATION_ROUTE}
+                                                 onClick={() => setError("")}>Заригистрируйтесь.</NavLink>
                                     </div>
                                 ) : (
                                     <div>
                                         Есть аккаунта? <NavLink to={LOGIN_ROUTE}
-                                                                onClick={() => setError("")}>Войди!</NavLink>
+                                                                onClick={() => setError("")}>Войти.</NavLink>
                                     </div>
                                 )}
                                 <Button type="submit" variant="outlined"

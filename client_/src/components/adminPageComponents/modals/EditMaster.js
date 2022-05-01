@@ -7,6 +7,7 @@ import {FormControl, TextField} from "@mui/material";
 import {createMaster, fetchMaster, updateMaster} from "../../../http/masterAPI";
 import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
+import SelectorMasterCity from "./SelectorMasterCity";
 
 
 const style = {
@@ -33,21 +34,17 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
         }
         if (masterName) {
             changeInfo.name = masterName
-            change("name", masterName)
         }
         if (masterRating) {
-            if (masterRating < 5 && masterRating > 0) {
+            if (masterRating <= 5 && masterRating >= 0) {
                 changeInfo.rating = masterRating
-                change("rating", masterRating)
             } else {
                 setError(true)
                 return
             }
         }
-
         if (cities.selectedCity) {
             changeInfo.cityId = cities.selectedCity
-
         }
         updateMaster(changeInfo)
             .then(res => {
@@ -60,18 +57,18 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
     }
 
 
-    function change(prop, value) {
-        masters.setMasters(masters.masters.map(obj =>
-            obj.id == idToEdit ? {...obj, [prop]: value} : obj
-        ));
-    }
-
     function close() {
         setMasterName(null)
         setMasterRating(null)
         cities.setSelectedCity(null)
+        fetchMaster(null, null, masters.page, 10).then(res => {
+            masters.setMasters(res.data.rows)
+            masters.setTotalCount(res.data.rows.length)
+        }, (err) => {
+        })
         setError(false)
         onClose()
+
     }
 
     return (
@@ -95,11 +92,12 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                 variant="outlined"
                                 defaultValue={nameToEdit}
                                 onChange={e => setMasterName(e.target.value)}
+
                             />
                             <TextField
                                 sx={{my: 2}}
                                 id="masterRating"
-                                error={error}
+                                error={masterRating > 5}
                                 helperText='Введите рейтинг от 0 до 5'
                                 label={`Текущуее рейтинг мастера: ${ratingToEdit}`}
                                 variant="outlined"
@@ -114,13 +112,16 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
 
                                 onChange={e => setMasterRating(e.target.value)}
                             />
-                            <SelectorCity cityChosen={cityChosen}/>
+                            <SelectorMasterCity cityChosen={cityChosen} error={error}/>
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                    onClick={changeMaster}> Добавить</Button>
+                                    onClick={changeMaster}
+                                    disabled={masterRating > 5 || masterRating < 0}>
+                                Изменить
+                            </Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>
                         </Box>

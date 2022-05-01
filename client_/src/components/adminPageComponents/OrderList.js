@@ -44,9 +44,11 @@ const OrderList = observer(({alertMessage}) => {
         deleteOrder(id).then((res) => {
             orders.setOrders(orders.orders.filter(obj => obj.id !== id));
             alertMessage('Успешно удаленно', false)
+            orders.setIsEmpty(false)
             getOrders()
         }, (err) => {
             alertMessage('Не удалось удалить', true)
+            orders.setIsEmpty(false)
         })
 
     }
@@ -54,7 +56,7 @@ const OrderList = observer(({alertMessage}) => {
 
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", height: 700}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Заказы
                 </Typography>
@@ -125,13 +127,13 @@ const OrderList = observer(({alertMessage}) => {
                                 <ListItemText sx={{width: 10}}
                                               primary={`${order.date} ${order.time}`}
                                 /> <ListItemText sx={{width: 10}}
-                                                 primary={order.sizeClock.name}
-                            /><ListItemText sx={{width: 10}}
-                                            primary={order.master.name}
-                            />
+                                                 primary={order.sizeClock.name}/>
                                 <ListItemText sx={{width: 10}}
-                                              primary={order.master.city.name}
+                                              primary={order.master.name}/>
+                                <ListItemText sx={{width: 10}}
+                                              primary={order.nameCit}
                                 />
+
 
                             </ListItem>)
                         })}

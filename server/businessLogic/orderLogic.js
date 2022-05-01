@@ -1,4 +1,4 @@
-const {Order, City, Master, SizeClock} = require('../models/models')
+const {Order, Master, SizeClock} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const MailService = require("../service/mailService")
 
@@ -6,8 +6,8 @@ const MailService = require("../service/mailService")
 class OrderLogic {
     async create(req, res, next, userId) {
         try {
-            const {name, sizeClockId, date, time, masterId} = req.body
-            await Order.create({name, sizeClockId, date, userId, time, masterId})
+            const {name, sizeClockId, date, time, masterId, nameCit} = req.body
+            await Order.create({name, sizeClockId, date, userId, time, masterId, nameCit})
             return res.status(201).json({message: "Created"})
 
         } catch (e) {
@@ -28,10 +28,6 @@ class OrderLogic {
                 include: [{
                     model: Master,
                     attributes: ['name'],
-                    include: {
-                        model: City,
-                        attributes: ['name']
-                    }
                 }, {
                     model: SizeClock,
                     attributes: ['name'],
@@ -58,10 +54,6 @@ class OrderLogic {
                 include: [{
                     model: Master,
                     attributes: ['name'],
-                    include: {
-                        model: City,
-                        attributes: ['name']
-                    }
                 }, {
                     model: SizeClock,
                     attributes: ['name'],

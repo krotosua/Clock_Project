@@ -47,7 +47,7 @@ const CityList = observer(({alertMessage}) => {
 
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", height: 700}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
 
                 <List subheader={
                     <Typography sx={{mt: 4, mb: 2,}}

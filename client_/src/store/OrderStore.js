@@ -2,7 +2,6 @@ import {makeAutoObservable} from "mobx";
 
 export default class OrderStore {
     constructor() {
-
         this._orders = []
         this._isEmpty = false
         this._page = 1

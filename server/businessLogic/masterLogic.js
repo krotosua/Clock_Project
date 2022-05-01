@@ -9,7 +9,8 @@ class MasterLogic {
             if (cityId <= 0) {
                 next(ApiError.badRequest({message: "cityId is empty"}))
             }
-            const master = await Master.create({name, rating, cityId})
+            const master = await Master.create({name, rating})
+            master.addCity(cityId)
             return res.json(master)
 
         } catch (e) {
@@ -26,12 +27,9 @@ class MasterLogic {
             let masters
             if (cityId) {
                 masters = await Master.findAndCountAll({
-                    where: {
-                        cityId,
-                    },
                     include: [{
                         model: City,
-                        attributes: ['name'],
+                        where: {id: cityId}
                     }, {
                         model: Order,
                         where: {
@@ -42,9 +40,9 @@ class MasterLogic {
                     ,
                     limit, offset
                 })
-
             } else {
                 masters = await Master.findAndCountAll({
+                    attributes: ['name', "rating", "id"],
                     include: [{
                         model: City,
 
@@ -77,12 +75,18 @@ class MasterLogic {
     async update(req, res, next) {
         try {
             const {id, name, rating, cityId} = req.body
+            console.log(cityId)
+            if (cityId <= 0 || cityId === []) {
+                next(ApiError.badRequest({message: "cityId is empty"}))
+            }
             const master = await Master.findOne({where: id})
             await master.update({
                 name: name,
                 rating: rating,
-                cityId: cityId
             })
+            if (cityId !== undefined) {
+                master.setCities(cityId)
+            }
             return res.status(200).json({message: "success"})
         } catch (e) {
             return next(ApiError.badRequest("Invalid ID"))

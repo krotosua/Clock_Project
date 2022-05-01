@@ -74,7 +74,7 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
             >
                 <Box sx={style}>
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Добавить новые размеры часов
+                        Изменить параметры часов
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>

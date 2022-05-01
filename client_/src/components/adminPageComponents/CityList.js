@@ -26,7 +26,6 @@ const CityList = observer(({alertMessage, getValue}) => {
     const [nameToEdit, setNameToEdit] = useState("")
     const getCity = () => {
         fetchCity(cities.page, 10).then(res => {
-            console.log(cities.page)
             if (res.status === 204) {
                 return cities.setIsEmpty(true)
             } else {
@@ -54,7 +53,7 @@ const CityList = observer(({alertMessage, getValue}) => {
 
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", height: 700}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Города
                 </Typography>

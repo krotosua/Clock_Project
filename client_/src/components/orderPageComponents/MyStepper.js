@@ -6,7 +6,7 @@ import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import {useNavigate} from "react-router-dom";
-import {FormControlLabel, Radio, RadioGroup, TextField, Tooltip} from "@mui/material";
+import {FormControlLabel, Radio, RadioGroup, Rating, TextField, Tooltip} from "@mui/material";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
 import {useContext, useState} from "react";
@@ -33,7 +33,6 @@ const MyStepper = observer(() => {
     const [email, setEmail] = useState("");
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
-    const [minTime, setMinTime] = useState(null)
     const [chosenMaster, setMaster] = useState(null);
     const [sizeClock, setSizeClock] = useState(null);
     const [cityChosen, setCityChosen] = useState(null);
@@ -81,7 +80,7 @@ const MyStepper = observer(() => {
                 date: date,
                 time: time.toLocaleTimeString(),
                 email: email,
-                cityId: cities.selectedCity,
+                nameCit: cities.cities.find(city => city.id === cityChosen).name,
                 masterId: chosenMaster,
                 sizeClockId: size.selectedSize.id
             }
@@ -310,9 +309,10 @@ const MyStepper = observer(() => {
                                                     <ListItemText sx={{width: 10}}
                                                                   primary={master.name}/>
                                                     <ListItemText sx={{width: 10}}
-                                                                  primary={master.rating}/>
+                                                                  primary={<Rating name="read-only"
+                                                                                   value={master.rating} readOnly/>}/>
                                                     <ListItemText sx={{width: 10}}
-                                                                  primary={master.city.name}/>
+                                                                  primary={master.cities[0].name}/>
                                                 </ListItem>
                                             );
                                         })
@@ -350,7 +350,7 @@ const MyStepper = observer(() => {
                                                     <ListItemText sx={{width: 10}}
                                                                   primary={master.rating}/>
                                                     <ListItemText sx={{width: 10}}
-                                                                  primary={master.city.name}/>
+                                                                  primary={master.cities[0].name}/>
                                                 </ListItem>
                                             )
                                         }))}

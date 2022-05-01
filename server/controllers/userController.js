@@ -1,5 +1,4 @@
 const userLogic = require('../businessLogic/userLogic');
-const cityLogic = require("../businessLogic/cityLogic");
 
 
 class UserController {

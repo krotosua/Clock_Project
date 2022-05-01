@@ -13,10 +13,7 @@ import {
     ADMIN_CITY_LIST_ROUTE,
     ADMIN_MASTER_LIST_ROUTE,
     ADMIN_ORDER_LIST_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
-    ORDER_ROUTE
 } from "../utils/consts";
-import Fab from "@mui/material/Fab";
-import AddIcon from "@mui/icons-material/Add";
 import CreateCity from "../components/adminPageComponents/modals/CreateCity";
 import {observer} from "mobx-react-lite";
 import CreateMaster from "../components/adminPageComponents/modals/CreateMaster";
@@ -41,15 +38,6 @@ const Admin = observer(() => {
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
-
-
-    function getValue(prop, list, idToEdit) { // получение значения свойства
-        return list.reduce(
-            (res, obj) => obj.id === idToEdit ? obj[prop] : res
-            , '');
-    }
-
-
     const alertMessage = (message, bool) => {
         setOpen(true)
         setMessage(message)
@@ -59,7 +47,7 @@ const Admin = observer(() => {
     return (
 
         <Container disableGutters
-                   sx={{height: "800px", pt: 2}}>
+                   sx={{pt: 2}}>
             <Box sx={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
@@ -98,17 +86,17 @@ const Admin = observer(() => {
                 </List>
                 <Box sx={{gridArea: 'main'}}>
                     {cityList ? <CityList alertMessage={alertMessage}
-                    /> : ""}
-                    {masterList ? <MasterList alertMessage={alertMessage}
-                    /> : ""}
-                    {sizeList ? <SizeList alertMessage={alertMessage}
-                    /> : ""}
-                    {orderList ? <OrderList
-                        alertMessage={alertMessage}
-                    /> : ""}
-                    {usersList ? <UserList
-                        alertMessage={alertMessage}
-                    /> : ""}
+                        /> :
+                        masterList ? <MasterList alertMessage={alertMessage}
+                            /> :
+                            sizeList ? <SizeList alertMessage={alertMessage}
+                                /> :
+                                orderList ? <OrderList
+                                        alertMessage={alertMessage}
+                                    /> :
+                                    usersList ? <UserList
+                                        alertMessage={alertMessage}
+                                    /> : <Box sx={{height: "800px"}}> </Box>}
 
                 </Box>
 
@@ -131,6 +119,7 @@ const Admin = observer(() => {
 
             </Box>
         </Container>
+
     );
 });
 

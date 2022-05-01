@@ -8,7 +8,6 @@ import {useState} from "react";
 const Pages = observer(({context}) => {
     const [currentPage, setCurrentPage] = useState(context.page);
     const pageCount = Math.ceil(context.totalCount / context.limit)
-    console.log(pageCount)
     const handleChange = (event, value) => {
         setCurrentPage(value);
         context.setPage(value)
@@ -16,7 +15,7 @@ const Pages = observer(({context}) => {
 
 
     return (
-        <Stack spacing={2}>
+        <Stack spacing={2} sx={{my: 2}}>
             <Pagination color='warning'
                         count={pageCount}
                         page={currentPage}

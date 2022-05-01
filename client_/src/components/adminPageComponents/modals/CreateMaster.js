@@ -9,6 +9,7 @@ import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
 import {observer} from "mobx-react-lite";
 import {fetchCity} from "../../../http/cityAPI";
+import SelectorMasterCity from "./SelectorMasterCity";
 
 const style = {
     position: 'absolute',
@@ -27,6 +28,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const [name, setName] = useState("")
     const [rating, setRating] = useState("")
     const [error, setError] = useState(false)
+
     const addMaster = () => {
 
         const masterData = {
@@ -34,6 +36,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
             rating: rating,
             cityId: cities.selectedCity
         }
+       
         createMaster(masterData).then(res => {
             close()
             alertMessage("Мастер успешно добавлен", false)
@@ -43,7 +46,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                 }
                 masters.setIsEmpty(false)
                 masters.setMasters(res.data.rows)
-                masters.setTotalCount(res.data.count)
+                masters.setTotalCount(res.data.rows.length)
             }, (err) => {
                 return masters.setIsEmpty(true)
 
@@ -101,7 +104,10 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                 required
                                 onChange={e => setRating(e.target.value)}
                             />
-                            <SelectorCity error={error}/>
+
+                            <SelectorMasterCity/>
+
+
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}

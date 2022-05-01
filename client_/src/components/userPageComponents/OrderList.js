@@ -70,7 +70,7 @@ const OrderList = observer(() => {
                                     primary={order.master.name}
                     />
                         <ListItemText sx={{width: 10}}
-                                      primary={order.master.city.name}
+                                      primary={order.nameCit}
                         />
 
                     </ListItem>)

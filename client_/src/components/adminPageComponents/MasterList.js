@@ -17,10 +17,11 @@ import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
 import {Tooltip} from "@mui/material";
 import Pages from "../Pages";
+import {Rating} from '@mui/material';
 
 
 const MasterList = observer(({alertMessage, getValue}) => {
-    let {masters} = useContext(Context)
+    let {masters, cities} = useContext(Context)
     const [masterVisible, setMasterVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
@@ -36,7 +37,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
             }
             masters.setIsEmpty(false)
             masters.setMasters(res.data.rows)
-            masters.setTotalCount(res.data.count)
+            masters.setTotalCount(res.data.rows.length)
         }, (err) => {
             return masters.setIsEmpty(true)
 
@@ -47,7 +48,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
         getMasters()
     }, [masters.page])
 
-//Удаление мастера
+
     const delMaster = (id) => {
         deleteMaster(id).then((res) => {
                 masters.setMasters(masters.masters.filter(obj => obj.id !== id));
@@ -57,14 +58,20 @@ const MasterList = observer(({alertMessage, getValue}) => {
                 alertMessage('Не удалось удалить, так как у мастера есть еще заказы', true)
             }
         )
-
-
     }
-
+    const forEdit = (master) => {
+        let changeCity = []
+        setEditVisible(true)
+        setIdToEdit(master.id)
+        setNameToEdit(master.name)
+        setRatingToEdit(master.rating)
+        changeCity = master.cities.map(item => item.id)
+        setCityToEdit(cities.cities.filter(cities => changeCity.indexOf(cities.id) > -1))
+    }
 
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", height: 700}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Мастера
                 </Typography>
@@ -100,7 +107,14 @@ const MasterList = observer(({alertMessage, getValue}) => {
                     <Divider orientation="vertical"/>
                     {masters.IsEmpty ? <h1>Список пуст</h1> :
                         masters.masters.map((master, index) => {
-
+                            let cityList = ""
+                            for (let i = 0; i < master.cities.length; i++) {
+                                if (i == 0) {
+                                    cityList += `${master.cities[i].name}`
+                                } else {
+                                    cityList = `${cityList}, ${master.cities[i].name}`
+                                }
+                            }
                             return (<ListItem
                                     key={master.id}
                                     divider
@@ -117,19 +131,19 @@ const MasterList = observer(({alertMessage, getValue}) => {
                                     />
                                     <ListItemText sx={{width: 10}}
                                                   primary={master.name}/>
+
                                     <ListItemText sx={{width: 10}}
-                                                  primary={master.rating}/>
+                                                  primary={
+                                                      <Rating name="read-only" value={master.rating} readOnly/>}/>
                                     <ListItemText sx={{width: 10}}
-                                                  primary={master.city.name}/>
+                                                  primary={cityList}/>
+
                                     <IconButton sx={{width: 5}}
                                                 edge="end"
                                                 aria-label="Edit"
                                                 onClick={() => {
-                                                    setEditVisible(true)
-                                                    setIdToEdit(master.id)
-                                                    setNameToEdit(master.name)
-                                                    setRatingToEdit(master.rating)
-                                                    setCityToEdit(master.cityId)
+                                                    forEdit(master)
+
                                                 }}
                                     >
                                         <EditIcon/>
