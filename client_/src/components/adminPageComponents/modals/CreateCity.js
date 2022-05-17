@@ -20,12 +20,13 @@ const style = {
     p: 4,
 };
 const CreateCity = ({open, onClose, alertMessage,}) => {
-    const [name, setName] = useState("")
-
-    const [error, setError] = useState(false)
+    const [cityName, setCityName] = useState("")
+    const [errCity, setErrCity] = useState(false)
+    const [blurCityName, setBlurCityName] = useState(false)
     let {cities} = useContext(Context)
     const addCity = () => {
-        createCity({name: name}).then(res => {
+
+        createCity({name: cityName.trim()}).then(res => {
                 cities.setIsEmpty(false)
                 alertMessage("Город успешно создан", false)
                 close()
@@ -37,16 +38,18 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
 
             },
             err => {
-                setError(true)
+                setErrCity(true)
                 alertMessage("Не удалось создать город", true)
             })
     }
     const close = () => {
-        setError(false)
-        setName("")
+        setErrCity(false)
+        setBlurCityName(false)
+        setCityName("")
         onClose()
     }
-
+    //--------------------Validation
+    const validName = blurCityName && cityName.length == 0
     return (
         <div>
 
@@ -62,24 +65,27 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={error}
-                                helperText={error && name == "" ? "Введите название города" :
-                                    error ? "Город с таким именем уже существует" : ""}
+                                error={errCity || validName}
+                                helperText={
+                                    errCity ? "Город с таким именем уже существует" :
+                                        validName ? "Введите название города" : false}
                                 sx={{mt: 1}}
                                 id="city"
                                 label="Введите город"
                                 variant="outlined"
-                                value={name}
+                                value={cityName}
+                                onFocus={() => setBlurCityName(false)}
+                                onBlur={() => setBlurCityName(true)}
                                 onChange={e => {
-                                    setName(e.target.value)
-                                    setError(false)
+                                    setCityName(e.target.value)
+                                    setErrCity(false)
                                 }}
                             />
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
-                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined" disabled={!cityName}
                                     onClick={addCity}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>

@@ -21,10 +21,11 @@ import Pages from "../Pages";
 
 const SizeList = observer(({alertMessage, getValue}) => {
     let {size} = useContext(Context)
-    const [sizeVisible, setSizeVisible] = useState(false);
+    const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
     const [nameToEdit, setNameToEdit] = useState(null);
+    const [dateToEdit, setDateToEdit] = useState(null);
     const getSize = () => {
         fetchSize(size.page, 10).then(res => {
             if (res.status === 204) {
@@ -49,14 +50,14 @@ const SizeList = observer(({alertMessage, getValue}) => {
             getSize()
         }, (err) => {
             alertMessage('Не удалось удалить', true)
-            return size.setIsEmpty(true)
+            return
         })
 
     }
 
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Размеры часов
                 </Typography>
@@ -71,7 +72,7 @@ const SizeList = observer(({alertMessage, getValue}) => {
                                 <IconButton sx={{width: 20}}
                                             edge="end"
                                             aria-label="addSize"
-                                            onClick={() => setSizeVisible(true)}
+                                            onClick={() => setCreateVisible(true)}
                                 >
                                     <AddIcon/>
                                 </IconButton>
@@ -130,6 +131,7 @@ const SizeList = observer(({alertMessage, getValue}) => {
                                                         setEditVisible(true)
                                                         setIdToEdit(size.id)
                                                         setNameToEdit(size.name)
+                                                        setDateToEdit(new Date(new Date().setHours(size.date.slice(0, 2), 0, 0)))
                                                     }}
                                         >
                                             <EditIcon/>
@@ -139,20 +141,21 @@ const SizeList = observer(({alertMessage, getValue}) => {
                             )
                         })}
                 </List>
-                <CreateSize open={sizeVisible}
+                <CreateSize open={createVisible}
                             alertMessage={alertMessage}
                             onClose={() => {
-                                setSizeVisible(false)
+                                setCreateVisible(false)
                             }}/>
-                <EditSize
+                {editVisible ? <EditSize
                     open={editVisible}
                     onClose={() => setEditVisible(false)}
                     idToEdit={idToEdit}
                     alertMessage={alertMessage}
                     nameToEdit={nameToEdit}
-                />
+                    dateToEdit={dateToEdit}
+                /> : null}
             </Box>
-            <Box sx={{position: "relative", left: "35%"}}>
+            <Box sx={{display: "flex", justifyContent: "center"}}>
                 <Pages context={size}/>
             </Box>
         </Box>

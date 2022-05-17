@@ -27,6 +27,10 @@ export default class MasterStore {
         this._totalCount = count
     }
 
+    setLimit(limit) {
+        this._limit = limit
+    }
+
     get masters() {
         return this._masters
     }

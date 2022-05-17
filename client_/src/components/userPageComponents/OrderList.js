@@ -11,7 +11,7 @@ import {observer} from "mobx-react-lite";
 
 
 const OrderList = observer(() => {
-    let {orders} = useContext(Context)
+    let {orders, cities} = useContext(Context)
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -36,6 +36,9 @@ const OrderList = observer(() => {
                                   primary="Дата и время"
                     />
                     <ListItemText sx={{width: 10}}
+                                  primary="Конец заказа"
+                    />
+                    <ListItemText sx={{width: 10}}
                                   primary="Размер часов"/>
 
                     <ListItemText sx={{width: 10}}
@@ -50,11 +53,9 @@ const OrderList = observer(() => {
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-
                     return (<ListItem
                         key={order.id}
                         divider
-
                     >
                         <ListItemText sx={{width: 10}}
                                       primary={index + 1}
@@ -63,14 +64,17 @@ const OrderList = observer(() => {
                                       primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={(order.date)}
-                        /> <ListItemText sx={{width: 10}}
-                                         primary={order.sizeClock.name}
-                    /><ListItemText sx={{width: 10}}
-                                    primary={order.master.name}
+                                      primary={`${order.date} ${order.time}`}
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary={`${order.date} ${order.endTime}`}/>
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.sizeClock.name}
+                        /><ListItemText sx={{width: 10}}
+                                        primary={order.master.name}
                     />
                         <ListItemText sx={{width: 10}}
-                                      primary={order.nameCit}
+                                      primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
 
                     </ListItem>)

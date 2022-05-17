@@ -7,10 +7,10 @@ const userRouter = require('./userRouter')
 const sizeRouter = require('./sizeRouter')
 
 
-router.use('/user', userRouter)
-router.use('/city', cityRouter)
-router.use('/master', masterRouter)
-router.use('/order', orderRouter)
-router.use('/size', sizeRouter)
+router.use('/users', userRouter)
+router.use('/cities', cityRouter)
+router.use('/masters', masterRouter)
+router.use('/orders', orderRouter)
+router.use('/sizes', sizeRouter)
 
 module.exports = router

@@ -18,7 +18,6 @@ import Pages from "../Pages";
 
 const CityList = observer(({alertMessage}) => {
     let {user} = useContext(Context)
-
     const getUsers = () => {
         fetchUsers(user.page, 10).then(res => {
             if (res.status === 204) {
@@ -42,12 +41,10 @@ const CityList = observer(({alertMessage}) => {
         }, (err) => {
             alertMessage('Не удалось удалить, так как у пользователя остались заказы', true)
         })
-
     }
-
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
 
                 <List subheader={
                     <Typography sx={{mt: 4, mb: 2,}}
@@ -56,9 +53,7 @@ const CityList = observer(({alertMessage}) => {
                     </Typography>}>
                     <ListItem
                         secondaryAction={
-                            <PersonIcon/>
-                        }
-                    >
+                            <PersonIcon/>}>
                         <ListItemText sx={{width: "2px",}}
                                       primary="№"
                         /><ListItemText sx={{width: 10}}
@@ -117,7 +112,7 @@ const CityList = observer(({alertMessage}) => {
                 </List>
 
             </Box>
-            <Box sx={{position: "relative", left: "35%"}}>
+            <Box sx={{display: "flex", justifyContent: "center"}}>
                 <Pages context={user}/>
             </Box>
         </Box>

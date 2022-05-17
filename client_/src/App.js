@@ -15,12 +15,16 @@ const App = observer(() => {
     const {user, cities, size} = useContext(Context)
     const [loading, setLoading] = useState(true)
     useEffect(() => {
-        check().then(data => {
-            user.setUser(data)
-            user.setIsAuth(true)
-            user.setUserRole(data.role)
-
-        }).finally(() => setLoading(false))
+        if (localStorage.getItem('token') !== "" ||
+            localStorage.getItem('token')) {
+            check().then(data => {
+                user.setUser(data)
+                user.setIsAuth(true)
+                user.setUserRole(data.role)
+            }, err => {
+                localStorage.setItem('token', "")
+            })
+        }
         fetchCity(1, 10).then(res => {
             if (res.status === 204) {
                 cities.setIsEmpty(true)
@@ -28,7 +32,7 @@ const App = observer(() => {
                 cities.setCities(res.data.rows)
                 cities.setTotalCount(res.data.count)
             }
-        })
+        }).finally(() => setLoading(false))
         fetchSize().then(res => {
             if (res.status === 204) {
                 return size.setIsEmpty(true)
@@ -40,7 +44,16 @@ const App = observer(() => {
     }, [])
 
     if (loading) {
-        return <CircularProgress/>
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
     }
     return (
 
@@ -50,15 +63,13 @@ const App = observer(() => {
             <Box sx={{bgcolor: '#eceaea'}}>
 
                 <CssBaseline/>
-                <Container sx={{bgcolor: '#fff', mt: 6}}>
+                <Container sx={{bgcolor: '#fff', mt: 6, height: document.documentElement.clientHeight - 48}}>
                     <AppRouter/>
-
                 </Container>
+                <Box sx={{width: "100%", bgcolor: '#eceaea'}}>
+                </Box>
+            </Box>
 
-            </Box>
-            <Box sx={{width: "100%", height: 200, bgcolor: '#eceaea'}}>
-               
-            </Box>
         </BrowserRouter>
     );
 })

@@ -21,10 +21,10 @@ const MenuProps = {
 };
 
 
-export default function SelectorMasterCity({cityChosen, error}) {
+export default function SelectorMasterCity({cityChosen, error, open}) {
     let {cities} = useContext(Context)
     const [cityName, setCityName] = React.useState(cityChosen || []);
-
+    const [blur, setBlur] = useState(false)
     const handleChange = (event) => {
         const {
             target: {value},
@@ -48,11 +48,13 @@ export default function SelectorMasterCity({cityChosen, error}) {
                 <Select
                     labelId="multiple-checkbox-label"
                     id="multiple-checkbox"
-                    error={error && cityName.length == 0}
+                    error={error && cityName.length == 0 || open ? cityName.length == 0 && blur : ""}
                     multiple
                     value={cityName}
                     onChange={handleChange}
                     onClose={handleClose}
+                    onFocus={() => setBlur(false)}
+                    onBlur={() => setBlur(true)}
                     input={<OutlinedInput label="Города где работает мастер"/>}
                     renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
                     MenuProps={MenuProps}

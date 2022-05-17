@@ -5,10 +5,8 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
 import {createMaster, fetchMaster} from "../../../http/masterAPI";
-import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
 import {observer} from "mobx-react-lite";
-import {fetchCity} from "../../../http/cityAPI";
 import SelectorMasterCity from "./SelectorMasterCity";
 
 const style = {
@@ -24,19 +22,18 @@ const style = {
 };
 const CreateMaster = observer(({open, onClose, alertMessage}) => {
     let {cities, masters} = useContext(Context)
-
-    const [name, setName] = useState("")
-    const [rating, setRating] = useState("")
-    const [error, setError] = useState(false)
-
+    const [masterName, setMasterName] = useState("")
+    const [masterRating, setMasterRating] = useState("")
+    const [blurMasterName, setBlurMasterName] = useState(false)
+    const [errMaster, setErrMaster] = useState(false)
     const addMaster = () => {
 
         const masterData = {
-            name: name,
-            rating: rating,
+            name: masterName.trim(),
+            rating: masterRating,
             cityId: cities.selectedCity
         }
-       
+
         createMaster(masterData).then(res => {
             close()
             alertMessage("Мастер успешно добавлен", false)
@@ -52,17 +49,22 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
 
             })
         }, err => {
-            setError(true)
+            setErrMaster(true)
             alertMessage("Не удалось добавить мастера", true)
         })
     }
     const close = () => {
-        setName("")
-        setRating("")
-        setError(false)
+        setMasterName("")
+        setMasterRating("")
+        setErrMaster(false)
+        setBlurMasterName(false)
         cities.setSelectedCity("")
         onClose()
     }
+    //--------------------Validation
+    const validButton = masterRating > 5 || masterRating < 0 || !masterName
+    const validName = blurMasterName && masterName.length == 0
+    const validRating = masterRating > 5 || masterRating < 0
 
     return (
         <div>
@@ -79,34 +81,35 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
+                                error={validName}
+                                helperText={validName ? "Введите имя мастера" : ""}
                                 sx={{mt: 1}}
-                                error={error && name === ""}
                                 id="masterName"
-                                label="Введите имя мастера"
+                                label={`Укажите имя мастера`}
                                 variant="outlined"
-                                value={name}
+                                value={masterName}
                                 required
-                                onChange={e => setName(e.target.value)}
+                                onFocus={() => setBlurMasterName(false)}
+                                onBlur={() => setBlurMasterName(true)}
+                                onChange={e => setMasterName(e.target.value)}
                             />
                             <TextField
                                 sx={{my: 2}}
-                                error={error && rating === "" || rating > 5 || rating < 0}
                                 id="masterRating"
-                                label="Укажите рейтинг от 0 до 5"
+                                error={validRating}
+                                helperText={validRating ? 'Введите рейтинг от 0 до 5' : false}
+                                label={`Укажите рейтинг от 0 до 5`}
                                 variant="outlined"
-                                value={rating}
+                                value={masterRating}
                                 type="number"
                                 InputProps={{
                                     inputProps: {
                                         max: 5, min: 0
                                     }
                                 }}
-                                required
-                                onChange={e => setRating(e.target.value)}
+                                onChange={e => setMasterRating(Number(e.target.value))}
                             />
-
-                            <SelectorMasterCity/>
-
+                            <SelectorMasterCity open={open} error={errMaster}/>
 
                         </FormControl>
                         <Box
@@ -115,7 +118,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                             <Button color="success" sx={{flexGrow: 1,}}
                                     variant="outlined"
                                     onClick={addMaster}
-                                    disabled={rating > 5 || rating < 0}>
+                                    disabled={validButton}>
                                 Добавить
                             </Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"

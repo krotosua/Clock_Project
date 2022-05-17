@@ -20,13 +20,31 @@ const MenuProps = {
     },
 };
 
-export default function SelectorCity({Edit, cityChosen, readOnly, error}) {
+export default function SelectorCity({
+                                         Edit,
+                                         cityChosen,
+                                         cityToEdit,
+                                         cleanMaster,
+                                         error,
+                                         closeList,
+                                         editOpen,
+                                         setCityChosen
+                                     }) {
     let {cities} = useContext(Context)
     const [city, setCity] = useState(Edit || cityChosen || "");
 
+    const handleEditChange = (event) => {
+        setCity(event.target.value);
+        cities.setSelectedCity(event.target.value)
+        closeList()
+        cleanMaster()
+        cityToEdit()
+    };
     const handleChange = (event) => {
         setCity(event.target.value);
         cities.setSelectedCity(event.target.value)
+        setCityChosen()
+        cleanMaster()
     };
 
     return (
@@ -37,15 +55,15 @@ export default function SelectorCity({Edit, cityChosen, readOnly, error}) {
                     error={error && city === ""}
                     labelId="citySel"
                     value={city}
-                    readOnly={readOnly}
                     label="Выберите город"
-                    onChange={handleChange}
+                    onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
                     {cities.cities.map((city, index) =>
                         <MenuItem
                             key={index}
                             value={city.id}
+
                         >
                             {city.name}
                         </MenuItem>

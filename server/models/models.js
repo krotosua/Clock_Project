@@ -13,24 +13,8 @@ const User = sequelize.define('user', {
         type: DataTypes.STRING,
     },
     role: {type: DataTypes.STRING, defaultValue: "USER"},
-})
 
-const Order = sequelize.define('order', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {
-        type: DataTypes.STRING,
-        validate: {
-            notEmpty: true,
-            len: [3, 10]
-        }
-    },
-    nameCit: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    date: {type: DataTypes.DATEONLY},
-    time: {type: DataTypes.TIME}
-})
+}, {timestamps: false})
 
 const Master = sequelize.define('master', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -38,15 +22,21 @@ const Master = sequelize.define('master', {
         type: DataTypes.STRING, allowNull: false,
         validate: {notEmpty: true}
     },
-    rating: {type: DataTypes.INTEGER, allowNull: false}
-})
+    rating: {
+        type: DataTypes.INTEGER, allowNull: false,
+        validate: {
+            min: 0,
+            max: 5
+        }
+    }
+}, {timestamps: false})
 const City = sequelize.define('city', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     name: {
         type: DataTypes.STRING, unique: true, allowNull: false,
         validate: {notEmpty: true}
     }
-})
+}, {timestamps: false})
 const SizeClock = sequelize.define('sizeClock', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     name: {
@@ -54,15 +44,37 @@ const SizeClock = sequelize.define('sizeClock', {
         validate: {notEmpty: true,}
     },
     date: {type: DataTypes.TIME}
-})
+}, {timestamps: false})
+const Order = sequelize.define('order', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING,
+        validate: {
+            notEmpty: true,
+            len: [3, 30]
+        }
+    },
+    cityId: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: City,
+            key: 'id'
+            
+        }
+    },
+    date: {type: DataTypes.DATEONLY,},
+    time: {type: DataTypes.TIME,},
+    endTime: {type: DataTypes.TIME}
+}, {timestamps: false})
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-})
+}, {timestamps: false})
 User.hasMany(Order)
 Order.belongsTo(User)
 
 Master.hasMany(Order)
 Order.belongsTo(Master)
+
 
 City.belongsToMany(Master, {through: CitiesMasters})
 Master.belongsToMany(City, {through: CitiesMasters})

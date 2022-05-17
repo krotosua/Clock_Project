@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer')
+const ApiError = require("../error/ApiError");
 
 class MailService {
     constructor() {
@@ -13,8 +14,9 @@ class MailService {
         })
     }
 
-    async sendMail(name, date, time, email, size, masterName, cityName) {
-        await this.transporter.sendMail({
+    sendMail(name, date, time, email, size, masterName, cityName, next) {
+
+        this.transporter.sendMail({
             from: `clockbotproject@gmail.com`,
             to: email,
             subject: 'Подтверждение заказа',
@@ -27,8 +29,15 @@ class MailService {
                 <p>Мастер:${masterName} в городе ${cityName}</p>
                 <p>Хорошего, дня!</p>
 </div>`,
+        }, err => {
+            if (err) {
+                return next(ApiError.badRequest(err.message))
+            }
+
         })
+
     }
+
 }
 
 module.exports = new MailService();

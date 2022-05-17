@@ -1,15 +1,15 @@
-const {Order, Master, SizeClock} = require('../models/models')
+const {Order, Master, SizeClock, City, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const MailService = require("../service/mailService")
 
 
 class OrderLogic {
-    async create(req, res, next, userId) {
+    async create(req, res, next, userId,) {
         try {
-            const {name, sizeClockId, date, time, masterId, nameCit} = req.body
-            await Order.create({name, sizeClockId, date, userId, time, masterId, nameCit})
-            return res.status(201).json({message: "Created"})
-
+            const {name, sizeClockId, date, time, endTime, masterId, cityId} = req.body.order
+            const order = await Order.create(
+                {name, sizeClockId, date, userId, time, endTime, masterId, cityId})
+            return order
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -17,8 +17,11 @@ class OrderLogic {
 
     async getUserOrders(req, res, next) {
         try {
-            let {id} = req.params
+            let {userId} = req.params
             let {limit, page} = req.query
+            if (userId <= 0) {
+                next(ApiError.badRequest({message: "cityId is wrong"}))
+            }
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
@@ -53,10 +56,13 @@ class OrderLogic {
             orders = await Order.findAndCountAll({
                 include: [{
                     model: Master,
-                    attributes: ['name'],
                 }, {
                     model: SizeClock,
                     attributes: ['name'],
+
+                }, {
+                    model: User,
+                    attributes: ['email'],
 
                 }], limit, offset
             })
@@ -70,18 +76,26 @@ class OrderLogic {
 
     }
 
-    async update(req, res, next) {
+    async update(req, res, next, userId) {
         try {
-            const {id, name, sizeClock, date} = req.body
-            const order = await Order.findOne({where: id})
-
+            const {orderId} = req.params
+            const {name, sizeClockId, date, time, endTime, masterId, cityId,} = req.body
+            if (orderId <= 0) {
+                next(ApiError.badRequest({message: "cityId is wrong"}))
+            }
+            const order = await Order.findOne({where: {id: orderId}})
             await order.update({
                 name: name,
-                sizeClock: sizeClock,
-                date: date
+                sizeClockId: sizeClockId,
+                date: date,
+                time: time,
+                endTime: endTime,
+                masterId: masterId,
+                cityId: cityId,
+                userId: userId
             })
 
-            return res.status(200).json({message: "success"})
+            return order
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -89,8 +103,11 @@ class OrderLogic {
 
     async deleteOne(req, res, next) {
         try {
-            const {id} = req.body
-            const order = await Order.findOne({where: id})
+            const {orderId} = req.params
+            if (orderId <= 0) {
+                next(ApiError.badRequest({message: "cityId is wrong"}))
+            }
+            const order = await Order.findOne({where: {id: orderId}})
             await order.destroy()
             return res.status(204).json({message: "success"})
         } catch (e) {
@@ -98,15 +115,17 @@ class OrderLogic {
         }
     }
 
-    async sendMessage(req, res, next) {
+    sendMessage(req, res, next) {
         try {
-            const {name, date, time, email, size, masterName, cityName} = req.body
-            await MailService.sendMail(name, date, time, email, size, masterName, cityName)
-            return res.status(200).json({message: "success"})
+            const {message} = req.body
+            const {name, date, time, email, size, masterName, cityName} = message
+            MailService.sendMail(name, date, time, email, size, masterName, cityName, next)
+
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
     }
+
 }
 
 

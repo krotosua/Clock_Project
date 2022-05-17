@@ -7,7 +7,7 @@ import {useContext} from "react";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
 import {Container, CssBaseline} from "@mui/material";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, USER_ORDER_ROUTE} from "../utils/consts";
 
 
@@ -29,21 +29,32 @@ const NavBar = observer(() => {
                 <Container maxWidth="xl">
                     {user.isAuth ?
                         <Toolbar>
+
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
+                                <Link to={START_ROUTE}
+                                      style={{textDecoration: 'none', color: 'white'}}>
                                 <span onClick={() => navigate(START_ROUTE)}
                                       style={{cursor: "pointer"}}>Clockwise Clockware</span>
-
+                                </Link>
                             </Typography>
                             {user.userRole === "ADMIN" ?
-                                <Button variant="outlined" color="inherit" onClick={() => navigate(ADMIN_ROUTE)}>
-                                    Админ панель
-                                </Button> :
-                                <Button variant="outlined" color="inherit"
-                                        onClick={() => {
-                                            navigate(`${USER_ORDER_ROUTE}/${user.user.id}`)
-                                        }}>
-                                    Список заказов
-                                </Button>
+                                <Link to={ADMIN_ROUTE}
+                                      style={{textDecoration: 'none', color: 'white'}}>
+                                    <Button variant="outlined"
+                                            color="inherit"
+                                            onClick={() => navigate(ADMIN_ROUTE)}>
+                                        Админ панель
+                                    </Button>
+                                </Link> :
+                                <Link to={`${USER_ORDER_ROUTE}/${user.user.id}`}
+                                      style={{textDecoration: 'none', color: 'white'}}>
+                                    <Button variant="outlined" color="inherit"
+                                            onClick={() => {
+                                                navigate(`${USER_ORDER_ROUTE}/${user.user.id}`)
+                                            }}>
+                                        Список заказов
+                                    </Button>
+                                </Link>
                             }
                             <Button variant="outlined" sx={{ml: 2}} color="inherit"
                                     onClick={() => logOut()}>Выйти</Button>
@@ -51,9 +62,11 @@ const NavBar = observer(() => {
 
                         <Toolbar>
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
+                                <Link to={START_ROUTE}
+                                      style={{textDecoration: 'none', color: 'white'}}>
                                 <span onClick={() => navigate(START_ROUTE)}
                                       style={{cursor: "pointer"}}>Clockwise Clockware</span>
-
+                                </Link>
                             </Typography>
                             <Button variant="outlined" color="inherit"
                                     onClick={() => navigate(LOGIN_ROUTE)}>Войти</Button>

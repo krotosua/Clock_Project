@@ -1,30 +1,34 @@
 const jwt = require("jsonwebtoken");
 const ApiError = require("../error/ApiError");
-const {User} = require("../models/models");
+const {User, Order} = require("../models/models");
 const bcrypt = require("bcrypt");
+const {validationResult} = require("express-validator");
 
 
 const generateJwt = (id, email, role) => {
     return jwt.sign(
         {id, email, role},
         process.env.SECRET_KEY,
-        {expiresIn: '10h'}
+        {expiresIn: '24h'}
     )
 }
 
 class UserLogic {
     async registration(req, res, next) {
         try {
-
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({errors: errors.array()});
+            }
             const {email, password, role} = req.body
 
             if (!email || !password) {
-                return next(ApiError.badRequest('Incorrect email or password'))
+                return next(ApiError.badRequest({message: 'Incorrect email or password'}))
             }
             const candidate = await User.findOne({where: {email}})
             if (candidate) {
                 if (candidate.password !== null) {
-                    return next(ApiError.badRequest('User with this email already exists'))
+                    return next(ApiError.badRequest({message: 'User with this email already exists'}))
                 } else {
                     await this.update(candidate, password)
                     const token = generateJwt(candidate.id, candidate.email, candidate.role)
@@ -42,9 +46,14 @@ class UserLogic {
     }
 
 
-    async GetOrCreateUser(req, res, next) {
+    async GetOrCreateUser(req, res, next,) {
         try {
-            const {email} = req.body
+            let email = ""
+            if (req.method === "PUT") {
+                email = req.body.email
+            } else if (req.method === "POST") {
+                email = req.body.order.email
+            }
             if (!email) {
                 throw new Error('Email is wrong')
             }
@@ -55,21 +64,25 @@ class UserLogic {
             const user = await User.create({email})
             return user
         } catch (e) {
-            next(ApiError.badRequest(e.message))
+            return next(ApiError.badRequest(e.message))
         }
     }
 
 
     async login(req, res, next) {
         try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({errors: errors.array()});
+            }
             const {email, password} = req.body
             const user = await User.findOne({where: {email}})
             if (!user) {
-                return next(ApiError.NotFound('User with this name not found'))
+                return next(ApiError.NotFound({message: 'User with this name not found'}))
             }
             let comparePassword = bcrypt.compareSync(password, user.password)
             if (!comparePassword) {
-                return next(ApiError.Unauthorized('Wrong password'))
+                return next(ApiError.Unauthorized({message: 'Wrong password'}))
             }
             const token = generateJwt(user.id, user.email, user.role)
             return res.json({token})
@@ -108,9 +121,21 @@ class UserLogic {
 
     async deleteOne(req, res, next) {
         try {
-            const {id} = req.body
-            const user = await User.findOne({where: id})
-            await user.destroy({onDelete: "cascade"})
+            const {userId} = req.params
+            if (userId <= 0) {
+                next(ApiError.badRequest({message: " wrong"}))
+            }
+            const user = await User.findOne({
+                where: {id: userId},
+                include: Order,
+                attributes: ["id"]
+            })
+            if (user.orders.length == 0) {
+                await user.destroy()
+                return res.status(204).json({message: "success"})
+            } else {
+                return next(ApiError.Conflict({message: "Clock has orders"}))
+            }
             return res.status(204).json({message: "success"})
         } catch (e) {
             return next(ApiError.badRequest(e.message))

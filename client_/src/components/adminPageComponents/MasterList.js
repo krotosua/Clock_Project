@@ -22,12 +22,17 @@ import {Rating} from '@mui/material';
 
 const MasterList = observer(({alertMessage, getValue}) => {
     let {masters, cities} = useContext(Context)
-    const [masterVisible, setMasterVisible] = useState(false)
+    const [createVisible, setCreateVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [nameToEdit, setNameToEdit] = useState(null)
     const [ratingToEdit, setRatingToEdit] = useState(null)
-    const [cityToEdit, setCityToEdit] = useState(null);
+    const [cityToEdit, setCityToEdit] = useState([]);
+
+
+    useEffect(() => {
+        getMasters()
+    }, [masters.page])
 
 
     function getMasters() {
@@ -37,17 +42,12 @@ const MasterList = observer(({alertMessage, getValue}) => {
             }
             masters.setIsEmpty(false)
             masters.setMasters(res.data.rows)
-            masters.setTotalCount(res.data.rows.length)
+            masters.setTotalCount(res.data.count)
         }, (err) => {
             return masters.setIsEmpty(true)
 
         })
     }
-
-    useEffect(() => {
-        getMasters()
-    }, [masters.page])
-
 
     const delMaster = (id) => {
         deleteMaster(id).then((res) => {
@@ -59,6 +59,19 @@ const MasterList = observer(({alertMessage, getValue}) => {
             }
         )
     }
+
+    function createCityList(master) {
+        let cityList = ""
+        for (let i = 0; i < master.cities.length; i++) {
+            if (i == 0) {
+                cityList += `${master.cities[i].name}`
+            } else {
+                cityList = `${cityList}, ${master.cities[i].name}`
+            }
+        }
+        return cityList
+    }
+
     const forEdit = (master) => {
         let changeCity = []
         setEditVisible(true)
@@ -70,8 +83,8 @@ const MasterList = observer(({alertMessage, getValue}) => {
     }
 
     return (
-        <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
+        <Box sx={{position: "relative"}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Мастера
                 </Typography>
@@ -87,7 +100,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
                                 <IconButton sx={{width: 20}}
                                             edge="end"
                                             aria-label="Add"
-                                            onClick={() => setMasterVisible(true)}>
+                                            onClick={() => setCreateVisible(true)}>
 
                                     <AddIcon/>
                                 </IconButton>
@@ -107,14 +120,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
                     <Divider orientation="vertical"/>
                     {masters.IsEmpty ? <h1>Список пуст</h1> :
                         masters.masters.map((master, index) => {
-                            let cityList = ""
-                            for (let i = 0; i < master.cities.length; i++) {
-                                if (i == 0) {
-                                    cityList += `${master.cities[i].name}`
-                                } else {
-                                    cityList = `${cityList}, ${master.cities[i].name}`
-                                }
-                            }
+                            let cityList = createCityList(master)
                             return (<ListItem
                                     key={master.id}
                                     divider
@@ -152,19 +158,18 @@ const MasterList = observer(({alertMessage, getValue}) => {
                             )
                         })}
                 </List>
-                <EditMaster open={editVisible}
-                            onClose={() => setEditVisible(false)}
-                            idToEdit={idToEdit}
-                            alertMessage={alertMessage}
-                            nameToEdit={nameToEdit}
-                            ratingToEdit={ratingToEdit}
-                            cityChosen={cityToEdit}/>
-
-                <CreateMaster open={masterVisible}
+                {editVisible ? <EditMaster open={editVisible}
+                                           onClose={() => setEditVisible(false)}
+                                           idToEdit={idToEdit}
+                                           alertMessage={alertMessage}
+                                           nameToEdit={nameToEdit}
+                                           ratingToEdit={ratingToEdit}
+                                           cityChosen={cityToEdit}/> : null}
+                <CreateMaster open={createVisible}
                               alertMessage={alertMessage}
-                              onClose={() => setMasterVisible(false)}/>
+                              onClose={() => setCreateVisible(false)}/>
             </Box>
-            <Box sx={{position: "relative", left: "35%"}}>
+            <Box sx={{display: "flex", justifyContent: "center"}}>
                 <Pages context={masters}/>
             </Box>
         </Box>

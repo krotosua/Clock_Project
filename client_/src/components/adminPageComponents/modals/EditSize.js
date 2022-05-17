@@ -4,7 +4,6 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-
 import {Context} from "../../../index";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
@@ -23,32 +22,31 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
-    const [nameSize, setNameSize] = useState(null)
-    const [time, setTime] = useState(null)
-    const [error, setError] = useState(false)
+const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit, dateToEdit}) => {
     let {size} = useContext(Context)
-
+    const [sizeName, setSizeName] = useState(nameToEdit)
+    const [sizeTime, setSizeTime] = useState(dateToEdit)
+    const [errSize, setErrSize] = useState(false)
+    const [openTime, setOpenTime] = useState(false)
+    const [blurSizeName, setBlurSizeName] = useState(false)
     const changeSize = () => {
         const changeInfo = {
             id: idToEdit
         }
-        if (nameSize) {
-            changeInfo.name = nameSize
-            change("name", nameSize)
+        if (sizeName) {
+            changeInfo.name = sizeName.trim()
+            change("name", sizeName)
         }
-        if (time) {
-            changeInfo.date = time.toLocaleTimeString()
-            change("date", time.toLocaleTimeString())
+        if (sizeTime) {
+            changeInfo.date = sizeTime.toLocaleTimeString()
+            change("date", sizeTime.toLocaleTimeString())
         }
-
 
         updateSize(changeInfo).then(res => {
-
             close()
             alertMessage('Название изменено успешно', false)
         }, err => {
-            setError(true)
+            setErrSize(true)
             alertMessage('Не удалось изменить название', true)
         })
     }
@@ -60,12 +58,15 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
     }
 
     const close = () => {
-        setError(false)
-        setNameSize(null)
-        setTime(null)
+        setErrSize(false)
+        setSizeName("")
+        setSizeTime(null)
+        setOpenTime(false)
         onClose()
     }
-
+    //--------------------Validation
+    const validName = blurSizeName && sizeName.length == 0
+    const validButton = errSize || sizeName.length === 0 || !sizeTime
     return (
         <div>
             <Modal
@@ -79,30 +80,44 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={error}
-                                helperText={error && nameSize === "" ? "Введите название часов" :
-                                    error ? "Часы с таким именем уже существуют" : ""}
+                                error={errSize || validName}
+                                helperText={validName ? "Введите название часов" :
+                                    errSize ? "Часы с таким именем уже существуют" : ""}
                                 sx={{my: 2}}
                                 id="city"
                                 label="Введите название часов"
                                 variant="outlined"
-                                defaultValue={nameToEdit}
+                                value={sizeName}
+                                onFocus={() => setBlurSizeName(false)}
+                                onBlur={() => setBlurSizeName(true)}
                                 onChange={e => {
-                                    setNameSize(e.target.value)
-                                    setError(false)
+                                    setSizeName(e.target.value)
+                                    setErrSize(false)
                                 }}
+
                             />
                             <div>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <TimePicker
+                                        readOnly
                                         label="Кол-во часов на ремонт"
-                                        value={time}
+                                        open={openTime}
+                                        value={sizeTime}
                                         onChange={(newValue) => {
-                                            setTime(newValue);
+                                            setSizeTime(newValue);
+                                            setOpenTime(false)
                                         }}
+                                        minTime={new Date(0, 0, 0, 1)}
                                         ampm={false}
                                         views={["hours"]}
-                                        renderInput={(params) => <TextField {...params} />}
+                                        renderInput={(params) =>
+                                            <TextField onClick={() => setOpenTime(true)}
+                                                       sx={{
+                                                           '& .MuiInputBase-input': {
+                                                               cursor: "pointer"
+                                                           }
+                                                       }}
+                                                       {...params} />}
                                     />
                                 </LocalizationProvider>
                             </div>
@@ -112,6 +127,7 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                                    disabled={validButton}
                                     onClick={changeSize}> Изенить часы</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>

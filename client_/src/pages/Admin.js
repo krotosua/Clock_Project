@@ -1,18 +1,18 @@
 import React, {useState} from 'react';
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
+
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import CityList from "../components/adminPageComponents/CityList"
-import {Container, Tooltip} from "@mui/material";
+import {Container, Link, ListItemButton, styled, Tooltip} from "@mui/material";
 import MasterList from "../components/adminPageComponents/MasterList";
 import OrderList from "../components/adminPageComponents/OrderList";
 import {useLocation, useNavigate} from "react-router-dom";
 import {
     ADMIN_CITY_LIST_ROUTE,
     ADMIN_MASTER_LIST_ROUTE,
-    ADMIN_ORDER_LIST_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
+    ADMIN_ORDER_LIST_ROUTE, ADMIN_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
 } from "../utils/consts";
 import CreateCity from "../components/adminPageComponents/modals/CreateCity";
 import {observer} from "mobx-react-lite";
@@ -23,7 +23,13 @@ import CreateSize from "../components/adminPageComponents/modals/CreateSize";
 import MyAlert from "../components/adminPageComponents/MyAlert";
 
 
+const SelectButton = styled(ListItemButton)`
+  &.Mui-selected {
+    color: #03a9f4
+  }
+`;
 const Admin = observer(() => {
+
     const location = useLocation();
     const navigate = useNavigate()
     const cityList = location.pathname === ADMIN_CITY_LIST_ROUTE;
@@ -31,6 +37,8 @@ const Admin = observer(() => {
     const sizeList = location.pathname === ADMIN_SIZES_ROUTE;
     const orderList = location.pathname === ADMIN_ORDER_LIST_ROUTE;
     const usersList = location.pathname === ADMIN_USERS_ROUTE
+    const adminRoute = location.pathname === ADMIN_ROUTE
+
     const [cityVisible, setCityVisible] = useState(false)
     const [masterVisible, setMasterVisible] = useState(false)
     const [sizeVisible, setSizeVisible] = useState(false)
@@ -43,6 +51,8 @@ const Admin = observer(() => {
         setMessage(message)
         setIsError(bool)
     }
+
+    const preventDefault = (event) => event.preventDefault();
 
     return (
 
@@ -57,41 +67,75 @@ const Admin = observer(() => {
                                     "menu main main main"`
 
             }}>
-                <List sx={{width: '100%', maxWidth: 250, gridArea: 'menu'}} component="nav"
+                <List sx={{
+                    width: '100%', maxWidth: 250,
+                    gridArea: 'menu',
+                }}
+                      component="nav"
                       aria-label="mailbox folders">
-                    <ListItem button
-                              onClick={() => navigate(ADMIN_CITY_LIST_ROUTE)}>
-                        <ListItemText primary="Города"/>
-                    </ListItem>
+                    <Link href={ADMIN_CITY_LIST_ROUTE}
+                          onClick={preventDefault}
+                          underline="none"
+                          color="inherit">
+                        <SelectButton
+                            selected={cityList ? true : false}
+                            onClick={() => navigate(ADMIN_CITY_LIST_ROUTE)}>
+                            <ListItemText primary="Города"/>
+                        </SelectButton>
+                    </Link>
                     <Divider/>
-                    <ListItem button
-                              onClick={() => navigate(ADMIN_MASTER_LIST_ROUTE)}>
-                        <ListItemText primary="Мастера"/>
-                    </ListItem>
+                    <Link href={ADMIN_MASTER_LIST_ROUTE}
+                          onClick={preventDefault}
+                          underline="none"
+                          color="inherit">
+                        <SelectButton
+                            selected={masterList ? true : false}
+                            onClick={() => navigate(ADMIN_MASTER_LIST_ROUTE)}>
+                            <ListItemText primary="Мастера"/>
+                        </SelectButton>
+                    </Link>
                     <Divider light/>
-                    <ListItem button
-                              onClick={() => navigate(ADMIN_SIZES_ROUTE)}>
-                        <ListItemText primary="Размеры часов"/>
-                    </ListItem>
+                    <Link href={ADMIN_SIZES_ROUTE}
+                          onClick={preventDefault}
+                          underline="none"
+                          color="inherit">
+                        <SelectButton
+                            selected={sizeList ? true : false}
+                            onClick={() => navigate(ADMIN_SIZES_ROUTE)}>
+                            <ListItemText primary="Размеры часов"/>
+                        </SelectButton>
+                    </Link>
                     <Divider light/>
-                    <ListItem button
-                              onClick={() => navigate(ADMIN_ORDER_LIST_ROUTE)}>
-                        <ListItemText primary="Заказы"/>
-                    </ListItem>
+                    <Link href={ADMIN_ORDER_LIST_ROUTE}
+                          onClick={preventDefault}
+                          underline="none"
+                          color="inherit">
+                        <SelectButton
+                            selected={orderList || adminRoute ? true : false}
+                            onClick={() => navigate(ADMIN_ORDER_LIST_ROUTE)}>
+                            <ListItemText primary="Заказы"/>
+                        </SelectButton>
+                    </Link>
                     <Divider light/>
-                    <ListItem button
-                              onClick={() => navigate(ADMIN_USERS_ROUTE)}>
-                        <ListItemText primary="Пользователи"/>
-                    </ListItem>
+                    <Link href={ADMIN_USERS_ROUTE}
+                          onClick={preventDefault}
+                          underline="none"
+                          color="inherit">
+                        <SelectButton
+                            selected={usersList ? true : false}
+                            onClick={() => navigate(ADMIN_USERS_ROUTE)}>
+                            <ListItemText primary="Пользователи"/>
+                        </SelectButton>
+                    </Link>
                 </List>
-                <Box sx={{gridArea: 'main'}}>
+                <Box sx={{gridArea: 'main', ml: 1}}>
                     {cityList ? <CityList alertMessage={alertMessage}
                         /> :
                         masterList ? <MasterList alertMessage={alertMessage}
                             /> :
                             sizeList ? <SizeList alertMessage={alertMessage}
                                 /> :
-                                orderList ? <OrderList
+                                orderList || adminRoute ? <OrderList
                                         alertMessage={alertMessage}
                                     /> :
                                     usersList ? <UserList

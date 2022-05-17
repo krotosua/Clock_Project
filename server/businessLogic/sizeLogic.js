@@ -1,13 +1,19 @@
 const {SizeClock, Order} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const sequelize = require("../db");
 
 class SizeLogic {
     async create(req, res, next) {
         try {
-            const {name, date} = req.body
-
-            await SizeClock.create({name, date})
-            return res.status(201).json({message: "Created"})
+            const result = await sequelize.transaction(async () => {
+                const {name, date} = req.body
+                if (typeof name !== "string" || typeof date !== "string") {
+                    next(ApiError.badRequest({message: " wrong"}))
+                }
+                const size = await SizeClock.create({name, date})
+                return size
+            });
+            return res.status(201).json(result)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -30,24 +36,30 @@ class SizeLogic {
         }
     }
 
-    async getOne(req, res, next) {
-        const id = req.body.sizeClockId
-        const sizeClockId = await SizeClock.findOne({where: {id}})
-        if (!sizeClockId) {
-            return next(ApiError.badRequest('Size clock doesn`t exist'))
+    async CheckClock(next, sizeClockId,) {
+        const sizeClock = await SizeClock.findOne({where: {id: sizeClockId}})
+        if (!sizeClock) {
+            return next(ApiError.badRequest('WRONG sizeClockId'))
         }
-        return res.status(200)
     }
 
     async update(req, res, next) {
         try {
-            const {id, name, date} = req.body
-            const size = await SizeClock.findOne({where: id})
-            await size.update({
-                name: name,
-                date: date
-            })
-            return res.status(200).json({message: "success"})
+            const result = await sequelize.transaction(async () => {
+                const {sizeId} = req.params
+                const {name, date} = req.body
+                if (typeof name !== "string" || typeof date !== "string" || sizeId <= 0) {
+                    next(ApiError.badRequest({message: " wrong"}))
+                }
+                const size = await SizeClock.findOne({where: {id: sizeId}})
+                await size.update({
+                    name: name,
+                    date: date
+                })
+                return size
+            });
+            return res.status(201).json(result)
+
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -55,17 +67,22 @@ class SizeLogic {
 
     async deleteOne(req, res, next) {
         try {
-            const {id} = req.body
-
-            if (id) {
+            const {sizeId} = req.params
+            console.log(req.params)
+            if (sizeId <= 0) {
+                next(ApiError.badRequest({message: " wrong"}))
+            }
+            if (sizeId) {
                 const size = await SizeClock.findOne({
-                    where: id,
+                    where: {id: sizeId},
                     include: Order,
                     attributes: ["id"]
                 })
                 if (size.orders.length == 0) {
                     await size.destroy()
                     return res.status(204).json({message: "success"})
+                } else {
+                    return next(ApiError.Conflict({message: "Clock has orders"}))
                 }
             } else {
                 return next(ApiError.badRequest({message: "Id is empty"}))

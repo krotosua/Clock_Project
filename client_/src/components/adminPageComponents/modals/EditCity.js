@@ -20,23 +20,24 @@ const style = {
     p: 4,
 };
 const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
-    const [error, setError] = useState(false)
     let {cities} = useContext(Context)
-    const [nameCity, setNameCity] = useState(null)
-
+    const [cityName, setCityName] = useState(nameToEdit)
+    const [errCity, setErrCity] = useState(false)
+    const [blurCityName, setBlurCityName] = useState(false)
     const changeCity = () => {
-        updateCity({id: idToEdit, name: nameCity}).then(res => {
-            change("name", nameCity)
+        updateCity({id: idToEdit, name: cityName.trim()}).then(res => {
+            change("name", cityName)
             close()
             alertMessage('Название изменено успешно', false)
         }, err => {
-            setError(true)
+            setErrCity(true)
             alertMessage('Не удалось изменить название', true)
         })
     }
     const close = () => {
-        setError(false)
-        setNameCity(null)
+        setErrCity(false)
+        setBlurCityName(false)
+        setCityName("")
         onClose()
     }
 
@@ -47,7 +48,8 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
         ));
     }
 
-
+    //--------------------Validation
+    const validName = blurCityName && cityName.length == 0
     return (
         <div>
             <Modal
@@ -62,25 +64,28 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={error}
-                                helperText={error && nameCity == "" ? "Введите название города" :
-                                    error ? "Город с таким названием уже существует" : ""}
+                                error={errCity || validName}
+                                helperText={validName ? "Введите название города" :
+                                    errCity ? "Город с таким именем уже существует" : false}
                                 sx={{mt: 1}}
                                 id="city"
                                 label="Введите город"
                                 variant="outlined"
-                                defaultValue={nameToEdit}
-
+                                value={cityName}
+                                onFocus={() => setBlurCityName(false)}
+                                onBlur={() => setBlurCityName(true)}
                                 onChange={e => {
-                                    setNameCity(e.target.value)
-                                    setError(false)
+                                    setCityName(e.target.value)
+                                    setErrCity(false)
                                 }}
                             />
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
-                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                            <Button color="success" sx={{flexGrow: 1,}}
+                                    disabled={!cityName || errCity}
+                                    variant="outlined"
                                     onClick={changeCity}> Изменить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>

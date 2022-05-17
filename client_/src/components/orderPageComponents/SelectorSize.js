@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {Context} from "../../index";
-import {useContext, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -18,32 +18,40 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize({sizeClock, readOnly}) {
+export default function SelectorSize({sizeClock, sizeToEdit, closeList, editOpen, cleanMaster, setSizeClock}) {
     const {size} = useContext(Context)
-    const [clock, setClock] = useState(sizeClock || "");
+    const [clock, setClock] = useState(sizeClock || '');
 
+    const handleEditChange = (event) => {
+        setClock(event.target.value);
+        cleanMaster()
+        sizeToEdit()
+        closeList()
+    };
     const handleChange = (event) => {
         setClock(event.target.value);
+        cleanMaster()
+        setSizeClock()
     };
 
 
     return (
         <Box sx={{minWidth: 120}}>
             <FormControl fullWidth>
-                <InputLabel id="size">Выберите размер часов</InputLabel>
+                <InputLabel id="size"> Выберите размер часов</InputLabel>
                 <Select
                     labelId="size"
                     value={clock}
-                    readOnly={readOnly}
-                    label="Выберите размер часов"
-                    onChange={handleChange}
+                    label={"Выберите размер часов"}
+                    onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
                     {size.size.map((clock, index) =>
                         <MenuItem
                             key={index}
                             value={clock.id}
-                            onClick={() => size.setSelectedSize(clock)}
+                            onClick={() => size.setSelectedSize(clock)
+                            }
                         >
                             {clock.name}
                         </MenuItem>

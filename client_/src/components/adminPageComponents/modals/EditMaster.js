@@ -23,57 +23,49 @@ const style = {
 };
 const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen}) => {
     const {cities, masters} = useContext(Context)
-    const [masterName, setMasterName] = useState(null)
-    const [masterRating, setMasterRating] = useState(null)
-    const [error, setError] = useState(false)
+    const [masterName, setMasterName] = useState(nameToEdit)
+    const [masterRating, setMasterRating] = useState(ratingToEdit)
+    const [blurMasterName, setBlurMasterName] = useState(false)
+    const [errMaster, setErrMaster] = useState(false)
 
-
+    useEffect(() => {
+        cities.setSelectedCity(cityChosen.map(city => city.id))
+    }, [])
     const changeMaster = () => {
         const changeInfo = {
             id: idToEdit,
+            name: masterName.trim(),
+            rating: masterRating,
+            cityId: cities.selectedCity
         }
-        if (masterName) {
-            changeInfo.name = masterName
-        }
-        if (masterRating) {
-            if (masterRating <= 5 && masterRating >= 0) {
-                changeInfo.rating = masterRating
-            } else {
-                setError(true)
-                return
-            }
-        }
-        if (cities.selectedCity) {
-            changeInfo.cityId = cities.selectedCity
-        }
+
         updateMaster(changeInfo)
             .then(res => {
                 close()
                 alertMessage('Данные мастера успешно изменены', false)
             }, err => {
-                setError(true)
+                setErrMaster(true)
                 alertMessage('Не удалось изменить данные мастера', true)
             })
     }
 
 
     function close() {
-        setMasterName(null)
-        setMasterRating(null)
-        cities.setSelectedCity(null)
         fetchMaster(null, null, masters.page, 10).then(res => {
             masters.setMasters(res.data.rows)
             masters.setTotalCount(res.data.rows.length)
         }, (err) => {
         })
-        setError(false)
+        setErrMaster(false)
         onClose()
-
     }
 
+    //--------------------Validation
+    const validButton = masterRating > 5 || masterRating < 0 || !masterName
+    const validName = errMaster || blurMasterName && masterName.length == 0
+    const validRating = masterRating > 5 || masterRating < 0
     return (
         <div>
-
             <Modal
                 open={open}
                 onClose={close}
@@ -86,22 +78,27 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
+                                error={validName}
+                                helperText={validName ? "Введите имя мастера" : ""}
                                 sx={{mt: 1}}
                                 id="masterName"
                                 label={`Текущуее имя мастера: ${nameToEdit}`}
                                 variant="outlined"
-                                defaultValue={nameToEdit}
+                                value={masterName}
+                                required
+                                onFocus={() => setBlurMasterName(false)}
+                                onBlur={() => setBlurMasterName(true)}
                                 onChange={e => setMasterName(e.target.value)}
 
                             />
                             <TextField
                                 sx={{my: 2}}
                                 id="masterRating"
-                                error={masterRating > 5}
+                                error={validRating}
                                 helperText='Введите рейтинг от 0 до 5'
                                 label={`Текущуее рейтинг мастера: ${ratingToEdit}`}
                                 variant="outlined"
-                                defaultValue={ratingToEdit}
+                                value={masterRating}
                                 type="number"
                                 InputProps={{
 
@@ -109,17 +106,16 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                         max: 5, min: 0
                                     }
                                 }}
-
-                                onChange={e => setMasterRating(e.target.value)}
+                                onChange={e => setMasterRating(Number(e.target.value))}
                             />
-                            <SelectorMasterCity cityChosen={cityChosen} error={error}/>
+                            <SelectorMasterCity open={open} cityChosen={cityChosen} error={errMaster}/>
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
                                     onClick={changeMaster}
-                                    disabled={masterRating > 5 || masterRating < 0}>
+                                    disabled={validButton}>
                                 Изменить
                             </Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"

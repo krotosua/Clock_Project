@@ -1,14 +1,18 @@
 const {City, Master} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const sequelize = require("../db");
 
 class CityLogic {
     async create(req, res, next) {
         try {
-            const {name} = req.body
-            await City.create({name})
-            return res.status(201).json({message: "Created"})
+            const result = await sequelize.transaction(async () => {
+                const {name} = req.body
+                const city = await City.create({name})
+                return city
+            });
+            return res.status(201).json(result)
         } catch (e) {
-            next(ApiError.badRequest(e.message))
+            return next(ApiError.badRequest(e.message))
         }
     }
 
@@ -29,21 +33,33 @@ class CityLogic {
         }
     }
 
-    async getOne(req, res, next) {
-        const id = req.body.cityId
-        const city = await City.findOne({where: {id}})
-        if (!city) {
-            return next(ApiError.badRequest('City doesn`t exist'))
+    async checkMasterCityId(id) {
+        const city = await City.findAll({where: {id}})
+     
+        if (city.length !== id.length || city.length == 0) {
+            throw new ApiError.badRequest({message: "WRONG CityId"})
         }
-        return res.status(200)
+    }
+
+    async checkCityId(id) {
+        const city = await City.findByPk(id)
+
+        if (!city) {
+            throw new ApiError.badRequest({message: "WRONG CityId"})
+        }
+
     }
 
     async update(req, res, next) {
         try {
-            const {id, name} = req.body
-            const city = await City.findOne({where: id})
-            await city.update({name: name})
-            return res.status(200).json({message: "success"})
+            const result = await sequelize.transaction(async () => {
+                const {cityId} = req.params
+                const {name} = req.body
+                const city = await City.findOne({where: {id: cityId}})
+                await city.update({name: name})
+                return city
+            });
+            return res.status(201).json(result)
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -51,22 +67,20 @@ class CityLogic {
 
     async deleteOne(req, res, next) {
         try {
-
-            const {id} = req.body
-            if (id) {
+            const {cityId} = req.params
+            if (cityId) {
                 const city = await City.findOne({
-                    where: id,
+                    where: {id: cityId},
                     include: Master,
                     attributes: ["id"]
                 })
+                console.log(cityId)
                 if (city.masters.length == 0) {
                     await city.destroy()
                     return res.status(204).json({message: "success"})
                 } else {
                     return next(ApiError.Conflict({message: "City isn`t empty"}))
                 }
-
-
             } else {
                 return next(ApiError.badRequest({message: "Id is empty"}))
             }

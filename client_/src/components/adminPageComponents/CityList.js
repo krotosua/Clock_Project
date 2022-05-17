@@ -18,12 +18,17 @@ import EditCity from "./modals/EditCity";
 import Pages from "../Pages";
 
 
-const CityList = observer(({alertMessage, getValue}) => {
+const CityList = observer(({alertMessage}) => {
     let {cities} = useContext(Context)
     const [cityVisible, setCityVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [nameToEdit, setNameToEdit] = useState("")
+
+    useEffect(() => {
+        getCity()
+    }, [cities.page])
+
     const getCity = () => {
         fetchCity(cities.page, 10).then(res => {
             if (res.status === 204) {
@@ -35,11 +40,6 @@ const CityList = observer(({alertMessage, getValue}) => {
             }
         }, error => cities.setIsEmpty(true))
     }
-
-    useEffect(() => {
-        getCity()
-    }, [cities.page])
-
     const delCity = (id) => {
         deleteCity(id).then((res) => {
             cities.setCities(cities.cities.filter(obj => obj.id !== id));
@@ -53,7 +53,7 @@ const CityList = observer(({alertMessage, getValue}) => {
 
     return (
         <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "600px"}}>
+            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Города
                 </Typography>
@@ -133,25 +133,24 @@ const CityList = observer(({alertMessage, getValue}) => {
 
                 </List>
 
-
-                <EditCity
+                {editVisible ? <EditCity
                     open={editVisible}
                     onClose={() => {
                         setEditVisible(false)
                     }}
                     idToEdit={idToEdit}
                     alertMessage={alertMessage}
-                    getValue={getValue}
+
                     nameToEdit={nameToEdit}
-                />
+                /> : null}
+
                 <CreateCity open={cityVisible}
 
                             onClose={() => setCityVisible(false)}
                             alertMessage={alertMessage}/>
 
-
             </Box>
-            <Box sx={{position: "relative", left: "35%"}}>
+            <Box style={{display: "flex", justifyContent: "center"}}>
                 <Pages context={cities}/>
             </Box>
         </Box>

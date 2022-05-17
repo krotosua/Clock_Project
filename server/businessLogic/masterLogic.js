@@ -6,13 +6,13 @@ class MasterLogic {
     async create(req, res, next) {
         try {
             const {name, rating, cityId} = req.body
-            if (cityId <= 0) {
-                next(ApiError.badRequest({message: "cityId is empty"}))
+            if (!Array.isArray(cityId) || typeof rating !== "number"
+                || typeof name !== "string" || cityId.length == 0) {
+                next(ApiError.badRequest({message: "Wrong request"}))
             }
             const master = await Master.create({name, rating})
-            master.addCity(cityId)
-            return res.json(master)
-
+            await master.addCity(cityId)
+            return master
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -20,7 +20,33 @@ class MasterLogic {
 
     async getAll(req, res, next) {
         try {
-            let {cityId, date, limit, page} = req.query
+            let {limit, page} = req.query
+            page = page || 1
+            limit = limit || 12
+            let offset = page * limit - limit
+            let masters = await Master.findAndCountAll({
+                attributes: ['name', "rating", "id"],
+                include: [{
+                    model: City,
+                },
+                ]
+            })
+
+            if (!masters.count) {
+                return res.status(204).json({message: "List is empty"})
+            }
+            masters.count = masters.rows.length
+            masters.rows = masters.rows.slice(offset, page * limit)
+            return res.json(masters)
+        } catch (e) {
+            next(ApiError.NotFound(e.message))
+        }
+    }
+
+    async getMastersOrders(req, res, next) {
+        try {
+            let {cityId} = req.params
+            let {date, time, endTime, limit, page} = req.query
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
@@ -33,71 +59,99 @@ class MasterLogic {
                     }, {
                         model: Order,
                         where: {
-                            date: {[Op.eq]: date}
+                            date: {[Op.eq]: date},
+                            [Op.not]: [
+                                {
+                                    [Op.or]: [{
+                                        [Op.and]: [
+                                            {time: {[Op.lt]: time}},
+                                            {endTime: {[Op.lte]: time}}
+                                        ]
+                                    }, {
+                                        [Op.and]: [
+                                            {time: {[Op.gte]: endTime}},
+                                            {endTime: {[Op.gt]: endTime}}
+                                        ]
+                                    }]
+                                }]
                         },
                         required: false
                     }]
-                    ,
-                    limit, offset
                 })
             } else {
-                masters = await Master.findAndCountAll({
-                    attributes: ['name', "rating", "id"],
-                    include: [{
-                        model: City,
-
-                    },
-
-
-                    ], limit, offset
-                })
+                next(ApiError.NotFound({message: "Not found"}))
             }
+            masters.rows = masters.rows.filter(master => master.orders.length == 0)
+            masters.count = masters.rows.length
+            masters.rows = masters.rows.slice(offset, page * limit)
             if (!masters.count) {
                 return res.status(204).json({message: "List is empty"})
             }
-
-            return res.json(masters)
+            return res.status(200).json(masters)
         } catch (e) {
-            next(ApiError.badRequest(e.message))
+            next(ApiError.NotFound(e.message))
         }
     }
 
-    async getOne(req, res, next) {
-        const id = req.body.masterId
-        const master = await Master.findOne({where: {id}})
+
+    async checkOrders(res, next, masterId, date, time, endTime) {
+        let master
+        master = await Master.findByPk(masterId)
         if (!master) {
-            return next(ApiError.badRequest('Master doesn`t exist'))
+            throw new ApiError.NotFound({message: 'Master not found'})
         }
-        return res.status(200)
-    }
+        master = await Master.findOne({
+            where: {id: masterId},
+            include: [{
+                model: Order,
+                where: {
+                    date: {[Op.eq]: date},
+                    [Op.not]: [
+                        {
+                            [Op.or]: [{
+                                [Op.and]: [
+                                    {time: {[Op.lt]: time}},
+                                    {endTime: {[Op.lte]: time}}
+                                ]
+                            }, {
+                                [Op.and]: [
+                                    {time: {[Op.gte]: endTime}},
+                                    {endTime: {[Op.gt]: endTime}}
+                                ]
+                            }]
+                        }]
+                },
 
+            }],
+        })
+        if (master) {
+            throw new ApiError.badRequest({message: 'Master has orders'})
+        }
+        return res.status(204).json({message: "Master hasn`t orders"})
+
+    }
 
     async update(req, res, next) {
         try {
-            const {id, name, rating, cityId} = req.body
-            console.log(cityId)
-            if (cityId <= 0 || cityId === []) {
-                next(ApiError.badRequest({message: "cityId is empty"}))
-            }
-            const master = await Master.findOne({where: id})
+            const {masterId} = req.params
+            const {name, rating, cityId} = req.body
+            const master = await Master.findOne({where: {id: masterId}})
             await master.update({
                 name: name,
                 rating: rating,
             })
-            if (cityId !== undefined) {
-                master.setCities(cityId)
-            }
-            return res.status(200).json({message: "success"})
+            await master.setCities(cityId)
+            return master
         } catch (e) {
-            return next(ApiError.badRequest("Invalid ID"))
+            return next(ApiError.badRequest({message: "Wrong request"}))
         }
     }
 
     async deleteOne(req, res, next) {
         try {
-            const {id} = req.body
+            const {masterId} = req.params
             const master = await Master.findOne({
-                where: id,
+                where: {id: masterId},
                 include: {
                     model: Order,
                     attributes: ['id']

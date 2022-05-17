@@ -23,17 +23,19 @@ const style = {
     p: 4,
 };
 const CreateSize = ({open, onClose, alertMessage}) => {
-    const [nameSize, setNameSize] = useState("")
-    const [time, setTime] = useState(null)
-    const [error, setError] = useState(false)
+    const [sizeName, setSizeName] = useState("")
+    const [sizeTime, setSizeTime] = useState(null)
+    const [errSize, setErrSize] = useState(false)
+    const [openTime, setOpenTime] = useState(false)
+    const [blurSizeName, setBlurSizeName] = useState(false)
     let {size} = useContext(Context)
 
     const addSize = () => {
-        if (!nameSize || !time) {
-            setError(true)
+        if (!sizeName || !sizeTime) {
+            setErrSize(true)
             return
         }
-        createSize({name: nameSize, date: time.toLocaleTimeString()}).then(res => {
+        createSize({name: sizeName.trim(), date: sizeTime.toLocaleTimeString()}).then(res => {
                 size.setIsEmpty(false)
                 fetchSize(size.page, 10).then(res => {
                     size.setIsEmpty(false)
@@ -46,18 +48,21 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                 close()
             },
             err => {
-
-                setError(err.response.status)
+                setErrSize(true)
                 alertMessage("Не удалось добавить размер часов", true)
             })
     }
     const close = () => {
-        setError(false)
-        setNameSize("")
-        setTime(null)
+        setErrSize(false)
+        setSizeName("")
+        setSizeTime(null)
+        setOpenTime(false)
+        setBlurSizeName(false)
         onClose()
     }
-
+    //--------------------Validation
+    const validName = blurSizeName && sizeName.length == 0
+    const validButton = errSize || sizeName.length === 0 || !sizeTime
     return (
         <div>
 
@@ -72,36 +77,44 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={error && nameSize == "" || error ? true : false}
-                                helperText={error && nameSize === "" ? "Введите название часов" :
-                                    error == 400 ? "Такое имя уже существует" : ""}
+                                error={errSize || validName}
+                                helperText={validName ? "Введите название часов" :
+                                    errSize ? "Часы с таким именем уже существуют" : ""}
                                 sx={{my: 2}}
                                 id="city"
                                 label="Введите название часов"
                                 variant="outlined"
-
-                                value={nameSize}
+                                value={sizeName}
+                                onFocus={() => setBlurSizeName(false)}
+                                onBlur={() => setBlurSizeName(true)}
                                 onChange={e => {
-                                    setNameSize(e.target.value)
-                                    setError(false)
+                                    setSizeName(e.target.value)
+                                    setErrSize(false)
                                 }}
+
                             />
                             <div>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <TimePicker
+                                        readOnly
                                         label="Кол-во часов на ремонт"
-
-                                        value={time}
-                                        onChange={(newValue) => {
-                                            setTime(newValue);
-                                            setError(false)
-                                        }}
+                                        open={openTime}
+                                        value={sizeTime}
+                                        minTime={new Date(0, 0, 0, 1)}
                                         ampm={false}
                                         views={["hours"]}
-                                        renderInput={(params) => <TextField
-                                            helperText={error ? "Введите кол-во часов" : ""}
-                                            {...params} />}
-
+                                        onChange={(newValue) => {
+                                            setSizeTime(newValue);
+                                            setOpenTime(false)
+                                        }}
+                                        renderInput={(params) =>
+                                            <TextField onClick={() => setOpenTime(true)}
+                                                       sx={{
+                                                           '& .MuiInputBase-input': {
+                                                               cursor: "pointer"
+                                                           }
+                                                       }}
+                                                       {...params} />}
                                     />
                                 </LocalizationProvider>
                             </div>
@@ -111,6 +124,7 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                                    disabled={validButton}
                                     onClick={addSize}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>

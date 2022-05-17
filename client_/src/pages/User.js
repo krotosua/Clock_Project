@@ -37,24 +37,26 @@ const User = observer(() => {
 
 
     return (
-        <Box sx={{height: "800px", pt: 5}}>
-            <h2>Список заказов</h2>
-            <Box sx={{height: "650px"}}>
-                <OrderList/>
+        <Box>
+            <Box sx={{height: "800px", pt: 5, position: "relative"}}>
+                <h2>Список заказов</h2>
+                <Box sx={{height: "650px"}}>
+                    <OrderList/>
+                </Box>
+                <Tooltip title="Добавить заказ" placement="top" arrow>
+                    <Fab onClick={() => navigate(ORDER_ROUTE)}
+                         color="primary"
+                         aria-label="add"
+                         sx={{position: 'absolute', bottom: 50, right: 50,}}>
+                        <AddIcon/>
+                    </Fab>
+                </Tooltip>
+
             </Box>
-            <Tooltip title="Добавить заказ" placement="top" arrow>
-                <Fab onClick={() => navigate(ORDER_ROUTE)}
-                     color="primary"
-                     aria-label="add"
-                     sx={{position: 'fixed', bottom: 80, right: 400,}}>
-                    <AddIcon/>
-                </Fab>
-            </Tooltip>
-            <Box sx={{position: "absolute", left: "47%"}}>
+            <Box style={{display: "flex", justifyContent: "center"}}>
                 <Pages context={orders}/>
             </Box>
         </Box>
-
 
     );
 });

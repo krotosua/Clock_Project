@@ -29,25 +29,25 @@ const Auth = observer(() => {
     const location = useLocation();
     const navigate = useNavigate()
     const isLogin = location.pathname === LOGIN_ROUTE;
-
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [error, setError] = useState(null)
+    const [error, setError] = useState(false)
+    const [blurPassword, setBlurPassword] = useState(false)
+    const [blurEmail, setBlurEmail] = useState(false)
 
     const singIn = async () => {
         try {
             let dataUser;
-            if (isLogin) {
+            if (isLogin && password.length >= 6 && reg.test(email) !== false) {
                 dataUser = await login(email, password)
+            } else if (password.length >= 6 && reg.test(email) !== false) {
+                dataUser = await registration(email, password)
             } else {
-                if (password.length >= 6) {
-                    dataUser = await registration(email, password)
-                } else {
-                    setError(401)
-                    return
-                }
-
+                setError(true)
+                return
             }
+
+
             user.setUser(dataUser)
             user.setIsAuth(true)
             user.setUserRole(dataUser.role)
@@ -56,9 +56,10 @@ const Auth = observer(() => {
                 navigate(START_ROUTE) :
                 navigate(ADMIN_ROUTE)
         } catch (e) {
-            setError(e.response.status)
+            setError(true)
         }
     }
+    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
 
     return (
         <Container
@@ -75,7 +76,6 @@ const Auth = observer(() => {
                     <Typography align="center" variant="h5">
                         {isLogin ? "Авторизация" : "Регистрация"}
                     </Typography>
-
                     <Box
                         sx={{
                             width: 700,
@@ -87,17 +87,19 @@ const Auth = observer(() => {
                     >
                         <FormControl>
                             <TextField
-                                error={error === 404 || error === 400 && email == ""}
+                                error={error || blurEmail && reg.test(email) == false}
                                 sx={{mb: 2}}
                                 id="Email"
                                 label="Email"
                                 variant="outlined"
                                 type={"email"}
                                 value={email}
-                                helperText={error === 404 ?
-                                    "Пользователя с таким email не найден" :
-                                    error === 400 ? "Введите email формата: clock@clock.com" : ""
+                                helperText={blurEmail && reg.test(email) == false ?
+                                    "Введите email формата: clock@clock.com" :
+                                    error && !isLogin ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
                                 }
+                                onFocus={() => setBlurEmail(false)}
+                                onBlur={() => setBlurEmail(true)}
                                 onChange={(e => {
                                     setEmail(e.target.value)
                                     setError(null)
@@ -105,19 +107,20 @@ const Auth = observer(() => {
                             />
 
                             <TextField
-                                error={error === 401}
+                                error={error || blurPassword && password.length < 6}
                                 id="Password"
                                 label="Password"
                                 variant="outlined"
                                 type={"password"}
                                 value={password}
-                                helperText={isLogin ?
-                                    error === 401 ? "Неправильный пароль" : ""
-                                    : "Длина пароля должна быть не менее 6 символов"}
+                                helperText={blurPassword && password.length < 6 ?
+                                    "Длина пароля должна быть не менее 6 символов" : ""}
                                 onChange={(e => {
                                     setPassword(e.target.value)
-                                    setError(null)
+                                    setError(false)
                                 })}
+                                onFocus={() => setBlurPassword(false)}
+                                onBlur={() => setBlurPassword(true)}
                             />
 
                             <Box
