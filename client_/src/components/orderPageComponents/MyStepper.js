@@ -18,12 +18,11 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
-import {fetchMastersOrder} from "../../http/masterAPI";
+import {fetchMastersForOrder} from "../../http/masterAPI";
 import {createOrder,} from "../../http/orderAPI";
 import {DatePicker, TimePicker} from "@mui/lab";
 import {START_ROUTE} from "../../utils/consts";
 import ruLocale from 'date-fns/locale/ru'
-import Pages from "../Pages";
 import PagesOrder from "./Pages";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
@@ -35,7 +34,6 @@ const MyStepper = observer(({alertMessage}) => {
     const [email, setEmail] = useState("");
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
-    const [endTime, setEndTime] = useState(new Date());
     const [chosenMaster, setChosenMaster] = useState(null);
     const [sizeClock, setSizeClock] = useState(null);
     const [cityChosen, setCityChosen] = useState(null);
@@ -49,14 +47,10 @@ const MyStepper = observer(({alertMessage}) => {
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const navigate = useNavigate();
-
     const handleNext = () => {
         if (activeStep === 0) {
-            let endHour = Number(time.getHours()) + Number(size.selectedSize.date.slice(0, 2))
-            let end = (new Date(new Date(time).setHours(endHour, 0, 0))).toLocaleTimeString()
-            setEndTime(end)
             setLoading(true)
-            fetchMastersOrder(cities.selectedCity, date, time.toLocaleTimeString(), end, masters.page, 3).then(
+            fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id, masters.page, 3).then(
                 (res) => {
                     if (res.status === 204) {
                         setFreeMasters([])
@@ -75,26 +69,16 @@ const MyStepper = observer(({alertMessage}) => {
             setChosenMaster(Number(chosenMaster))
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
-            let order = {
+            let body = {
                 name: name,
                 date: date,
-                time: time.toLocaleTimeString(),
-                endTime: endTime,
+                time: time,
                 email: email,
                 cityId: cityChosen,
                 masterId: chosenMaster,
                 sizeClockId: size.selectedSize.id
             }
-            let message = {
-                name: name.trim(),
-                date: date.toLocaleDateString(),
-                time: time.toLocaleTimeString(),
-                email: email.trim(),
-                size: size.selectedSize.name,
-                masterName: masters.masters.find(master => master.id == chosenMaster).name,
-                cityName: cities.cities.find(city => city.id === cityChosen).name
-            }
-            createOrder(order, message).then(res => {
+            createOrder(body).then(res => {
                 cities.setSelectedCity(null)
                 size.setSelectedSize({date: "00:00:00"})
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -102,7 +86,7 @@ const MyStepper = observer(({alertMessage}) => {
                 alertMessage('Мастер занят', true)
                 setActiveStep(1)
                 setLoading(true)
-                fetchMastersOrder(cities.selectedCity, date, time.toLocaleTimeString(), endTime).then(
+                fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id).then(
                     (res) => {
                         if (res.status === 204) {
                             setFreeMasters([])
@@ -137,7 +121,7 @@ const MyStepper = observer(({alertMessage}) => {
     useEffect(() => {
             if (activeStep === 1) {
                 setLoading(true)
-                fetchMastersOrder(cities.selectedCity, date, time.toLocaleTimeString(), endTime, masters.page, 3).then(
+                fetchMastersForOrder(cities.selectedCity, date, time.toLocaleTimeString(), size.selectedSize.id, masters.page, 3).then(
                     (res) => {
                         if (res.status === 204) {
                             setFreeMasters([])
@@ -219,6 +203,7 @@ const MyStepper = observer(({alertMessage}) => {
                         <DatePicker
                             mask='__.__.____'
                             label="Выберите день заказа"
+                            disableHighlightToday
                             value={date}
                             open={openDate}
                             onChange={(newDate) => {
@@ -240,7 +225,7 @@ const MyStepper = observer(({alertMessage}) => {
                         />
                     </LocalizationProvider>
 
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                         <TimePicker
                             readOnly
                             label="Выберите время"
@@ -255,7 +240,7 @@ const MyStepper = observer(({alertMessage}) => {
                                 e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
                             ampm={false}
                             views={["hours"]}
-                            minTime={date.toLocaleDateString() == new Date().toLocaleDateString() ?
+                            minTime={date.toLocaleDateString('uk-UA') == new Date().toLocaleDateString('uk-UA') ?
                                 new Date(0, 0, 0, new Date().getHours() + 1) :
                                 new Date(0, 0, 0, 8)}
                             maxTime={new Date(0, 0, 0, 22)}
@@ -307,8 +292,8 @@ const MyStepper = observer(({alertMessage}) => {
                             <Box sx={{mb: 1}}>Выбранный размер часов:<b>{size.selectedSize.name}</b></Box>
                             <Box sx={{mb: 1}}> Город где сделан
                                 заказ: <b>{cities.cities.find(city => city.id === cityChosen).name}</b></Box>
-                            <Box sx={{mb: 1}}> Дата заказа и время заказа: <b>{date.toLocaleDateString()} </b></Box>
-                            <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString()}</b></Box>
+                            <Box sx={{mb: 1}}> Дата заказа и время заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
+                            <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
                             <Box> Имя мастера: <b>{freeMasters.find(item => item.id == chosenMaster).name}</b></Box>
                         </Box>
 
@@ -344,78 +329,92 @@ const MyStepper = observer(({alertMessage}) => {
                 ///////////////////////////////////////////////////////////////////////////////////////////////////
                 activeStep === steps.length - 2 ? (
                     <Box sx={{mt: 2, position: "relative"}}>
-                        {freeMasters.length == 0 ? (
-                            <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>
-                                Все мастера заняты
-                            </Typography>) : (
-                            <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
-                                <Typography sx={{my: 4,}}>
-                                    Свободные мастера
-                                </Typography>
-                                <List disablePadding>
-                                    <ListItem key={1} divider
-                                    >
-                                        <ListItemText sx={{width: 10}} primary="№"/>
-                                        <ListItemText sx={{width: 10}} primary="Имя мастера"/>
-                                        <ListItemText sx={{width: 10,}} primary="Рейтинг"/>
-                                        <ListItemText sx={{width: 10, pr: 5}} primary="Город"/>
-                                    </ListItem>
-
-                                    <Divider orientation="vertical"/>
-                                    <RadioGroup
-                                        aria-labelledby="demo-controlled-radio-buttons-group"
-                                        name="controlled-radio-buttons-group"
-                                        value={chosenMaster}
-                                        onChange={choseMaster}
-                                    >
-                                        {freeMasters.length == 0 ? (
-                                            <Typography sx={{mb: 2}}>
-                                                Все мастера заняты
-                                            </Typography>
-                                        ) : (
-                                            freeMasters.map((master, index) => {
-                                                let isFree = true
-                                                return (
-                                                    <ListItem key={master.id}
-                                                              divider
-                                                              style={{cursor: 'pointer'}}
-                                                              selected={chosenMaster == master.id}
-                                                              onClick={() => choseMaster(null, master.id)}
-                                                              secondaryAction={
-                                                                  isFree ?
-                                                                      <Tooltip title={'Выбрать мастера'}
-                                                                               placement="right"
-                                                                               arrow>
-                                                                          <FormControlLabel
-                                                                              value={master.id}
-                                                                              control={<Radio/>}
-                                                                              label=""/>
-                                                                      </Tooltip> : "Занят"
-                                                              }
-                                                    >
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={index + 1}/>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={master.name}/>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={<Rating name="read-only"
-                                                                                       value={master.rating}
-                                                                                       readOnly/>}/>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={master.cities[0].name}/>
-                                                    </ListItem>
-                                                );
-                                            })
-                                        )}
-                                    </RadioGroup>
-                                </List>
-                                <Box sx={{display: "flex", justifyContent: "center"}}>
-                                    <PagesOrder context={masters}/>
-
+                        {loading ?
+                            (
+                                <Box sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}>
+                                    <CircularProgress/>
                                 </Box>
-                                {loading ? <CircularProgress size={30}
-                                                             sx={{position: "absolute", right: 5, bottom: 85}}/> : ""}
-                            </Box>)
+                            )
+                            : freeMasters.length == 0 ? (
+                                <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>
+                                    Все мастера заняты
+                                </Typography>) : (
+                                <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
+                                    <Typography sx={{my: 4,}}>
+                                        Свободные мастера
+                                    </Typography>
+                                    <List disablePadding>
+                                        <ListItem key={1} divider
+                                        >
+                                            <ListItemText sx={{width: 10}} primary="№"/>
+                                            <ListItemText sx={{width: 10}} primary="Имя мастера"/>
+                                            <ListItemText sx={{width: 10,}} primary="Рейтинг"/>
+                                            <ListItemText sx={{width: 10, pr: 5}} primary="Город"/>
+                                        </ListItem>
+
+                                        <Divider orientation="vertical"/>
+                                        <RadioGroup
+                                            aria-labelledby="demo-controlled-radio-buttons-group"
+                                            name="controlled-radio-buttons-group"
+                                            value={chosenMaster}
+                                            onChange={choseMaster}
+                                        >
+                                            {freeMasters.length == 0 ? (
+                                                <Typography sx={{mb: 2}}>
+                                                    Все мастера заняты
+                                                </Typography>
+                                            ) : (
+                                                freeMasters.map((master, index) => {
+                                                    let isFree = true
+                                                    return (
+                                                        <ListItem key={master.id}
+                                                                  divider
+                                                                  style={{cursor: 'pointer'}}
+                                                                  selected={chosenMaster == master.id}
+                                                                  onClick={() => choseMaster(null, master.id)}
+                                                                  secondaryAction={
+                                                                      isFree ?
+                                                                          <Tooltip title={'Выбрать мастера'}
+                                                                                   placement="right"
+                                                                                   arrow>
+                                                                              <FormControlLabel
+                                                                                  value={master.id}
+                                                                                  control={<Radio/>}
+                                                                                  label=""/>
+                                                                          </Tooltip> : "Занят"
+                                                                  }
+                                                        >
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={index + 1}/>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={master.name}/>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={<Rating name="read-only"
+                                                                                           value={master.rating}
+                                                                                           readOnly/>}/>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={master.cities[0].name}/>
+                                                        </ListItem>
+                                                    );
+                                                })
+                                            )}
+                                        </RadioGroup>
+                                    </List>
+                                    <Box sx={{display: "flex", justifyContent: "center"}}>
+                                        <PagesOrder context={masters}/>
+
+                                    </Box>
+                                    {loading ? <CircularProgress size={30}
+                                                                 sx={{
+                                                                     position: "absolute",
+                                                                     right: 5,
+                                                                     bottom: 85
+                                                                 }}/> : ""}
+                                </Box>)
                         }
 
                         <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>

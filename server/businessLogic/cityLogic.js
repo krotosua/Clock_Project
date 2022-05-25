@@ -1,10 +1,16 @@
 const {City, Master} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const sequelize = require("../db");
+const {validationResult} = require('express-validator');
 
 class CityLogic {
     async create(req, res, next) {
         try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({errors: errors.array()});
+            }
+
             const result = await sequelize.transaction(async () => {
                 const {name} = req.body
                 const city = await City.create({name})
@@ -35,7 +41,7 @@ class CityLogic {
 
     async checkMasterCityId(id) {
         const city = await City.findAll({where: {id}})
-     
+
         if (city.length !== id.length || city.length == 0) {
             throw new ApiError.badRequest({message: "WRONG CityId"})
         }
@@ -43,11 +49,10 @@ class CityLogic {
 
     async checkCityId(id) {
         const city = await City.findByPk(id)
-
         if (!city) {
             throw new ApiError.badRequest({message: "WRONG CityId"})
         }
-
+        return city
     }
 
     async update(req, res, next) {
@@ -68,13 +73,13 @@ class CityLogic {
     async deleteOne(req, res, next) {
         try {
             const {cityId} = req.params
+
             if (cityId) {
                 const city = await City.findOne({
                     where: {id: cityId},
                     include: Master,
                     attributes: ["id"]
                 })
-                console.log(cityId)
                 if (city.masters.length == 0) {
                     await city.destroy()
                     return res.status(204).json({message: "success"})

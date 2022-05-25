@@ -12,7 +12,7 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
-import {deleteMaster, fetchMaster} from "../../http/masterAPI";
+import {deleteMaster, fetchMasters} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
 import {Tooltip} from "@mui/material";
@@ -36,7 +36,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
 
 
     function getMasters() {
-        fetchMaster(null, null, masters.page, 10).then(res => {
+        fetchMasters(null, null, masters.page, 10).then(res => {
             if (res.status === 204) {
                 return masters.setIsEmpty(true)
             }

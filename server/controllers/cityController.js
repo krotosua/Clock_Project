@@ -1,14 +1,14 @@
 const cityLogic = require('../businessLogic/cityLogic')
 const ApiError = require("../error/ApiError");
+const {validationResult} = require("express-validator");
 
 class CityController {
     async create(req, res, next) {
-        const {name} = req.body
-        if (typeof name !== 'string' || !name) {
-            next(ApiError.badRequest({message: "Invalid name"}))
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
         }
         await cityLogic.create(req, res, next)
-
     }
 
     async getAll(req, res, next) {
@@ -16,23 +16,18 @@ class CityController {
 
     }
 
-    async getOne(req, res, next) {
-        await cityLogic.getOne(req, res, next)
-    }
-
     async update(req, res, next) {
-        const {cityId} = req.params
-        const {name} = req.body
-        if (!cityId || !name || typeof name !== 'string' || cityId <= 0) {
-            return next(ApiError.badRequest('Wrong Id'))
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
         }
         await cityLogic.update(req, res, next)
     }
 
     async deleteOne(req, res, next) {
-        const {cityId} = req.params
-        if (!cityId || cityId <= 0) {
-            return next(ApiError.badRequest('Wrong Id'))
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
         }
         await cityLogic.deleteOne(req, res, next)
     }

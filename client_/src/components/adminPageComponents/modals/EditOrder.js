@@ -12,7 +12,7 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
 import {DatePicker, TimePicker} from "@mui/lab";
-import {fetchMastersOrder} from "../../../http/masterAPI";
+import {fetchMastersForOrder} from "../../../http/masterAPI";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
@@ -47,7 +47,6 @@ const EditOrder = observer(({
     const [email, setEmail] = useState(orderToEdit.user.email);
     const [date, setDate] = useState(dateToEdit);
     const [time, setTime] = useState(timeToEdit);
-    const [endTime, setEndTime] = useState(orderToEdit.endTime);
     const [chosenMaster, setChosenMaster] = useState(orderToEdit.masterId);
     const [freeMasters, setFreeMasters] = useState([]);
     const [sizeClock, setSizeClock] = useState(orderToEdit.sizeClockId);
@@ -59,9 +58,9 @@ const EditOrder = observer(({
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [changedMaster, setChangedMaster] = useState(false)
-    const getMasters = (end) => {
+    const getMasters = () => {
         setLoading(true)
-        fetchMastersOrder(cityChosen, date, time.toLocaleTimeString(), end, masters.page, 3).then(
+        fetchMastersForOrder(cityChosen, date, time, sizeClock, masters.page, 3).then(
             (res) => {
                 if (res.status === 204) {
                     setFreeMasters([])
@@ -81,12 +80,9 @@ const EditOrder = observer(({
         size.setSelectedSize(size.size.find(clock => clock.id == orderToEdit.sizeClockId))
     }, [])
     useEffect(() => {
-        let endHour = Number(time.getHours()) + Number(size.selectedSize.date.slice(0, 2))
-        let end = (new Date(new Date(timeToEdit).setHours(endHour, 0, 0))).toLocaleTimeString()
-        setEndTime(end)
 
         if (openList == true) {
-            getMasters(end)
+            getMasters()
         }
     }, [masters.page, openList])
 
@@ -96,22 +92,20 @@ const EditOrder = observer(({
             alertMessage('Не удалось изменить заказ', true)
             return
         }
-        if (time.toLocaleTimeString() !== timeToEdit.toLocaleTimeString() ||
-            dateToEdit.toLocaleDateString() !== date.toLocaleDateString()
+        if (time.toLocaleTimeString("en-GB") !== timeToEdit.toLocaleTimeString("en-GB") ||
+            dateToEdit.toLocaleDateString("ko-KR") !== date.toLocaleDateString()
             || orderToEdit.masterId !== changedMaster
             || orderToEdit.cityId !== cityChosen || orderToEdit.sizeClockId !== sizeClock) {
             setChangedMaster(true)
         }
-        console.log(changedMaster)
         updateOrder({
             id: idToEdit,
             name: name.trim(),
             email: email.trim(),
             date: date,
-            time: time.toLocaleTimeString(),
+            time: time,
             cityId: cityChosen,
             masterId: chosenMaster,
-            endTime: endTime,
             sizeClockId: Number(sizeClock),
             changedMaster: changedMaster
         }).then(res => {
@@ -147,6 +141,7 @@ const EditOrder = observer(({
         setOpenDate(false)
         setChosenMaster(null)
         setChangedMaster(true)
+        setFreeMasters([])
     }
 
     function timeChange(newDate) {
@@ -156,6 +151,7 @@ const EditOrder = observer(({
         setOpenTime(false)
         setChosenMaster(null)
         setChangedMaster(true)
+        setFreeMasters([])
     }
 
     const close = () => {
@@ -167,7 +163,7 @@ const EditOrder = observer(({
     //--------------------Validation
     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     let checkInfo = openList == false || !idToEdit || !name || !email
-        || !date || !time || !cityChosen || !endTime
+        || !date || !time || !cityChosen
         || !chosenMaster || !sizeClock || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket
     const validName = blurName && name.length < 3
@@ -222,6 +218,7 @@ const EditOrder = observer(({
                                           cleanMaster={() => setChosenMaster(null)}
                                           closeList={() => {
                                               setOpenList(false)
+                                              setFreeMasters([])
                                               setChangedMaster(true)
                                           }}
                                           sizeToEdit={() => setSizeClock(size.selectedSize.id)}/>
@@ -229,6 +226,7 @@ const EditOrder = observer(({
                                           editOpen={open}
                                           closeList={() => {
                                               setOpenList(false)
+                                              setFreeMasters([])
                                               setChangedMaster(true)
                                           }}
                                           cleanMaster={() => setChosenMaster(null)}
@@ -257,7 +255,7 @@ const EditOrder = observer(({
                             />
                         </LocalizationProvider>
 
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                             <TimePicker
                                 readOnly
                                 label="Кол-во часов на ремонт"
@@ -268,7 +266,7 @@ const EditOrder = observer(({
                                     e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
                                 ampm={false}
                                 views={["hours"]}
-                                minTime={date.toLocaleDateString() == new Date().toLocaleDateString() ?
+                                minTime={date.toLocaleDateString("ko-KR") == new Date().toLocaleDateString("ko-KR") ?
                                     new Date(0, 0, 0, new Date().getHours() + 1) :
                                     new Date(0, 0, 0, 8)}
                                 maxTime={new Date(0, 0, 0, 22)}
@@ -304,79 +302,88 @@ const EditOrder = observer(({
                             </ListItem>
 
                         </Box> : null}
-                        {checkOpenList ? (
-                            <Typography variant="h5" sx={{my: 2, textAlign: "center"}}>
-                                В текущее время все мастера заняты
-                            </Typography>) : (
-                            <Box sx={{flexGrow: 1, maxWidth: "1fr", position: "relative"}}>
-                                <Typography sx={{my: 2,}}>
-                                    Свободные мастера
-                                </Typography>
-                                <List disablePadding>
-                                    <ListItem key={1} divider>
-                                        <ListItemText sx={{width: 10}} primary="№"/>
-                                        <ListItemText sx={{width: 10}} primary="Имя мастера"/>
-                                        <ListItemText sx={{width: 10,}} primary="Рейтинг"/>
-                                        <ListItemText sx={{width: 10, pr: 5}} primary="Город"/>
-                                    </ListItem>
+                        {checkOpenList && loading ?
+                            <Box sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                mt: 2
+                            }}>
+                                <CircularProgress/>
+                            </Box>
+                            : checkOpenList ? (
+                                <Typography variant="h5" sx={{my: 2, textAlign: "center"}}>
+                                    В текущее время все мастера заняты
+                                </Typography>) : (
+                                <Box sx={{flexGrow: 1, maxWidth: "1fr", position: "relative"}}>
+                                    <Typography sx={{my: 2,}}>
+                                        Свободные мастера
+                                    </Typography>
+                                    <List disablePadding>
+                                        <ListItem key={1} divider>
+                                            <ListItemText sx={{width: 10}} primary="№"/>
+                                            <ListItemText sx={{width: 10}} primary="Имя мастера"/>
+                                            <ListItemText sx={{width: 10,}} primary="Рейтинг"/>
+                                            <ListItemText sx={{width: 10, pr: 5}} primary="Город"/>
+                                        </ListItem>
 
-                                    <Divider orientation="vertical"/>
-                                    <RadioGroup
-                                        aria-labelledby="demo-controlled-radio-buttons-group"
-                                        name="controlled-radio-buttons-group"
-                                        value={chosenMaster}
-                                        onChange={choseMaster}
-                                    >
-                                        {(openList ? freeMasters.map((master, index) => {
-                                                return (
-                                                    <ListItem key={master.id}
-                                                              divider
-                                                              style={{cursor: 'pointer'}}
-                                                              selected={chosenMaster === master.id}
-                                                              onClick={() => choseMaster(null, master.id)}
-                                                              secondaryAction={
-                                                                  <Tooltip title={'Выбрать мастера'}
-                                                                           placement="right"
-                                                                           arrow>
-                                                                      <FormControlLabel
-                                                                          value={master.id}
-                                                                          control={<Radio/>}
-                                                                          label=""/>
-                                                                  </Tooltip>
-                                                              }>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={index + 1}/>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={master.name}/>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={<Rating
-                                                                          value={master.rating}
-                                                                          readOnly/>}/>
-                                                        <ListItemText sx={{width: 10}}
-                                                                      primary={master.cities[0].name}/>
-                                                    </ListItem>
-                                                );
-                                            }) : <Button color="primary" sx={{flexGrow: 1,}} variant="outlined"
-                                                         disabled={checkButtonList}
-                                                         onClick={() => setOpenList(true)}>
-                                                Проверить свобоных мастеров в текущее время
-                                            </Button>
+                                        <Divider orientation="vertical"/>
+                                        <RadioGroup
+                                            aria-labelledby="demo-controlled-radio-buttons-group"
+                                            name="controlled-radio-buttons-group"
+                                            value={chosenMaster}
+                                            onChange={choseMaster}
+                                        >
+                                            {(openList ? freeMasters.map((master, index) => {
+                                                    return (
+                                                        <ListItem key={master.id}
+                                                                  divider
+                                                                  style={{cursor: 'pointer'}}
+                                                                  selected={chosenMaster === master.id}
+                                                                  onClick={() => choseMaster(null, master.id)}
+                                                                  secondaryAction={
+                                                                      <Tooltip title={'Выбрать мастера'}
+                                                                               placement="right"
+                                                                               arrow>
+                                                                          <FormControlLabel
+                                                                              value={master.id}
+                                                                              control={<Radio/>}
+                                                                              label=""/>
+                                                                      </Tooltip>
+                                                                  }>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={index + 1}/>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={master.name}/>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={<Rating
+                                                                              value={master.rating}
+                                                                              readOnly/>}/>
+                                                            <ListItemText sx={{width: 10}}
+                                                                          primary={master.cities[0].name}/>
+                                                        </ListItem>
+                                                    );
+                                                }) : <Button color="primary" sx={{flexGrow: 1,}} variant="outlined"
+                                                             disabled={checkButtonList}
+                                                             onClick={() => setOpenList(true)}>
+                                                    Проверить свобоных мастеров в текущее время
+                                                </Button>
 
-                                        )}
+                                            )}
 
-                                    </RadioGroup>
-                                    {openList == true ? <Box sx={{display: "flex", justifyContent: "center"}}>
-                                        <PagesOrder context={masters}/>
-                                    </Box> : ""}
+                                        </RadioGroup>
+                                        {openList == true ? <Box sx={{display: "flex", justifyContent: "center"}}>
+                                            <PagesOrder context={masters}/>
+                                        </Box> : ""}
 
-                                </List>
-                                {loading ? <CircularProgress size={30}
-                                                             sx={{
-                                                                 position: "absolute",
-                                                                 right: 10,
-                                                                 bottom: 30
-                                                             }}/> : ""}
-                            </Box>)}
+                                    </List>
+                                    {loading ? <CircularProgress size={30}
+                                                                 sx={{
+                                                                     position: "absolute",
+                                                                     right: 10,
+                                                                     bottom: 30
+                                                                 }}/> : ""}
+                                </Box>)}
 
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}

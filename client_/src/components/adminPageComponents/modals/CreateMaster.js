@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import {createMaster, fetchMaster} from "../../../http/masterAPI";
+import {createMaster, fetchMasters} from "../../../http/masterAPI";
 import {Context} from "../../../index";
 import {observer} from "mobx-react-lite";
 import SelectorMasterCity from "./SelectorMasterCity";
@@ -37,7 +37,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
         createMaster(masterData).then(res => {
             close()
             alertMessage("Мастер успешно добавлен", false)
-            fetchMaster(null, null, masters.page, 10).then(res => {
+            fetchMasters(null, null, masters.page, 10).then(res => {
                 if (res.status === 204) {
                     return masters.setIsEmpty(true)
                 }

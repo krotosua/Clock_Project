@@ -10,11 +10,6 @@ class UserController {
         await userLogic.login(req, res, next)
     }
 
-    async ordeReg(req, res, next) {
-        await userLogic.GetOrCreateUser(req, res, next)
-
-    }
-
     async check(req, res, next) {
         await userLogic.check(req, res, next)
     }

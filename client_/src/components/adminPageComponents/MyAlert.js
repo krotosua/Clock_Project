@@ -4,7 +4,7 @@ import {Alert} from "@mui/material";
 
 const MyAlert = ({open, onClose, message, isError}) => {
     return (
-        <Snackbar open={open} autoHideDuration={2000} onClose={onClose}>
+        <Snackbar open={open} autoHideDuration={6000} onClose={onClose}>
             <Alert onClose={onClose}
                    severity={isError ? "error" : "success"}>{message}</Alert>
         </Snackbar>

@@ -21,7 +21,6 @@ class UserLogic {
                 return res.status(400).json({errors: errors.array()});
             }
             const {email, password, role} = req.body
-
             if (!email || !password) {
                 return next(ApiError.badRequest({message: 'Incorrect email or password'}))
             }
@@ -48,12 +47,7 @@ class UserLogic {
 
     async GetOrCreateUser(req, res, next,) {
         try {
-            let email = ""
-            if (req.method === "PUT") {
-                email = req.body.email
-            } else if (req.method === "POST") {
-                email = req.body.order.email
-            }
+            let {email} = req.body
             if (!email) {
                 throw new Error('Email is wrong')
             }
@@ -64,7 +58,7 @@ class UserLogic {
             const user = await User.create({email})
             return user
         } catch (e) {
-            return next(ApiError.badRequest(e.message))
+            throw new Error('Email is wrong')
         }
     }
 
@@ -109,7 +103,10 @@ class UserLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let users
-            users = await User.findAndCountAll({limit, offset})
+            users = await User.findAndCountAll({
+                attributes: ["email", "id", "role"]
+                , limit, offset
+            })
             if (!users.count) {
                 return res.status(204).json({message: "List is empty"})
             }
@@ -120,11 +117,12 @@ class UserLogic {
     }
 
     async deleteOne(req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
         try {
             const {userId} = req.params
-            if (userId <= 0) {
-                next(ApiError.badRequest({message: " wrong"}))
-            }
             const user = await User.findOne({
                 where: {id: userId},
                 include: Order,

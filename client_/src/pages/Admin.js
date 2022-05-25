@@ -73,6 +73,17 @@ const Admin = observer(() => {
                 }}
                       component="nav"
                       aria-label="mailbox folders">
+                    <Link href={ADMIN_ORDER_LIST_ROUTE}
+                          onClick={preventDefault}
+                          underline="none"
+                          color="inherit">
+                        <SelectButton
+                            selected={orderList || adminRoute ? true : false}
+                            onClick={() => navigate(ADMIN_ORDER_LIST_ROUTE)}>
+                            <ListItemText primary="Заказы"/>
+                        </SelectButton>
+                    </Link>
+                    <Divider/>
                     <Link href={ADMIN_CITY_LIST_ROUTE}
                           onClick={preventDefault}
                           underline="none"
@@ -83,7 +94,7 @@ const Admin = observer(() => {
                             <ListItemText primary="Города"/>
                         </SelectButton>
                     </Link>
-                    <Divider/>
+                    <Divider light/>
                     <Link href={ADMIN_MASTER_LIST_ROUTE}
                           onClick={preventDefault}
                           underline="none"
@@ -106,17 +117,7 @@ const Admin = observer(() => {
                         </SelectButton>
                     </Link>
                     <Divider light/>
-                    <Link href={ADMIN_ORDER_LIST_ROUTE}
-                          onClick={preventDefault}
-                          underline="none"
-                          color="inherit">
-                        <SelectButton
-                            selected={orderList || adminRoute ? true : false}
-                            onClick={() => navigate(ADMIN_ORDER_LIST_ROUTE)}>
-                            <ListItemText primary="Заказы"/>
-                        </SelectButton>
-                    </Link>
-                    <Divider light/>
+
                     <Link href={ADMIN_USERS_ROUTE}
                           onClick={preventDefault}
                           underline="none"

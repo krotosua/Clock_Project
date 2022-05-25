@@ -1,6 +1,7 @@
-const {Master, City, Order} = require('../models/models')
+const {Master, City, Order, CitiesMasters} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const {Op} = require("sequelize");
+const sizeLogic = require("./sizeLogic");
 
 class MasterLogic {
     async create(req, res, next) {
@@ -28,8 +29,15 @@ class MasterLogic {
                 attributes: ['name', "rating", "id"],
                 include: [{
                     model: City,
+                    through: {
+                        attributes: []
+                    }
+
                 },
-                ]
+                ],
+                exclude: [{
+                    model: CitiesMasters
+                }]
             })
 
             if (!masters.count) {
@@ -43,10 +51,17 @@ class MasterLogic {
         }
     }
 
-    async getMastersOrders(req, res, next) {
+    async getMastersForOrder(req, res, next) {
         try {
             let {cityId} = req.params
-            let {date, time, endTime, limit, page} = req.query
+            let {date, time, sizeClock, limit, page} = req.query
+            const clock = await sizeLogic.CheckClock(next, sizeClock)
+
+            let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
+            let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
+            time = new Date(time)
+            console.log(time)
+            console.log(endTime)
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
@@ -55,7 +70,10 @@ class MasterLogic {
                 masters = await Master.findAndCountAll({
                     include: [{
                         model: City,
-                        where: {id: cityId}
+                        where: {id: cityId},
+                        through: {
+                            attributes: []
+                        }
                     }, {
                         model: Order,
                         where: {

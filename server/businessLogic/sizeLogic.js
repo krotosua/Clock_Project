@@ -7,9 +7,6 @@ class SizeLogic {
         try {
             const result = await sequelize.transaction(async () => {
                 const {name, date} = req.body
-                if (typeof name !== "string" || typeof date !== "string") {
-                    next(ApiError.badRequest({message: " wrong"}))
-                }
                 const size = await SizeClock.create({name, date})
                 return size
             });
@@ -41,6 +38,7 @@ class SizeLogic {
         if (!sizeClock) {
             return next(ApiError.badRequest('WRONG sizeClockId'))
         }
+        return sizeClock
     }
 
     async update(req, res, next) {
@@ -48,9 +46,6 @@ class SizeLogic {
             const result = await sequelize.transaction(async () => {
                 const {sizeId} = req.params
                 const {name, date} = req.body
-                if (typeof name !== "string" || typeof date !== "string" || sizeId <= 0) {
-                    next(ApiError.badRequest({message: " wrong"}))
-                }
                 const size = await SizeClock.findOne({where: {id: sizeId}})
                 await size.update({
                     name: name,
@@ -68,10 +63,6 @@ class SizeLogic {
     async deleteOne(req, res, next) {
         try {
             const {sizeId} = req.params
-            console.log(req.params)
-            if (sizeId <= 0) {
-                next(ApiError.badRequest({message: " wrong"}))
-            }
             if (sizeId) {
                 const size = await SizeClock.findOne({
                     where: {id: sizeId},

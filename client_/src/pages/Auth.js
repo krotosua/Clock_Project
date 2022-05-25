@@ -17,7 +17,7 @@ import {
 import {
     ADMIN_ROUTE,
     LOGIN_ROUTE,
-    REGISTRATION_ROUTE, START_ROUTE,
+    REGISTRATION_ROUTE, START_ROUTE, USER_ORDER_ROUTE,
 } from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
@@ -53,7 +53,7 @@ const Auth = observer(() => {
             user.setUserRole(dataUser.role)
 
             dataUser.role === "USER" ?
-                navigate(START_ROUTE) :
+                navigate(`${USER_ORDER_ROUTE}/${user.user.id}`) :
                 navigate(ADMIN_ROUTE)
         } catch (e) {
             setError(true)
@@ -70,6 +70,7 @@ const Auth = observer(() => {
                 alignItems: "center",
                 height: window.innerHeight - 60,
             }}
+            onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
         >
             <Card sx={{width: 800, p: 1}}>
                 <CardContent>
@@ -85,7 +86,7 @@ const Auth = observer(() => {
                             justifyContent: "center",
                         }}
                     >
-                        <FormControl>
+                        <FormControl error={true}>
                             <TextField
                                 error={error || blurEmail && reg.test(email) == false}
                                 sx={{mb: 2}}
@@ -135,7 +136,7 @@ const Auth = observer(() => {
                                 ) : (
                                     <div>
                                         Есть аккаунта? <NavLink to={LOGIN_ROUTE}
-                                                                onClick={() => setError("")}>Войти.</NavLink>
+                                                                onClick={() => setError(false)}>Войти.</NavLink>
                                     </div>
                                 )}
                                 <Button type="submit" variant="outlined"

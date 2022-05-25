@@ -28,7 +28,6 @@ const OrderList = observer(({alertMessage}) => {
     const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [orderToEdit, setOrderToEdit] = useState(null)
     const navigate = useNavigate()
-
     const getOrders = () => {
         fetchAlLOrders(orders.page, 8).then(res => {
             if (res.status === 204) {
@@ -36,7 +35,7 @@ const OrderList = observer(({alertMessage}) => {
                 return
             }
             res.data.rows.map(item => {
-                item.date = new Date(item.date).toLocaleDateString()
+                item.date = new Date(item.date).toLocaleDateString("uk-UA")
             })
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
@@ -61,15 +60,16 @@ const OrderList = observer(({alertMessage}) => {
 
     }
 
-    function editOrder(order) {
+    function editOrder(order, time) {
         setOrderToEdit(order)
         setIdToEdit(order.id)
         let pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
         let date = new Date(order.date.replace(pattern, '$3-$2-$1'));
         setDateToEdit(date)
-        setTimeToEdit(new Date(new Date().setHours(order.time.slice(0, 2), 0, 0)))
+        setTimeToEdit(new Date(new Date(0, 0, 0).setHours(time.slice(0, 2), 0, 0)))
         setEditVisible(true)
     }
+
 
     return (
         <Box>
@@ -127,6 +127,7 @@ const OrderList = observer(({alertMessage}) => {
                     <Divider orientation="vertical"/>
                     {orders.IsEmpty ? <h1>Список пуст</h1> :
                         orders.orders.map((order, index) => {
+                            const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
                             return (<ListItem
                                 key={order.id}
                                 divider
@@ -151,25 +152,26 @@ const OrderList = observer(({alertMessage}) => {
                                               primary={order.name}
                                 />
                                 <ListItemText sx={{width: 10}}
-                                              primary={`${order.date} ${order.time.slice(0, 5)}`}
+                                              primary={`${order.date} ${time}`}
                                 /> <ListItemText sx={{width: 10}}
                                                  primary={order.sizeClock.name}/>
                                 <ListItemText sx={{width: 10}}
                                               primary={order.master.name}/>
                                 <ListItemText sx={{width: 10}}
                                               primary={cities.cities.find(city => city.id === order.cityId).name}
-                                />
+                                />{new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date
+                            && new Date().toLocaleTimeString("uk-UA") > time ? null :
                                 <Tooltip title={'Изменить заказ'}
                                          placement="left"
                                          arrow>
                                     <IconButton sx={{width: 5}}
                                                 edge="end"
                                                 aria-label="Edit"
-                                                onClick={() => editOrder(order)}
+                                                onClick={() => editOrder(order, time)}
                                     >
                                         <EditIcon/>
                                     </IconButton>
-                                </Tooltip>
+                                </Tooltip>}
 
                             </ListItem>)
                         })}

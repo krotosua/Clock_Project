@@ -56,9 +56,14 @@ const NavBar = observer(() => {
                                     </Button>
                                 </Link>
                             }
-                            <Button variant="outlined" sx={{ml: 2}} color="inherit"
-                                    onClick={() => logOut()}>Выйти</Button>
-                        </Toolbar> :
+                            <Link to={START_ROUTE}
+                                  style={{textDecoration: 'none', color: 'white'}}>
+                                <Button variant="outlined" sx={{ml: 2}} color="inherit"
+                                        onClick={() => logOut()}>Выйти</Button>
+                            </Link>
+                        </Toolbar>
+
+                        :
 
                         <Toolbar>
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
@@ -68,8 +73,10 @@ const NavBar = observer(() => {
                                       style={{cursor: "pointer"}}>Clockwise Clockware</span>
                                 </Link>
                             </Typography>
-                            <Button variant="outlined" color="inherit"
-                                    onClick={() => navigate(LOGIN_ROUTE)}>Войти</Button>
+                            <Link to={LOGIN_ROUTE}
+                                  style={{textDecoration: 'none', color: 'white'}}>
+                                <Button variant="outlined" color="inherit">Войти</Button>
+                            </Link>
                         </Toolbar>}
                 </Container>
             </AppBar>

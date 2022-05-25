@@ -59,12 +59,12 @@ const Order = sequelize.define('order', {
         references: {
             model: City,
             key: 'id'
-            
+
         }
     },
     date: {type: DataTypes.DATEONLY,},
-    time: {type: DataTypes.TIME,},
-    endTime: {type: DataTypes.TIME}
+    time: {type: DataTypes.DATE,},
+    endTime: {type: DataTypes.DATE}
 }, {timestamps: false})
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},

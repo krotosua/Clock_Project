@@ -4,9 +4,9 @@ const MailService = require("../service/mailService")
 
 
 class OrderLogic {
-    async create(req, res, next, userId,) {
+    async create(req, res, next, userId, time, endTime) {
         try {
-            const {name, sizeClockId, date, time, endTime, masterId, cityId} = req.body.order
+            const {name, sizeClockId, date, masterId, cityId} = req.body
             const order = await Order.create(
                 {name, sizeClockId, date, userId, time, endTime, masterId, cityId})
             return order
@@ -19,15 +19,12 @@ class OrderLogic {
         try {
             let {userId} = req.params
             let {limit, page} = req.query
-            if (userId <= 0) {
-                next(ApiError.badRequest({message: "cityId is wrong"}))
-            }
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
             let orders
             orders = await Order.findAndCountAll({
-                where: {userId: id},
+                where: {userId: userId},
                 include: [{
                     model: Master,
                     attributes: ['name'],
@@ -76,10 +73,10 @@ class OrderLogic {
 
     }
 
-    async update(req, res, next, userId) {
+    async update(req, res, next, userId, time, endTime) {
         try {
             const {orderId} = req.params
-            const {name, sizeClockId, date, time, endTime, masterId, cityId,} = req.body
+            const {name, sizeClockId, date, masterId, cityId,} = req.body
             if (orderId <= 0) {
                 next(ApiError.badRequest({message: "cityId is wrong"}))
             }
@@ -104,9 +101,6 @@ class OrderLogic {
     async deleteOne(req, res, next) {
         try {
             const {orderId} = req.params
-            if (orderId <= 0) {
-                next(ApiError.badRequest({message: "cityId is wrong"}))
-            }
             const order = await Order.findOne({where: {id: orderId}})
             await order.destroy()
             return res.status(204).json({message: "success"})
@@ -115,11 +109,15 @@ class OrderLogic {
         }
     }
 
-    sendMessage(req, res, next) {
+    async sendMessage(req, res, next, result) {
         try {
-            const {message} = req.body
-            const {name, date, time, email, size, masterName, cityName} = message
-            MailService.sendMail(name, date, time, email, size, masterName, cityName, next)
+            const cityName = result.city.name
+            const size = result.clock.name
+            let {name, date, time, email, masterId,} = req.body
+            const master = await Master.findByPk(masterId)
+            date = new Date(Date.parse(date)).toLocaleDateString()
+            time = new Date(Date.parse(time)).toLocaleTimeString()
+            MailService.sendMail(name, date, time, email, size, master.name, cityName, next)
 
         } catch (e) {
             return next(ApiError.badRequest(e.message))

@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import {createMaster, fetchMaster, updateMaster} from "../../../http/masterAPI";
+import {createMaster, fetchMasters, updateMaster} from "../../../http/masterAPI";
 import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
@@ -51,7 +51,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
 
 
     function close() {
-        fetchMaster(null, null, masters.page, 10).then(res => {
+        fetchMasters(null, null, masters.page, 10).then(res => {
             masters.setMasters(res.data.rows)
             masters.setTotalCount(res.data.rows.length)
         }, (err) => {
