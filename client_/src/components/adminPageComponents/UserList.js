@@ -74,7 +74,7 @@ const CityList = observer(({alertMessage}) => {
                                     key={user.id}
                                     divider
                                     secondaryAction={
-                                        user.role === "USER" ?
+                                        user.role === "USER"||user.role === "MASTER" ?
                                             <Tooltip title={'Удалить пользователя'}
                                                      placement="right"
                                                      arrow>

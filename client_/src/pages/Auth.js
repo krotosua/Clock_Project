@@ -2,9 +2,9 @@ import React, {useContext, useState} from "react";
 import {
     Box,
     Card,
-    CardContent,
+    CardContent, Checkbox,
     Container,
-    FormControl,
+    FormControl, FormControlLabel,
     TextField,
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
@@ -22,10 +22,12 @@ import {
 import {login, registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
+import SelectorMasterCity from "../components/adminPageComponents/modals/SelectorMasterCity";
+import MyAlert from "../components/adminPageComponents/MyAlert";
 
 
 const Auth = observer(() => {
-    const {user} = useContext(Context)
+    const {user, cities} = useContext(Context)
     const location = useLocation();
     const navigate = useNavigate()
     const isLogin = location.pathname === LOGIN_ROUTE;
@@ -34,32 +36,53 @@ const Auth = observer(() => {
     const [error, setError] = useState(false)
     const [blurPassword, setBlurPassword] = useState(false)
     const [blurEmail, setBlurEmail] = useState(false)
-
+    const [agree, setAgree] = useState(false)
+    const [role, setRole] = useState("USER")
+    const [name, setName] = useState('')
+    const [open, setOpen] = useState(false)
+    const [isError, setIsError] = useState(false)
+    const [message, setMessage] = useState("")
+    const alertMessage = (message, bool) => {
+        setOpen(true)
+        setMessage(message)
+        setIsError(bool)
+    }
     const singIn = async () => {
         try {
             let dataUser;
             if (isLogin && password.length >= 6 && reg.test(email) !== false) {
                 dataUser = await login(email, password)
             } else if (password.length >= 6 && reg.test(email) !== false) {
-                dataUser = await registration(email, password)
+                if (role === "MASTER") {
+                    dataUser = await registration(email, password, role, name, cities.selectedCity)
+                } else {
+                    dataUser = await registration(email, password, role, null, null)
+                }
+                alertMessage("Письмо для подтверждения Email отправлено на почту", false)
+                return
             } else {
                 setError(true)
                 return
             }
 
-
+            if (dataUser.isActivated == false&&dataUser.role !=="ADMIN") {
+                alertMessage("Требуется подтвердить Email", true)
+                return
+            }
             user.setUser(dataUser)
             user.setIsAuth(true)
             user.setUserRole(dataUser.role)
 
-            dataUser.role === "USER" ?
+            dataUser.role === "USER" && dataUser.isActivated === true ?
                 navigate(`${USER_ORDER_ROUTE}/${user.user.id}`) :
                 navigate(ADMIN_ROUTE)
         } catch (e) {
             setError(true)
         }
     }
+    //////////////
     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    let unlockButton = !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false
 
     return (
         <Container
@@ -114,6 +137,7 @@ const Auth = observer(() => {
                                 variant="outlined"
                                 type={"password"}
                                 value={password}
+                                sx={{mb: 2}}
                                 helperText={blurPassword && password.length < 6 ?
                                     "Длина пароля должна быть не менее 6 символов" : ""}
                                 onChange={(e => {
@@ -124,6 +148,44 @@ const Auth = observer(() => {
                                 onBlur={() => setBlurPassword(true)}
                             />
 
+                            {role == "MASTER" ?
+                                <Box>
+                                    <SelectorMasterCity error={false}/>
+                                    <TextField
+                                        error={error || blurEmail && reg.test(email) == false}
+                                        sx={{mt: 2}}
+                                        id="name"
+                                        label="Укажите Ваше имя"
+                                        variant="outlined"
+                                        value={name}
+                                        onChange={(e => {
+                                            setName(e.target.value)
+                                        })}
+                                    />
+                                </Box>
+                                : null}
+                            {isLogin ? null :
+                                <Box>
+                                    <Box>
+                                        <FormControlLabel
+                                            label="Cо всем согласен"
+                                            control={
+                                                <Checkbox onChange={(e) => setAgree(e.target.checked)}/>}
+
+                                        />
+                                    </Box>
+                                    <Box>
+                                        <FormControlLabel
+                                            label="Зарегестрироваться как мастер"
+                                            control={<Checkbox onChange={(e) => {
+                                                e.target.checked ? setRole("MASTER") : setRole("USER")
+                                            }}/>}
+                                        />
+                                    </Box>
+
+
+                                </Box>
+                            }
                             <Box
                                 sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                             >
@@ -131,7 +193,7 @@ const Auth = observer(() => {
                                     <div>
                                         Нет аккаунта?
                                         <NavLink to={REGISTRATION_ROUTE}
-                                                 onClick={() => setError("")}>Заригистрируйтесь.</NavLink>
+                                                 onClick={() => setError(false)}> Зарегистрируйтесь.</NavLink>
                                     </div>
                                 ) : (
                                     <div>
@@ -140,7 +202,8 @@ const Auth = observer(() => {
                                     </div>
                                 )}
                                 <Button type="submit" variant="outlined"
-                                        color={"warning"} onClick={singIn}>
+                                        color={"warning"} onClick={singIn}
+                                        disabled={unlockButton}>
                                     {isLogin ? "Войти" : "Регистрация"}
                                 </Button>
                             </Box>
@@ -149,6 +212,10 @@ const Auth = observer(() => {
                     </Box>
                 </CardContent>
             </Card>
+            <MyAlert open={open}
+                     onClose={() => setOpen(false)}
+                     message={message}
+                     isError={isError}/>
         </Container>
 
     )

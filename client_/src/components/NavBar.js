@@ -21,13 +21,14 @@ const NavBar = observer(() => {
         localStorage.setItem('token', "")
         navigate(START_ROUTE)
     }
+  
 
     return (
         <React.Fragment>
             <CssBaseline/>
             <AppBar color="warning" position="fixed">
                 <Container maxWidth="xl">
-                    {user.isAuth ?
+                    {user.isAuth&&user.user.isActivated ?
                         <Toolbar>
 
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>

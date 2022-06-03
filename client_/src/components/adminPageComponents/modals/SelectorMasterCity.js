@@ -48,7 +48,7 @@ export default function SelectorMasterCity({cityChosen, error, open}) {
                 <Select
                     labelId="multiple-checkbox-label"
                     id="multiple-checkbox"
-                    error={error && cityName.length == 0 || open ? cityName.length == 0 && blur : ""}
+                    error={error && cityName.length == 0 || open ? cityName.length == 0 && blur : false}
                     multiple
                     value={cityName}
                     onChange={handleChange}

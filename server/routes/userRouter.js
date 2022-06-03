@@ -15,6 +15,7 @@ router.post('/login/',
     body('password').isLength({min: 6}),
     userController.login)
 router.get('/auth/', authMiddleware, userController.check)
+router.get('/activate/:link', userController.activate)
 router.get("/", checkRole("ADMIN"), userController.getAll)
 router.delete('/:userId', checkRole("ADMIN"),
     param("userId").not().isEmpty().isInt({gt: 0}),

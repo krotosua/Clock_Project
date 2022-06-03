@@ -7,10 +7,6 @@ class MasterLogic {
     async create(req, res, next) {
         try {
             const {name, rating, cityId} = req.body
-            if (!Array.isArray(cityId) || typeof rating !== "number"
-                || typeof name !== "string" || cityId.length == 0) {
-                next(ApiError.badRequest({message: "Wrong request"}))
-            }
             const master = await Master.create({name, rating})
             await master.addCity(cityId)
             return master

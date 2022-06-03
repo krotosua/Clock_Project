@@ -3,11 +3,12 @@ const ApiError = require("../error/ApiError");
 const {User, Order} = require("../models/models");
 const bcrypt = require("bcrypt");
 const {validationResult} = require("express-validator");
+const MailService = require("../service/mailService")
+const uuid = require("uuid")
 
-
-const generateJwt = (id, email, role) => {
+const generateJwt = (id, email, role, isActivated) => {
     return jwt.sign(
-        {id, email, role},
+        {id, email, role, isActivated},
         process.env.SECRET_KEY,
         {expiresIn: '24h'}
     )
@@ -35,9 +36,10 @@ class UserLogic {
                 }
             }
             const hashPassword = await bcrypt.hash(password, 5)
-
-            const user = await User.create({email, role, password: hashPassword})
-            const token = generateJwt(user.id, user.email, user.role)
+            const activationLink = uuid.v4()
+            const user = await User.create({email, role, password: hashPassword, activationLink})
+            await MailService.sendActivationMail(email, `${process.env.API_URL}api/users/activate/${activationLink}`)
+            const token = generateJwt(user.id, user.email, user.role, user.isActivated)
             return res.status(201).json({token})
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -78,7 +80,7 @@ class UserLogic {
             if (!comparePassword) {
                 return next(ApiError.Unauthorized({message: 'Wrong password'}))
             }
-            const token = generateJwt(user.id, user.email, user.role)
+            const token = generateJwt(user.id, user.email, user.role, user.isActivated)
             return res.json({token})
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -86,7 +88,7 @@ class UserLogic {
     }
 
     async check(req, res) {
-        const token = generateJwt(req.user.id, req.user.email, req.user.role)
+        const token = generateJwt(req.user.id, req.user.email, req.user.role,req.user.isActivated)
         return res.status(200).json({token})
     }
 
@@ -135,6 +137,21 @@ class UserLogic {
                 return next(ApiError.Conflict({message: "Clock has orders"}))
             }
             return res.status(204).json({message: "success"})
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async activate(req, res, next) {
+        try {
+            const activationLink = req.params.link
+            const user = await User.findOne({where: {activationLink}})
+            if (!user) {
+                throw new Error('Wrong link')
+            }
+            user.isActivated = true
+            await user.save()
+            return res.redirect(process.env.CLIENT_URL)
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }

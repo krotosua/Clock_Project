@@ -1,9 +1,15 @@
 const userLogic = require('../businessLogic/userLogic');
+const masterLogic = require("../businessLogic/masterLogic");
 
 
 class UserController {
     async registration(req, res, next) {
         await userLogic.registration(req, res, next)
+        if(req.body.role=="MASTER"){
+            req.body.rating=0
+            const master = await masterLogic.create(req, res, next)
+            return master
+        }
     }
 
     async login(req, res, next) {
@@ -21,7 +27,9 @@ class UserController {
     async deleteOne(req, res, next) {
         await userLogic.deleteOne(req, res, next)
     }
-
+async activate(req,res,next){
+await userLogic.activate(req, res, next)
+}
 }
 
 

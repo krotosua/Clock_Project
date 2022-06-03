@@ -37,7 +37,26 @@ class MailService {
         })
 
     }
+    sendActivationMail(  email,activationLink,next) {
 
+        this.transporter.sendMail({
+            from: `clockbotproject@gmail.com`,
+            to: email,
+            subject: 'Активация аккаунта на',
+            text: "",
+            html:
+                `<div>
+             <h1>Для активации перейдите по ссылке</h1>
+             <a href="${activationLink}">${activationLink}</a>
+</div>`,
+        }, err => {
+            if (err) {
+                return next(ApiError.badRequest(err.message))
+            }
+
+        })
+
+    }
 }
 
 module.exports = new MailService();
