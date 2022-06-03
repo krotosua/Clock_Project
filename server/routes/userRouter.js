@@ -4,7 +4,7 @@ const userController = require('../controllers/userController')
 const authMiddleware = require('../middleware/authMiddleware')
 const {body, param} = require('express-validator')
 const checkRole = require("../middleware/checkRoleMiddleware");
-const sizeController = require("../controllers/sizeController");
+
 
 
 router.post("/registration/",

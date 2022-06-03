@@ -54,9 +54,9 @@ const Auth = observer(() => {
                 dataUser = await login(email, password)
             } else if (password.length >= 6 && reg.test(email) !== false) {
                 if (role === "MASTER") {
-                    dataUser = await registration(email, password, role, name, cities.selectedCity)
+                    await registration(email, password, role, name, cities.selectedCity)
                 } else {
-                    dataUser = await registration(email, password, role)
+                    await registration(email, password, role)
                 }
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
                 return
@@ -83,7 +83,7 @@ const Auth = observer(() => {
     //////////////
     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     let unlockButton = role == "MASTER" ?
-        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length==0 :
+        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length == 0 :
         !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false
 
     return (
@@ -150,11 +150,11 @@ const Auth = observer(() => {
                                 onBlur={() => setBlurPassword(true)}
                             />
 
-                            {role == "MASTER"&&!isLogin ?
+                            {role == "MASTER" && !isLogin ?
                                 <Box>
                                     <SelectorMasterCity error={false}/>
                                     <TextField
-                                        error={error || blurEmail && reg.test(email) == false}
+                                        error={error}
                                         sx={{mt: 2}}
                                         id="name"
                                         label="Укажите Ваше имя"

@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {useContext, useEffect} from "react";
+import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
@@ -14,10 +14,18 @@ import {Tooltip} from "@mui/material";
 import {deleteUser, fetchUsers} from "../../http/userAPI";
 import PersonIcon from '@mui/icons-material/Person';
 import Pages from "../Pages";
+import EditIcon from "@mui/icons-material/Edit";
+import EditUser from "./modals/EditUser";
+import AddIcon from "@mui/icons-material/Add";
+import CreateCity from "./modals/CreateCity";
+import CreateUser from "./modals/CreateUser";
 
 
 const CityList = observer(({alertMessage}) => {
     let {user} = useContext(Context)
+    const [editVisible, setEditVisible] = useState(false)
+    const [createVisible, setCreateVisible] = useState(false)
+    const [userToEdit, setUserToEdit] = useState(null);
     const getUsers = () => {
         fetchUsers(user.page, 10).then(res => {
             if (res.status === 204) {
@@ -53,7 +61,17 @@ const CityList = observer(({alertMessage}) => {
                     </Typography>}>
                     <ListItem
                         secondaryAction={
-                            <PersonIcon/>}>
+                            <Tooltip title={'Добавить пользователя'}
+                                     placement="top"
+                                     arrow>
+                                <IconButton sx={{width: 20}}
+                                            edge="end"
+                                            aria-label="addCity"
+                                            onClick={() => setCreateVisible(true)}
+                                >
+                                    <AddIcon/>
+                                </IconButton>
+                            </Tooltip> }>
                         <ListItemText sx={{width: "2px",}}
                                       primary="№"
                         /><ListItemText sx={{width: 10}}
@@ -104,12 +122,37 @@ const CityList = observer(({alertMessage}) => {
                                     <ListItemText sx={{width: 10}}
                                                   primary={user.role}
                                     />
+                                    {user.role !=="ADMIN"? <Tooltip title={'Изменить данные пользователя'}
+                                              placement="left"
+                                              arrow>
+                                        <IconButton sx={{width: 5}}
+                                                    edge="end"
+                                                    aria-label="Edit"
+                                                    onClick={() => {
+                                                        setEditVisible(true)
+                                                        setUserToEdit(user)
+                                                    }}
+                                        >
+                                            <EditIcon/>
+                                        </IconButton>
+                                    </Tooltip>:null}
                                 </ListItem>
 
                             )
                         })}
 
                 </List>
+                {editVisible ? <EditUser
+                    open={editVisible}
+                    userToEdit={userToEdit}
+                    onClose={() => {
+                        setEditVisible(false)
+                    }}
+                /> : null}
+                {createVisible?
+                <CreateUser open={createVisible}
+                            onClose={() => setCreateVisible(false)}
+                            alertMessage={alertMessage}/>:null}
 
             </Box>
             <Box sx={{display: "flex", justifyContent: "center"}}>
