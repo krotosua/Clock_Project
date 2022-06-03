@@ -56,7 +56,7 @@ const Auth = observer(() => {
                 if (role === "MASTER") {
                     dataUser = await registration(email, password, role, name, cities.selectedCity)
                 } else {
-                    dataUser = await registration(email, password, role, null, null)
+                    dataUser = await registration(email, password, role)
                 }
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
                 return
@@ -65,7 +65,7 @@ const Auth = observer(() => {
                 return
             }
 
-            if (dataUser.isActivated == false&&dataUser.role !=="ADMIN") {
+            if (dataUser.isActivated == false && dataUser.role !== "ADMIN") {
                 alertMessage("Требуется подтвердить Email", true)
                 return
             }
@@ -82,7 +82,9 @@ const Auth = observer(() => {
     }
     //////////////
     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    let unlockButton = !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false
+    let unlockButton = role == "MASTER" ?
+        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length==0 :
+        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false
 
     return (
         <Container
@@ -148,7 +150,7 @@ const Auth = observer(() => {
                                 onBlur={() => setBlurPassword(true)}
                             />
 
-                            {role == "MASTER" ?
+                            {role == "MASTER"&&!isLogin ?
                                 <Box>
                                     <SelectorMasterCity error={false}/>
                                     <TextField
@@ -198,7 +200,11 @@ const Auth = observer(() => {
                                 ) : (
                                     <div>
                                         Есть аккаунта? <NavLink to={LOGIN_ROUTE}
-                                                                onClick={() => setError(false)}>Войти.</NavLink>
+                                                                onClick={() => {
+                                                                    setAgree(false)
+                                                                    setRole("USER")
+                                                                    setError(false)
+                                                                }}>Войти.</NavLink>
                                     </div>
                                 )}
                                 <Button type="submit" variant="outlined"

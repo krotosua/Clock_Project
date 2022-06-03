@@ -97,6 +97,9 @@ class UserLogic {
         await user.update({password: hashPassword})
 
     }
+    async updateUser(req, res,next) {
+
+    }
 
     async getAll(req, res, next) {
         try {
