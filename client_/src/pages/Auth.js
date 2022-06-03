@@ -4,7 +4,7 @@ import {
     Card,
     CardContent, Checkbox,
     Container,
-    FormControl, FormControlLabel,
+    FormControl, FormControlLabel, FormHelperText, InputAdornment, OutlinedInput,
     TextField,
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
@@ -24,6 +24,10 @@ import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 import SelectorMasterCity from "../components/adminPageComponents/modals/SelectorMasterCity";
 import MyAlert from "../components/adminPageComponents/MyAlert";
+import IconButton from "@mui/material/IconButton";
+import InputLabel from "@mui/material/InputLabel";
+import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {createMaster} from "../http/masterAPI";
 
 
 const Auth = observer(() => {
@@ -33,11 +37,15 @@ const Auth = observer(() => {
     const isLogin = location.pathname === LOGIN_ROUTE;
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [passwordCheck, setPasswordCheck] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
+    const [showPasswordCheck, setShowPasswordCheck] = useState(false)
     const [error, setError] = useState(false)
     const [blurPassword, setBlurPassword] = useState(false)
+    const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
     const [blurEmail, setBlurEmail] = useState(false)
     const [agree, setAgree] = useState(false)
-    const [role, setRole] = useState("USER")
+    const [isMaster, setIsMaster] = useState(false)
     const [name, setName] = useState('')
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
@@ -53,10 +61,17 @@ const Auth = observer(() => {
             if (isLogin && password.length >= 6 && reg.test(email) !== false) {
                 dataUser = await login(email, password)
             } else if (password.length >= 6 && reg.test(email) !== false) {
-                if (role === "MASTER") {
-                    await registration(email, password, role, name, cities.selectedCity)
+                if (isMaster ) {
+                    const masterData = {
+                        name: name.trim(),
+                        rating: 0,
+                        cityId: cities.selectedCity,
+                        email:email,
+                        password:password
+                    }
+                    await createMaster(masterData)
                 } else {
-                    await registration(email, password, role)
+                    await registration(email, password, isMaster)
                 }
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
                 return
@@ -80,11 +95,14 @@ const Auth = observer(() => {
             setError(true)
         }
     }
+    const handleClickShowPassword = () => {
+        setShowPassword(!showPassword)
+    };
     //////////////
     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    let unlockButton = role == "MASTER" ?
-        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length == 0 :
-        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false
+    let disableButton = isMaster == true ?
+        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length == 0||password !== passwordCheck :
+        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false||!isLogin&& password !== passwordCheck
 
     return (
         <Container
@@ -132,25 +150,71 @@ const Auth = observer(() => {
                                 })}
                             />
 
-                            <TextField
-                                error={error || blurPassword && password.length < 6}
-                                id="Password"
-                                label="Password"
-                                variant="outlined"
-                                type={"password"}
-                                value={password}
-                                sx={{mb: 2}}
-                                helperText={blurPassword && password.length < 6 ?
-                                    "Длина пароля должна быть не менее 6 символов" : ""}
-                                onChange={(e => {
-                                    setPassword(e.target.value)
-                                    setError(false)
-                                })}
-                                onFocus={() => setBlurPassword(false)}
-                                onBlur={() => setBlurPassword(true)}
-                            />
 
-                            {role == "MASTER" && !isLogin ?
+                            <FormControl variant="outlined">
+                                <InputLabel htmlFor="Password">Пароль</InputLabel>
+                                <OutlinedInput
+                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
+                                    id="Password"
+                                    label="Пароль"
+                                    type={showPassword ? 'text' : 'password'}
+
+                                    value={password}
+                                    onChange={(e => {
+                                        setPassword(e.target.value)
+                                        setError(false)
+                                    })}
+                                    endAdornment={
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                    onFocus={() => setBlurPassword(false)}
+                                    onBlur={() => setBlurPassword(true)}
+                                />
+                                <FormHelperText>{blurPassword && password.length < 6 ?
+                                    "Длина пароля должна быть не менее 6 символов"
+                                    : ""}</FormHelperText>
+                            </FormControl>
+                            {!isLogin?<FormControl sx={{my: 2}} variant="outlined">
+                                <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
+                                <OutlinedInput
+                                    error={error || blurPasswordCheck && password !== passwordCheck}
+                                    id="Check Password"
+                                    label="Подтвердить пароль"
+                                    type={showPasswordCheck ? 'text' : 'password'}
+                                    value={passwordCheck}
+                                    onChange={(e => {
+                                        setPasswordCheck(e.target.value)
+                                        setError(false)
+                                    })}
+                                    endAdornment={
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={() => setShowPasswordCheck(!showPasswordCheck)}
+                                                edge="end"
+                                            >
+                                                {showPasswordCheck ? <VisibilityOff/> : <Visibility/>}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                    onFocus={() => setBlurPasswordCheck(false)}
+                                    onBlur={() => setBlurPasswordCheck(true)}
+                                />
+                                <FormHelperText
+                                    error={true}>{blurPasswordCheck && password !== passwordCheck ? "Пароли не совпадают" : ""}</FormHelperText>
+
+                            </FormControl>:null}
+
+
+                            {isMaster && !isLogin ?
                                 <Box>
                                     <SelectorMasterCity error={false}/>
                                     <TextField
@@ -180,7 +244,8 @@ const Auth = observer(() => {
                                         <FormControlLabel
                                             label="Зарегестрироваться как мастер"
                                             control={<Checkbox onChange={(e) => {
-                                                e.target.checked ? setRole("MASTER") : setRole("USER")
+                                                setError(false)
+                                                e.target.checked ? setIsMaster(true) : setIsMaster(false)
                                             }}/>}
                                         />
                                     </Box>
@@ -202,14 +267,14 @@ const Auth = observer(() => {
                                         Есть аккаунта? <NavLink to={LOGIN_ROUTE}
                                                                 onClick={() => {
                                                                     setAgree(false)
-                                                                    setRole("USER")
+                                                                    setIsMaster(false)
                                                                     setError(false)
                                                                 }}>Войти.</NavLink>
                                     </div>
                                 )}
                                 <Button type="submit" variant="outlined"
                                         color={"warning"} onClick={singIn}
-                                        disabled={unlockButton}>
+                                        disabled={disableButton}>
                                     {isLogin ? "Войти" : "Регистрация"}
                                 </Button>
                             </Box>

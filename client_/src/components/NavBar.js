@@ -14,6 +14,7 @@ import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, USER_ORDER_ROUTE} from "../utils/
 const NavBar = observer(() => {
     const {user} = useContext(Context)
     const navigate = useNavigate()
+    console.log(user.user)
     const logOut = () => {
         user.setUser({})
         user.setIsAuth(false)

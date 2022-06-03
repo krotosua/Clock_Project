@@ -9,9 +9,8 @@ router.post("/",
 
     body("name").not().isEmpty().isString().trim().escape(),
     body("rating").not().isEmpty().not().isString().isInt({gt: -1, lt: 6}),
-    body("cityId").not().isEmpty().isArray(),
-
-    checkRole("ADMIN"), masterController.create)
+    body("cityId").not().isEmpty().isArray()
+    , masterController.create)
 router.get('/', masterController.getAll)
 router.get('/:cityId',
 

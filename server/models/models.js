@@ -30,7 +30,16 @@ const Master = sequelize.define('master', {
             min: 0,
             max: 5
         }
-    }
+    },
+    email: {
+        type: DataTypes.STRING, unique: true, allowNull: false,
+        validate: {
+            isEmail: true,
+        }
+    },
+    password: {
+        type: DataTypes.STRING,
+    },
 }, {timestamps: false})
 const City = sequelize.define('city', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},

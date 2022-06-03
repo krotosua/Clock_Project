@@ -42,7 +42,6 @@ const Admin = observer(() => {
     const [cityVisible, setCityVisible] = useState(false)
     const [masterVisible, setMasterVisible] = useState(false)
     const [sizeVisible, setSizeVisible] = useState(false)
-
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")

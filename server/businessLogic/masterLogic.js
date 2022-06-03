@@ -6,8 +6,8 @@ const sizeLogic = require("./sizeLogic");
 class MasterLogic {
     async create(req, res, next) {
         try {
-            const {name, rating, cityId} = req.body
-            const master = await Master.create({name, rating})
+            const {name, rating,email,password, cityId} = req.body
+            const master = await Master.create({name, rating,email,password})
             await master.addCity(cityId)
             return master
         } catch (e) {
