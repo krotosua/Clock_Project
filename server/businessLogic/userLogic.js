@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const ApiError = require("../error/ApiError");
-const {User, Order, Master} = require("../models/models");
+const {User, Order, Master,Customer} = require("../models/models");
 const bcrypt = require("bcrypt");
 const {validationResult} = require("express-validator");
 const MailService = require("../service/mailService")
@@ -24,7 +24,7 @@ class UserLogic {
         }
         try {
 
-
+            const result = await sequelize.transaction(async () => {
             const {email, password,isMaster} = req.body
             let role = isMaster?"MASTER":"CUSTOMER"
             const candidate = await User.findOne({where: {email}})
@@ -40,16 +40,18 @@ class UserLogic {
             const hashPassword = await bcrypt.hash(password, 5)
             const activationLink = uuid.v4()
             const user = await User.create({email, role, password: hashPassword, activationLink})
-            if(isMaster){
-                req.body.userId=user.id
-                await masterController.create(req,res,next)
+                if(isMaster) {
+                req.body.userId = user.id
+               await masterController.create(req, res, next)
             }else{
-                await Customer.create(user.id)
+                await Customer.create({userId: user.id})
+
             }
             await MailService.sendActivationMail(email, `${process.env.API_URL}api/users/activate/${activationLink}`)
             const token = generateJwt(user.id, user.email, user.role, user.isActivated)
             return res.status(201).json({token})
-
+            })
+            return result
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -61,6 +63,7 @@ class UserLogic {
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()});
             }
+            const result = await sequelize.transaction(async () => {
             const {email, password,isMaster,isActivated} = req.body
             let role = isMaster?"MASTER":"CUSTOMER"
             const candidate = await User.findOne({where: {email}})
@@ -78,8 +81,12 @@ class UserLogic {
             if(isMaster){
                 req.body.userId=user.id
                 await masterController.create(req,res,next)
+            }else{
+                await Customer.create({userId: user.id})
             }
             return res.status(201).json({user})
+            })
+            return result
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -161,9 +168,10 @@ class UserLogic {
             let users
             users = await User.findAndCountAll({
                 attributes: ["email", "id", "role"],
-                include:{
+                include:[{
                     model:Master
-                }
+                },
+                ]
                 , limit, offset
             })
             if (!users.count) {

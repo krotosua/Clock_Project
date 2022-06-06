@@ -72,7 +72,7 @@ const Order = sequelize.define('order', {
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 }, {timestamps: false})
-const Customer = sequelize.define('customers', {
+const Customer = sequelize.define('customer', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 }, {timestamps: false})
 User.hasMany(Order)
@@ -100,5 +100,6 @@ module.exports = {
     City,
     Master,
     SizeClock,
-    CitiesMasters
+    CitiesMasters,
+    Customer
 }

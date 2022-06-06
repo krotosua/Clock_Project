@@ -94,8 +94,8 @@ const Auth = observer(() => {
     //////////////
     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     let disableButton = isMaster == true ?
-        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length == 0||password !== passwordCheck :
-        !isLogin && !agree || !email || password.length < 6 || reg.test(email) == false||!isLogin&& password !== passwordCheck
+         !agree || !email || password.length < 6 || reg.test(email) == false || !name || cities.selectedCity.length == 0||password !== passwordCheck :
+         !agree || !email || password.length < 6 || reg.test(email) == false|| password !== passwordCheck
 
     return (
         <Container
@@ -109,9 +109,97 @@ const Auth = observer(() => {
             onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
         >
             <Card sx={{width: 800, p: 1}}>
-                <CardContent>
+                {isLogin?
+                    (<CardContent>
+                        <Typography align="center" variant="h5">
+                            Авторизация
+                        </Typography>
+                        <Box
+                            sx={{
+                                width: 700,
+                                mt: 3,
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <FormControl error={true}>
+                                <TextField
+                                    error={error || blurEmail && reg.test(email) == false}
+                                    sx={{mb: 2}}
+                                    id="Email"
+                                    label="Email"
+                                    variant="outlined"
+                                    type={"email"}
+                                    value={email}
+                                    helperText={blurEmail && reg.test(email) == false ?
+                                        "Введите email формата: clock@clock.com" :
+                                        error && !isLogin ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
+                                    }
+                                    onFocus={() => setBlurEmail(false)}
+                                    onBlur={() => setBlurEmail(true)}
+                                    onChange={(e => {
+                                        setEmail(e.target.value)
+                                        setError(null)
+                                    })}
+                                />
+
+
+                                <FormControl variant="outlined">
+                                    <InputLabel htmlFor="Password">Пароль</InputLabel>
+                                    <OutlinedInput
+                                        error={error || blurPassword && password.length < 6 || blurPasswordCheck ?!isLogin&&password !== passwordCheck : false}
+                                        id="Password"
+                                        label="Пароль"
+                                        type={showPassword ? 'text' : 'password'}
+
+                                        value={password}
+                                        onChange={(e => {
+                                            setPassword(e.target.value)
+                                            setError(false)
+                                        })}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="toggle password visibility"
+                                                    onClick={handleClickShowPassword}
+                                                    edge="end"
+                                                >
+                                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        onFocus={() => setBlurPassword(false)}
+                                        onBlur={() => setBlurPassword(true)}
+                                    />
+                                    <FormHelperText>{blurPassword && password.length < 6 ?
+                                        "Длина пароля должна быть не менее 6 символов"
+                                        : ""}</FormHelperText>
+                                </FormControl>
+
+                                <Box
+                                    sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                                >
+                                        <div>
+                                            Нет аккаунта?
+                                            <NavLink to={REGISTRATION_ROUTE}
+                                                     onClick={() => setError(false)}> Зарегистрируйтесь.</NavLink>
+                                        </div>
+                                    <Button type="submit" variant="outlined"
+                                            color={"warning"} onClick={singIn}
+                                            disabled={  !email || password.length < 6 || reg.test(email) == false}>
+                                         Войти
+                                    </Button>
+                                </Box>
+
+                            </FormControl>
+                        </Box>
+                    </CardContent>
+                    )
+                :
+              (  <CardContent>
                     <Typography align="center" variant="h5">
-                        {isLogin ? "Авторизация" : "Регистрация"}
+                        Регистрация
                     </Typography>
                     <Box
                         sx={{
@@ -133,7 +221,7 @@ const Auth = observer(() => {
                                 value={email}
                                 helperText={blurEmail && reg.test(email) == false ?
                                     "Введите email формата: clock@clock.com" :
-                                    error && !isLogin ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
+                                    error ? "Пользователь с таким email уже существует" : ""
                                 }
                                 onFocus={() => setBlurEmail(false)}
                                 onBlur={() => setBlurEmail(true)}
@@ -147,7 +235,7 @@ const Auth = observer(() => {
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
-                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ?!isLogin&&password !== passwordCheck : false}
+                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ?password !== passwordCheck : false}
                                     id="Password"
                                     label="Пароль"
                                     type={showPassword ? 'text' : 'password'}
@@ -175,7 +263,7 @@ const Auth = observer(() => {
                                     "Длина пароля должна быть не менее 6 символов"
                                     : ""}</FormHelperText>
                             </FormControl>
-                            {!isLogin?<FormControl sx={{my: 2}} variant="outlined">
+                            <FormControl sx={{my: 2}} variant="outlined">
                                 <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
                                 <OutlinedInput
                                     error={error || blurPasswordCheck && password !== passwordCheck}
@@ -204,10 +292,10 @@ const Auth = observer(() => {
                                 <FormHelperText
                                     error={true}>{blurPasswordCheck && password !== passwordCheck ? "Пароли не совпадают" : ""}</FormHelperText>
 
-                            </FormControl>:null}
+                            </FormControl>
 
 
-                            {isMaster && !isLogin ?
+                            {isMaster ?
                                 <Box>
                                     <SelectorMasterCity error={false}/>
                                     <TextField
@@ -223,7 +311,7 @@ const Auth = observer(() => {
                                     />
                                 </Box>
                                 : null}
-                            {isLogin ? null :
+
                                 <Box>
                                     <Box>
                                         <FormControlLabel
@@ -242,20 +330,12 @@ const Auth = observer(() => {
                                             }}/>}
                                         />
                                     </Box>
-
-
                                 </Box>
-                            }
+
                             <Box
                                 sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                             >
-                                {isLogin ? (
-                                    <div>
-                                        Нет аккаунта?
-                                        <NavLink to={REGISTRATION_ROUTE}
-                                                 onClick={() => setError(false)}> Зарегистрируйтесь.</NavLink>
-                                    </div>
-                                ) : (
+
                                     <div>
                                         Есть аккаунта? <NavLink to={LOGIN_ROUTE}
                                                                 onClick={() => {
@@ -264,17 +344,17 @@ const Auth = observer(() => {
                                                                     setError(false)
                                                                 }}>Войти.</NavLink>
                                     </div>
-                                )}
+
                                 <Button type="submit" variant="outlined"
                                         color={"warning"} onClick={singIn}
                                         disabled={disableButton}>
-                                    {isLogin ? "Войти" : "Регистрация"}
+                                   Регистрация
                                 </Button>
                             </Box>
 
                         </FormControl>
                     </Box>
-                </CardContent>
+                </CardContent>)}
             </Card>
             <MyAlert open={open}
                      onClose={() => setOpen(false)}

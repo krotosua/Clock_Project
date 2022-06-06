@@ -11,13 +11,11 @@ class MasterController {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const result = await sequelize.transaction(async () => {
+
                 const {cityId} = req.body
                 await cityLogic.checkMasterCityId(cityId)
                 const master = await masterLogic.create(req, res, next)
                 return master
-            })
-            return
         } catch (e) {
             next(ApiError.badRequest({message: "WRONG request"}))
         }
