@@ -26,7 +26,7 @@ class UserLogic {
 
 
             const {email, password,isMaster} = req.body
-            let role = isMaster?"MASTER":"USER"
+            let role = isMaster?"MASTER":"CUSTOMER"
             const candidate = await User.findOne({where: {email}})
             if (candidate) {
                 if (candidate.password !== null) {
@@ -43,6 +43,8 @@ class UserLogic {
             if(isMaster){
                 req.body.userId=user.id
                 await masterController.create(req,res,next)
+            }else{
+                await Customer.create(user.id)
             }
             await MailService.sendActivationMail(email, `${process.env.API_URL}api/users/activate/${activationLink}`)
             const token = generateJwt(user.id, user.email, user.role, user.isActivated)
@@ -60,7 +62,7 @@ class UserLogic {
                 return res.status(400).json({errors: errors.array()});
             }
             const {email, password,isMaster,isActivated} = req.body
-            let role = isMaster?"MASTER":"USER"
+            let role = isMaster?"MASTER":"CUSTOMER"
             const candidate = await User.findOne({where: {email}})
             if (candidate) {
                 if (candidate.password !== null) {
@@ -190,8 +192,7 @@ class UserLogic {
                         attributes: ["id"]}},],
                 attributes: ["id","role"]
             })
-console.log(user)
-            if (user.role=="USER"&&user.orders.length == 0||
+            if (user.role=="CUSTOMER"&&user.orders.length == 0||
                 user.role=="MASTER"&&user.master.orders.length == 0) {
                 await user.destroy()
                 return res.status(204).json({message: "success"})

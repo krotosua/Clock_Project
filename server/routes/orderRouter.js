@@ -16,7 +16,7 @@ router.post("/",
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
     orderController.create,)
 
-router.get('/:userId', checkRole("USER"),
+router.get('/:userId', checkRole("CUSTOMER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getUserOrders)
 router.get('/', checkRole("ADMIN"), orderController.getAllOrders)
