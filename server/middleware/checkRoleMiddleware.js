@@ -17,6 +17,7 @@ module.exports = function (role) {
             }
             req.user = decoded;
             next()
+
         } catch (e) {
             next(ApiError.Unauthorized({message: "No access"}))
         }

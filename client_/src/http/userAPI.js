@@ -29,6 +29,6 @@ export const deleteUser = async (id) => {
     await $authHost.delete('api/users/' + id,)
 }
 export const updateUser = async (userId,data) => {
-    console.log(userId)
+
     await $authHost.put('api/users/' + userId,data)
 }

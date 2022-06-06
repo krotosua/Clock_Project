@@ -1,4 +1,4 @@
-const {Master, City, Order, CitiesMasters,User} = require('../models/models')
+const {Master, City, Order, CitiesMasters, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const {Op} = require("sequelize");
 const sizeLogic = require("./sizeLogic");
@@ -6,12 +6,12 @@ const sizeLogic = require("./sizeLogic");
 class MasterLogic {
     async create(req, res, next) {
         try {
-            const {name, rating,email,password, cityId,userId,isActivated} = req.body
+            const {name, rating, email, password, cityId, userId, isActivated} = req.body
             let master
-            if(isActivated){
-            master = await Master.create({name, rating,email,password,userId,isActivated})
-            }else{
-                master = await Master.create({name, rating,email,password,userId,isActivated})
+            if (isActivated) {
+                master = await Master.create({name, rating, email, password, userId, isActivated})
+            } else {
+                master = await Master.create({name, rating, email, password, userId, isActivated})
             }
 
             await master.addCity(cityId)
@@ -28,7 +28,7 @@ class MasterLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let masters = await Master.findAndCountAll({
-                attributes: ['name', "rating", "id","isActivated"],
+                attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
                     model: City,
                     through: {
@@ -36,7 +36,7 @@ class MasterLogic {
                     },
 
                 },
-                    {  model: User,}
+                    {model: User,}
                 ],
                 exclude: [{
                     model: CitiesMasters
@@ -69,8 +69,8 @@ class MasterLogic {
             let masters
             if (cityId) {
                 masters = await Master.findAndCountAll({
-                    where:{
-                        isActivated:{[Op.is]:true}
+                    where: {
+                        isActivated: {[Op.is]: true}
                     },
                     include: [{
                         model: City,
@@ -156,7 +156,7 @@ class MasterLogic {
     async update(req, res, next) {
         try {
             const {masterId} = req.params
-            const {name, rating, cityId,isActivated} = req.body
+            const {name, rating, cityId, isActivated} = req.body
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
                 name: name,
@@ -187,14 +187,19 @@ class MasterLogic {
     async deleteOne(req, res, next) {
         try {
             const {masterId} = req.params
-            const master = await Master.findOne({
-                where: {id: masterId},
+            const master = await User.findOne({
+
                 include: {
-                    model: Order,
-                    attributes: ['id']
+                    model: Master,
+                    where: {id: masterId},
+                    attributes: ['id'],
+                    include: {
+                        model: Order,
+                        attributes: ['id']
+                    }
                 }
             })
-            if (master.orders.length == 0) {
+            if (master.master.orders.length == 0) {
                 await master.destroy()
                 return res.status(204).json({message: "success"})
             } else {

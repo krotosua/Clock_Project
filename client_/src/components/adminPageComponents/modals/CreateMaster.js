@@ -41,15 +41,8 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const [errMaster, setErrMaster] = useState(false)
     const addMaster = () => {
 
-        const masterData = {
-            name: masterName.trim(),
-            rating: masterRating,
-            cityId: cities.selectedCity,
-            email:email,
-            password:password
-        }
 
-        registrationFromAdm(email, password, true,masterName,cities.selectedCity,true).then(res => {
+        registrationFromAdm(email, password, true,true,masterName,cities.selectedCity,).then(res => {
 
             close()
             alertMessage("Мастер успешно добавлен", false)

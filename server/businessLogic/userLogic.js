@@ -24,7 +24,7 @@ class UserLogic {
         }
         try {
 
-            const result = await sequelize.transaction(async () => {
+
             const {email, password,isMaster} = req.body
             let role = isMaster?"MASTER":"USER"
             const candidate = await User.findOne({where: {email}})
@@ -47,8 +47,7 @@ class UserLogic {
             await MailService.sendActivationMail(email, `${process.env.API_URL}api/users/activate/${activationLink}`)
             const token = generateJwt(user.id, user.email, user.role, user.isActivated)
             return res.status(201).json({token})
-        })
-        return result
+
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -191,7 +190,7 @@ class UserLogic {
                         attributes: ["id"]}},],
                 attributes: ["id","role"]
             })
-
+console.log(user)
             if (user.role=="USER"&&user.orders.length == 0||
                 user.role=="MASTER"&&user.master.orders.length == 0) {
                 await user.destroy()
