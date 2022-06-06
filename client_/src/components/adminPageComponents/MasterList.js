@@ -12,12 +12,13 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
-import {deleteMaster, fetchMasters} from "../../http/masterAPI";
+import {activateMaster, deleteMaster, fetchMasters} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
 import {Tooltip} from "@mui/material";
 import Pages from "../Pages";
 import {Rating} from '@mui/material';
+import Button from "@mui/material/Button";
 
 
 const MasterList = observer(({alertMessage, getValue}) => {
@@ -48,6 +49,22 @@ const MasterList = observer(({alertMessage, getValue}) => {
 
         })
     }
+
+    function changeActiveted(master) {
+        let changeInfo = {
+            id: master.id,
+            isActivated: !master.isActivated
+        }
+
+        activateMaster(changeInfo)
+            .then(res => {
+                alertMessage('Данные мастера успешно изменены', false)
+                return master.isActivated = !master.isActivated
+            }, err => {
+                alertMessage('Не удалось изменить данные мастера', true)
+            })
+    }
+
 
     const delMaster = (id) => {
         deleteMaster(id).then((res) => {
@@ -110,11 +127,15 @@ const MasterList = observer(({alertMessage, getValue}) => {
                         <ListItemText sx={{width: 10}}
                                       primary="№"/>
                         <ListItemText sx={{width: 10}}
+                                      primary="ID пользователя"/>
+                        <ListItemText sx={{width: 10}}
                                       primary="Имя мастера"/>
                         <ListItemText sx={{width: 10}}
                                       primary="Рейтинг"/>
                         <ListItemText sx={{width: 10}}
                                       primary="Город"/>
+                        <ListItemText sx={{width: 10}}
+                                      primary="Статус"/>
                     </ListItem>
 
                     <Divider orientation="vertical"/>
@@ -136,6 +157,9 @@ const MasterList = observer(({alertMessage, getValue}) => {
                                                   primary={index + 1}
                                     />
                                     <ListItemText sx={{width: 10}}
+                                                  primary={master.user.id}/>
+
+                                    <ListItemText sx={{width: 10}}
                                                   primary={master.name}/>
 
                                     <ListItemText sx={{width: 10}}
@@ -143,7 +167,16 @@ const MasterList = observer(({alertMessage, getValue}) => {
                                                       <Rating name="read-only" value={master.rating} readOnly/>}/>
                                     <ListItemText sx={{width: 10}}
                                                   primary={cityList}/>
-
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={
+                                                      <Button color={master.isActivated ? "success" : "error"}
+                                                              size="small"
+                                                              variant="outlined"
+                                                              onClick={() => changeActiveted(master)}>
+                                                          {master.isActivated ? "Актив" : "Не актив"}
+                                                      </Button>
+                                                  }
+                                    />
                                     <IconButton sx={{width: 5}}
                                                 edge="end"
                                                 aria-label="Edit"

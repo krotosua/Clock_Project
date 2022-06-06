@@ -17,11 +17,14 @@ class MasterController {
                 const master = await masterLogic.create(req, res, next)
                 return master
             })
-            return res.status(201).json(result)
+            return
         } catch (e) {
             next(ApiError.badRequest({message: "WRONG request"}))
         }
     }
+
+
+
 
     async getAll(req, res, next) {
         await masterLogic.getAll(req, res, next)
@@ -46,6 +49,21 @@ class MasterController {
                 const {cityId} = req.body
                 await cityLogic.checkMasterCityId(cityId)
                 const master = await masterLogic.update(req, res, next)
+                return master
+            })
+            return res.status(201).json(result)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+    async activate(req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
+        try {
+            const result = await sequelize.transaction(async () => {
+                const master = await masterLogic.activate(req, res, next)
                 return master
             })
             return res.status(201).json(result)

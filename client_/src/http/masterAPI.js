@@ -2,7 +2,7 @@ import {$authHost, $host} from "./index";
 
 
 export const createMaster = async (master) => {
-    await $authHost.post('api/masters/', master)
+    await $authHost.post('api/masters/admin/', master)
 }
 
 export const fetchMasters = async (cityId, date, page, limit = 10) => {
@@ -18,5 +18,9 @@ export const deleteMaster = async (id) => {
 }
 export const updateMaster = async (master) => {
     await $authHost.put('api/masters/' + master.id, master)
+
+}
+export const activateMaster = async (master) => {
+    await $authHost.put('api/masters/activate/' + master.id, master)
 
 }

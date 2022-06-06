@@ -12,12 +12,12 @@ import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import {Tooltip} from "@mui/material";
 import {deleteUser, fetchUsers} from "../../http/userAPI";
-import PersonIcon from '@mui/icons-material/Person';
+
 import Pages from "../Pages";
 import EditIcon from "@mui/icons-material/Edit";
 import EditUser from "./modals/EditUser";
 import AddIcon from "@mui/icons-material/Add";
-import CreateCity from "./modals/CreateCity";
+
 import CreateUser from "./modals/CreateUser";
 
 
@@ -92,7 +92,7 @@ const CityList = observer(({alertMessage}) => {
                                     key={user.id}
                                     divider
                                     secondaryAction={
-                                        user.role === "USER"||user.role === "MASTER" ?
+                                        user.role !== "ADMIN" ?
                                             <Tooltip title={'Удалить пользователя'}
                                                      placement="right"
                                                      arrow>
@@ -148,6 +148,7 @@ const CityList = observer(({alertMessage}) => {
                     onClose={() => {
                         setEditVisible(false)
                     }}
+                    alertMessage={alertMessage}
                 /> : null}
                 {createVisible?
                 <CreateUser open={createVisible}

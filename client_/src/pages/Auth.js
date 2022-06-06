@@ -50,6 +50,7 @@ const Auth = observer(() => {
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
+
     const alertMessage = (message, bool) => {
         setOpen(true)
         setMessage(message)
@@ -60,22 +61,14 @@ const Auth = observer(() => {
             let dataUser;
             if (isLogin && password.length >= 6 && reg.test(email) !== false) {
                 dataUser = await login(email, password)
-            } else if (password.length >= 6 && reg.test(email) !== false) {
-                if (isMaster ) {
-                    const masterData = {
-                        name: name.trim(),
-                        rating: 0,
-                        cityId: cities.selectedCity,
-                        email:email,
-                        password:password
-                    }
-                    await createMaster(masterData)
-                } else {
+            }
+            else if (password.length >= 6 && reg.test(email) !== false) {
+                isMaster?
+                    await registration(email, password, isMaster,name,cities.selectedCity):
                     await registration(email, password, isMaster)
-                }
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
-                return
-            } else {
+                return}
+            else {
                 setError(true)
                 return
             }
@@ -154,7 +147,7 @@ const Auth = observer(() => {
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
-                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
+                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ?!isLogin&&password !== passwordCheck : false}
                                     id="Password"
                                     label="Пароль"
                                     type={showPassword ? 'text' : 'password'}

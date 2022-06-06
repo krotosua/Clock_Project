@@ -11,6 +11,7 @@ import SelectorMasterCity from "./SelectorMasterCity";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {registrationFromAdm} from "../../../http/userAPI";
 
 const style = {
     position: 'absolute',
@@ -48,7 +49,8 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
             password:password
         }
 
-        createMaster(masterData).then(res => {
+        registrationFromAdm(email, password, true,masterName,cities.selectedCity,true).then(res => {
+
             close()
             alertMessage("Мастер успешно добавлен", false)
             fetchMasters(null, null, masters.page, 10).then(res => {

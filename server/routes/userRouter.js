@@ -10,7 +10,15 @@ const checkRole = require("../middleware/checkRoleMiddleware");
 router.post("/registration/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
+    body('isMaster').isBoolean(),
     userController.registration)
+router.post("/registrationAdm/",
+    body('email').isEmail(),
+    body('password').isLength({min: 6}),
+    body('isMaster').isBoolean(),
+    checkRole("ADMIN"),
+
+    userController.registrationFromAdmin)
 router.post('/login/',
     body('email').isEmail(),
     body('password').isLength({min: 6}),

@@ -29,17 +29,9 @@ const Master = sequelize.define('master', {
         validate: {
             min: 0,
             max: 5
-        }
+        },defaultValue: 0
     },
-    email: {
-        type: DataTypes.STRING, unique: true, allowNull: false,
-        validate: {
-            isEmail: true,
-        }
-    },
-    password: {
-        type: DataTypes.STRING,
-    },
+    isActivated:{type:DataTypes.BOOLEAN, defaultValue: false},
 }, {timestamps: false})
 const City = sequelize.define('city', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -82,6 +74,9 @@ const CitiesMasters = sequelize.define('cities_masters', {
 }, {timestamps: false})
 User.hasMany(Order)
 Order.belongsTo(User)
+
+User.hasOne(Master,{onDelete: 'CASCADE'})
+Master.belongsTo(User,{onDelete: 'CASCADE'})
 
 Master.hasMany(Order)
 Order.belongsTo(Master)
