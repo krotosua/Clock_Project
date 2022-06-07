@@ -25,7 +25,7 @@ const Master = sequelize.define('master', {
         validate: {notEmpty: true}
     },
     rating: {
-        type: DataTypes.INTEGER, allowNull: false,
+        type: DataTypes.DOUBLE, allowNull: false,
         validate: {
             min: 0,
             max: 5
@@ -67,7 +67,8 @@ const Order = sequelize.define('order', {
     },
     date: {type: DataTypes.DATEONLY,},
     time: {type: DataTypes.DATE,},
-    endTime: {type: DataTypes.DATE}
+    endTime: {type: DataTypes.DATE},
+    finished:{type: DataTypes.BOOLEAN, defaultValue: false},
 }, {timestamps: false})
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -75,6 +76,25 @@ const CitiesMasters = sequelize.define('cities_masters', {
 const Customer = sequelize.define('customer', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 }, {timestamps: false})
+const Rating = sequelize.define('rating', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    review:{type: DataTypes.STRING,allowNull:true},
+    rating: {
+        type: DataTypes.INTEGER, allowNull: false,
+        validate: {
+            min: 0,
+            max: 5
+        }, defaultValue: 0}})
+
+Master.hasMany(Rating,{onDelete: 'CASCADE'})
+Rating.belongsTo(Master)
+
+User.hasOne(Rating,)
+Rating.belongsTo(User)
+
+Order.hasOne(Rating,{onDelete: 'CASCADE'})
+Rating.belongsTo(Order)
+
 User.hasMany(Order)
 Order.belongsTo(User)
 
@@ -101,5 +121,6 @@ module.exports = {
     Master,
     SizeClock,
     CitiesMasters,
-    Customer
+    Customer,
+    Rating
 }

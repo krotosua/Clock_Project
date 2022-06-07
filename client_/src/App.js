@@ -21,7 +21,7 @@ const App = observer(() => {
                 user.setUser(data)
                 user.setIsAuth(true)
                 user.setUserRole(data.role)
-
+console.log(data)
             }, err => {
                 localStorage.setItem('token', "")
             })

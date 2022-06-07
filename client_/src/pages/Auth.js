@@ -17,7 +17,7 @@ import {
 import {
     ADMIN_ROUTE,
     LOGIN_ROUTE,
-    REGISTRATION_ROUTE, START_ROUTE, USER_ORDER_ROUTE,
+    REGISTRATION_ROUTE, MASTER_ORDER_ROUTE, CUSTOMER_ORDER_ROUTE,
 } from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
@@ -27,7 +27,6 @@ import MyAlert from "../components/adminPageComponents/MyAlert";
 import IconButton from "@mui/material/IconButton";
 import InputLabel from "@mui/material/InputLabel";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import {createMaster} from "../http/masterAPI";
 
 
 const Auth = observer(() => {
@@ -72,6 +71,7 @@ const Auth = observer(() => {
                 setError(true)
                 return
             }
+            console.log(dataUser)
 
             if (dataUser.isActivated == false && dataUser.role !== "ADMIN") {
                 alertMessage("Требуется подтвердить Email", true)
@@ -81,9 +81,10 @@ const Auth = observer(() => {
             user.setIsAuth(true)
             user.setUserRole(dataUser.role)
 
-            dataUser.role === "USER" && dataUser.isActivated === true ?
-                navigate(`${USER_ORDER_ROUTE}/${user.user.id}`) :
-                navigate(ADMIN_ROUTE)
+            dataUser.role === "CUSTOMER" && dataUser.isActivated === true ?
+                navigate(`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`) :
+                user.userRole === 'MASTER'&&dataUser.isActivated === true?
+                navigate(`${MASTER_ORDER_ROUTE}/${user.user.id}`) :navigate(ADMIN_ROUTE)
         } catch (e) {
             setError(true)
         }

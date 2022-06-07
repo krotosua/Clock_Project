@@ -207,6 +207,7 @@ const MyStepper = observer(({alertMessage}) => {
                             value={date}
                             open={openDate}
                             onChange={(newDate) => {
+
                                 setDate(newDate);
                                 setOpenDate(false)
                                 setChosenMaster(null)
@@ -232,7 +233,7 @@ const MyStepper = observer(({alertMessage}) => {
                             value={time}
                             open={openTime}
                             onChange={(newValue) => {
-                                setTime(newValue);
+                                setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(),0,0)));
                                 setOpenTime(false)
                                 setChosenMaster(null)
                             }}

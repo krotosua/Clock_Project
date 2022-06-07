@@ -8,7 +8,7 @@ import {Context} from "../index";
 import {observer} from "mobx-react-lite";
 import {Container, CssBaseline} from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
-import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, USER_ORDER_ROUTE} from "../utils/consts";
+import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, CUSTOMER_ORDER_ROUTE,MASTER_ORDER_ROUTE} from "../utils/consts";
 
 
 const NavBar = observer(() => {
@@ -47,15 +47,26 @@ const NavBar = observer(() => {
                                         Админ панель
                                     </Button>
                                 </Link> :
-                                <Link to={`${USER_ORDER_ROUTE}/${user.user.id}`}
+                                user.userRole === "CUSTOMER"?
+                                <Link to={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
                                       style={{textDecoration: 'none', color: 'white'}}>
                                     <Button variant="outlined" color="inherit"
                                             onClick={() => {
-                                                navigate(`${USER_ORDER_ROUTE}/${user.user.id}`)
+                                                navigate(`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`)
                                             }}>
                                         Список заказов
                                     </Button>
-                                </Link>
+                                </Link>:
+                                    user.userRole === "MASTER"?
+                                        <Link to={`${MASTER_ORDER_ROUTE}/${user.user.id}`}
+                                              style={{textDecoration: 'none', color: 'white'}}>
+                                            <Button variant="outlined" color="inherit"
+                                                    onClick={() => {
+                                                        navigate(`${MASTER_ORDER_ROUTE}/${user.user.id}`)
+                                                    }}>
+                                                Список заказов
+                                            </Button>
+                                        </Link>:null
                             }
                             <Link to={START_ROUTE}
                                   style={{textDecoration: 'none', color: 'white'}}>

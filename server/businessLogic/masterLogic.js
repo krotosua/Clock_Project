@@ -1,4 +1,4 @@
-const {Master, City, Order, CitiesMasters, User} = require('../models/models')
+const {Master, City, Order, CitiesMasters, User, Rating} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const {Op} = require("sequelize");
 const sizeLogic = require("./sizeLogic");
@@ -156,7 +156,7 @@ class MasterLogic {
     async update(req, res, next) {
         try {
             const {masterId} = req.params
-            const {name, rating, cityId, isActivated} = req.body
+            const {name, rating, cityId, } = req.body
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
                 name: name,
@@ -169,11 +169,29 @@ class MasterLogic {
         }
     }
 
+    async ratingUpdate(req, res, next) {
+        try {
+            const {userId} = req.params
+            let { rating,review, orderId,masterId } = req.body
+           await Rating.create({ rating,review,userId, masterId, orderId})
+           let allRating= await Rating.findAndCountAll({where:{masterId:masterId},
+            attributes:["rating"]})
+            rating = allRating.rows.reduce((sum,current)=> sum+current,0)/allRating.count
+            const master = await Master.findOne({where: {id: masterId}})
+            await master.update({
+                rating: rating,
+            })
+            return  master
+        } catch (e) {
+            return next(ApiError.badRequest({message: "Wrong request"}))
+        }
+    }
+
+
     async activate(req, res, next) {
         try {
             const {masterId} = req.params
             const {isActivated} = req.body
-            console.log(masterId)
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
                 isActivated: isActivated,

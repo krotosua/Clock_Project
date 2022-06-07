@@ -69,6 +69,21 @@ class MasterController {
             next(ApiError.badRequest(e.message))
         }
     }
+    async ratingUpdate(req, res, next){
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
+        try {
+            const result = await sequelize.transaction(async () => {
+                const master = await masterLogic.ratingUpdate(req, res, next)
+                return master
+            })
+            return res.status(201).json(result)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
 
     async deleteOne(req, res, next) {
         const errors = validationResult(req);
