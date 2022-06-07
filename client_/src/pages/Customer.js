@@ -4,24 +4,24 @@ import {Box, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import {ORDER_ROUTE} from "../utils/consts";
 import {useNavigate, useParams} from "react-router-dom";
-import {fetchUserOrders} from "../http/orderAPI";
+import {fetchCustomerOrders, } from "../http/orderAPI";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../components/Pages";
 
-const User = observer(() => {
+const Customer = observer(() => {
     const navigate = useNavigate()
 
     let {orders} = useContext(Context)
     const {id} = useParams()
     const getOrders = () => {
-        fetchUserOrders(id, orders.page, 8).then(res => {
+        fetchCustomerOrders(id, orders.page, 8).then(res => {
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
             }
             res.data.rows.map(item => {
-                item.date = new Date(item.date).toLocaleDateString()
+                item.date = new Date(item.date).toLocaleDateString("uk-UA")
             })
 
             orders.setIsEmpty(false)
@@ -59,4 +59,4 @@ const User = observer(() => {
     );
 });
 
-export default User;
+export default Customer;

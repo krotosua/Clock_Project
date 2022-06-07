@@ -55,6 +55,20 @@ class UserLogic {
             next(ApiError.badRequest(e.message))
         }
     }
+    async adminreg(req, res, next) {
+        try {
+                const {email, password,role} = req.body
+           let isActivated= true
+                const hashPassword = await bcrypt.hash(password, 5)
+
+                const user = await User.create({email, role, password: hashPassword,isActivated})
+
+                return res.status(201).json({user})
+
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
 
     async registrationFromAdmin(req, res, next) {
         try {
@@ -119,7 +133,7 @@ class UserLogic {
             const {email, password} = req.body
             const user = await User.findOne({where: {email}})
             if (!user) {
-                return next(ApiError.NotFound({message: 'User with this name not found'}))
+                return next(ApiError.NotFound({message: 'Customer with this name not found'}))
             }
             let comparePassword = bcrypt.compareSync(password, user.password)
             if (!comparePassword) {
@@ -209,7 +223,7 @@ class UserLogic {
                 await user.destroy()
                 return res.status(204).json({message: "success"})
             } else {
-                return next(ApiError.Conflict("User has orders"))
+                return next(ApiError.Conflict( "Customer has orders"))
             }
             return res.status(204).json("success")
         } catch (e) {

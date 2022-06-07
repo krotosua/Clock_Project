@@ -9,13 +9,14 @@ import {
     ORDER_ROUTE,
     REGISTRATION_ROUTE,
     START_ROUTE,
-    USER_ORDER_ROUTE,
-    ACTIVATED_ROUTE
+    MASTER_ORDER_ROUTE,
+    CUSTOMER_ORDER_ROUTE,ACTIVATED_ROUTE
 } from "./utils/consts";
-import User from "./pages/User";
+import Customer from "./pages/Customer";
 import Start from "./pages/Start";
 import Order from "./pages/Order";
 import Auth from "./pages/Auth";
+import Master from "./pages/Master";
 import Activated from "./pages/Activated";
 
 
@@ -40,11 +41,20 @@ export const adminRoutes = [{
         Component: Admin
     }
 ]
-export const authRoutes = [
+
+export const masterRoutes = [
 
     {
-        path: USER_ORDER_ROUTE + '/:id',
-        Component: User
+        path: MASTER_ORDER_ROUTE + '/:id',
+        Component: Master
+    },
+
+]
+export const customerRoutes = [
+
+    {
+        path: CUSTOMER_ORDER_ROUTE + '/:id',
+        Component: Customer
     },
 
 ]

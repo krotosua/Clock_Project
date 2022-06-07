@@ -18,7 +18,6 @@ class OrderController {
             const result = await sequelize.transaction(async () => {
                 let {sizeClockId, date, time, masterId, cityId} = req.body
                 const clock = await sizeLogic.CheckClock(next, sizeClockId)
-
                 let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
                 let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
                 time = new Date(time)
@@ -26,12 +25,12 @@ class OrderController {
                 await masterLogic.checkOrders(res, next, masterId, date, time, endTime, clock)
                 const user = await userLogic.GetOrCreateUser(req, res, next)
                 if (!user) {
-                    throw new ApiError.badRequest({message: "User is wrong"})
+                    throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 const userId = user.dataValues.id
                 const order = await orderLogic.create(req, res, next, userId, time, endTime)
                 if (!order) {
-                    throw new ApiError.badRequest({message: "User is wrong"})
+                    throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 let data = {
                     order: order,
@@ -66,10 +65,27 @@ class OrderController {
                 }
                 const user = await userLogic.GetOrCreateUser(req, res, next)
                 if (!user) {
-                    throw new ApiError.badRequest({message: "User is wrong"})
+                    throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 const userId = user.dataValues.id
                 const orders = await orderLogic.update(req, res, next, userId, time, endTime)
+                return orders
+            })
+            return res.status(201).json(result)
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async finished(req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
+        try {
+            const result = await sequelize.transaction(async () => {
+
+                const orders = await orderLogic.finished(req, res, next)
                 return orders
             })
             return res.status(201).json(result)
@@ -84,6 +100,14 @@ class OrderController {
             return res.status(400).json({errors: errors.array()});
         }
         await orderLogic.getUserOrders(req, res, next)
+    }
+
+    async getMasterOrders(req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
+        await orderLogic.getMasterOrders(req, res, next)
     }
 
     async getAllOrders(req, res, next) {

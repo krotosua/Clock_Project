@@ -15,7 +15,7 @@ import {
 import {
     ADMIN_ROUTE,
     LOGIN_ROUTE,
-    REGISTRATION_ROUTE, USER_ORDER_ROUTE,
+    REGISTRATION_ROUTE, MASTER_ORDER_ROUTE, CUSTOMER_ORDER_ROUTE,
 } from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
@@ -53,15 +53,15 @@ const Auth = observer(() => {
     }
     const singIn = async () => {
         try {
-            let customerData,masterData,dataUser
+            let customerData, masterData, dataUser
             isMaster ?
-                masterData={
-                    email,password,isMaster, name, cityId: cities.selectedCity
-                }:
-            customerData={
-                email,password,isMaster, name
-            }
-            
+                masterData = {
+                    email, password, isMaster, name, cityId: cities.selectedCity
+                } :
+                customerData = {
+                    email, password, isMaster, name
+                }
+
             if (isLogin && password.length >= 6 && reg.test(email) !== false) {
                 dataUser = await login(email, password)
             } else if (password.length >= 6 && reg.test(email) !== false) {
@@ -97,7 +97,7 @@ const Auth = observer(() => {
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     const disableButton = isMaster === true ?
         !agree || !email || password.length < 6 || reg.test(email) === false || !name || cities.selectedCity.length === 0 || password !== passwordCheck :
-        !agree || !email || password.length < 6 || reg.test(email) === false || !name|| password !== passwordCheck
+        !agree || !email || password.length < 6 || reg.test(email) === false || !name || password !== passwordCheck
 
     return (
         <Container

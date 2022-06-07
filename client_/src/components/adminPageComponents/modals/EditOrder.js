@@ -144,8 +144,8 @@ const EditOrder = observer(({
         setFreeMasters([])
     }
 
-    function timeChange(newDate) {
-        setTime(newDate);
+    function timeChange(newValue) {
+        setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(),0,0)));
         setOpenList(false)
         setChosenMaster(null)
         setOpenTime(false)

@@ -19,15 +19,17 @@ import {
     Divider
 } from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
+import {CircularProgress, FormControlLabel, Radio, RadioGroup, Rating, TextField, Tooltip} from "@mui/material";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
 import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
-import {LocalizationProvider, DatePicker, TimePicker} from "@mui/lab";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import {observer} from "mobx-react-lite";
 import {fetchMastersForOrder} from "../../http/masterAPI";
-import {createOrder} from "../../http/orderAPI";
+import {createOrder,} from "../../http/orderAPI";
+import {DatePicker, TimePicker} from "@mui/lab";
 import {START_ROUTE} from "../../utils/consts";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
@@ -149,122 +151,133 @@ const MyStepper = observer(({alertMessage}) => {
 
             <Box sx={{mt: 2}}>
 
-                <TextField
-                    required
-                    id="Name"
-                    label="Ваше имя"
-                    helperText={blurName && name.length < 3 ? "Имя должно быть больше 3-х символов" : ""}
-                    variant="outlined"
-                    value={name}
-                    error={blurName && name.length < 3}
-                    onFocus={() => setBlurName(false)}
-                    onBlur={() => setBlurName(true)}
-                    fullWidth
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <TextField
-                    required
-                    sx={{mt: 1}}
-                    error={blurEmail && reg.test(email) == false}
-                    helperText={blurEmail && reg.test(email) == false ? "Введите email формата:clock@clock.com " : ""}
-                    id="Email"
-                    onFocus={() => setBlurEmail(false)}
-                    onBlur={() => setBlurEmail(true)}
-                    label="Ваш Email"
-                    type="email"
-                    variant="outlined"
-                    value={email}
-                    fullWidth
-                    onChange={(e) => {
-                        setEmail(e.target.value)
-                        setError(false)
-                    }}
-                />
-                <Box
-                    sx={{display: "grid", gridTemplateColumns: "repeat(2, 1fr)", my: 2}}
-                >
-                    <SelectorSize sizeClock={sizeClock}
-                                  cleanMaster={() => setChosenMaster(null)}
-                                  setSizeClock={() => setSizeClock(size.selectedSize.id)}/>
-                    <SelectorCity cityChosen={cityChosen}
-                                  cleanMaster={() => setChosenMaster(null)}
-                                  setCityChosen={() => setCityChosen(cities.selectedCity)}
+                    <TextField
+                        required
+                        id="Name"
+                        label="Ваше имя"
+                        helperText={blurName && name.length < 3 ? "Имя должно быть больше 3-х символов" : ""}
+                        variant="outlined"
+                        value={name}
+                        error={blurName && name.length < 3}
+                        onFocus={() => setBlurName(false)}
+                        onBlur={() => setBlurName(true)}
+                        fullWidth
+                        onChange={(e) => setName(e.target.value)}
                     />
-                </Box>
-                <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
-                    <DatePicker
-                        mask='__.__.____'
-                        label="Выберите день заказа"
-                        disableHighlightToday
-                        value={date}
-                        open={openDate}
-                        onChange={(newDate) => {
-                            setDate(newDate);
-                            setOpenDate(false)
-                            setChosenMaster(null)
+                    <TextField
+                        required
+                        sx={{mt: 1}}
+                        error={blurEmail && reg.test(email) == false}
+                        helperText={blurEmail && reg.test(email) == false ? "Введите email формата:clock@clock.com " : ""}
+                        id="Email"
+                        onFocus={() => setBlurEmail(false)}
+                        onBlur={() => setBlurEmail(true)}
+                        label="Ваш Email"
+                        type="email"
+                        variant="outlined"
+                        value={email}
+                        fullWidth
+                        onChange={(e) => {
+                            setEmail(e.target.value)
+                            setError(false)
                         }}
-                        onError={(e) => e ? setErrorDatePicker(true) : setErrorDatePicker(false)}
-                        minDate={new Date()}
-                        renderInput={(params) => <TextField onClick={() => setOpenDate(true)}
-                                                            sx={{
-                                                                mr: 2, '& .MuiInputBase-input': {
-                                                                    cursor: "pointer",
-                                                                }
-                                                            }}
-                                                            {...params} />}
                     />
-                </LocalizationProvider>
-
-                <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
-                    <TimePicker
-                        readOnly
-                        label="Выберите время"
-                        value={time}
-                        open={openTime}
-                        onChange={(newValue) => {
-                            setTime(newValue);
-                            setOpenTime(false)
-                            setChosenMaster(null)
-                        }}
-                        onError={(e) => e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
-                        ampm={false}
-                        views={["hours"]}
-                        minTime={date.toLocaleDateString('uk-UA') == new Date().toLocaleDateString('uk-UA') ? new Date(0, 0, 0, new Date().getHours() + 1) : new Date(0, 0, 0, 8)}
-                        maxTime={new Date(0, 0, 0, 22)}
-                        renderInput={(params) => <TextField helperText="Заказы принимаются с 8:00 до 22:00"
-                                                            sx={{
-                                                                '& .MuiInputBase-input': {
-                                                                    cursor: "pointer"
-                                                                }
-                                                            }}
-                                                            onClick={() => setOpenTime(true)}
-                                                            {...params} />}
-                    />
-                </LocalizationProvider>
-                <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>
-                    {activeStep === 0 ? <Link to={START_ROUTE}
-                                              style={{textDecoration: 'none', color: 'black'}}>
-                        <Button
-                            color="inherit"
-                            onClick={() => {
-                                navigate(START_ROUTE)
-                            }}
-                            sx={{mr: 1}}
-                        >
-                            На начальную страницу
-                        </Button>
-                    </Link> : <Button
-                        color="inherit"
-                        disabled={activeStep === 0}
-                        onClick={handleBack}
-                        sx={{mr: 1}}
+                    <Box
+                        sx={{display: "grid", gridTemplateColumns: "repeat(2, 1fr)", my: 2}}
                     >
-                        Назад
-                    </Button>}
-                    <Button onClick={handleNext}
-                            disabled={checkInfo}>
-                        {activeStep === steps.length - 1 ? "Отправить заказ" : "Дальше"}
-                    </Button>
+                        <SelectorSize sizeClock={sizeClock}
+                                      cleanMaster={() => setChosenMaster(null)}
+                                      setSizeClock={() => setSizeClock(size.selectedSize.id)}/>
+                        <SelectorCity cityChosen={cityChosen}
+                                      cleanMaster={() => setChosenMaster(null)}
+                                      setCityChosen={() => setCityChosen(cities.selectedCity)}
+                        />
+                    </Box>
+                    <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
+                        <DatePicker
+                            mask='__.__.____'
+                            label="Выберите день заказа"
+                            disableHighlightToday
+                            value={date}
+                            open={openDate}
+                            onChange={(newDate) => {
+
+                                setDate(newDate);
+                                setOpenDate(false)
+                                setChosenMaster(null)
+                            }}
+                            onError={(e) =>
+                                e ? setErrorDatePicker(true) : setErrorDatePicker(false)}
+                            minDate={new Date()}
+                            renderInput={(params) => <TextField onClick={() => setOpenDate(true)}
+                                                                sx={{
+                                                                    mr: 2,
+                                                                    '& .MuiInputBase-input': {
+                                                                        cursor: "pointer",
+                                                                    }
+                                                                }}
+                                                                {...params} />}
+                        />
+                    </LocalizationProvider>
+
+                    <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
+                        <TimePicker
+                            readOnly
+                            label="Выберите время"
+                            value={time}
+                            open={openTime}
+                            onChange={(newValue) => {
+                                setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(),0,0)));
+                                setOpenTime(false)
+                                setChosenMaster(null)
+                            }}
+                            onError={(e) =>
+                                e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
+                            ampm={false}
+                            views={["hours"]}
+                            minTime={date.toLocaleDateString('uk-UA') == new Date().toLocaleDateString('uk-UA') ?
+                                new Date(0, 0, 0, new Date().getHours() + 1) :
+                                new Date(0, 0, 0, 8)}
+                            maxTime={new Date(0, 0, 0, 22)}
+                            renderInput={(params) =>
+                                <TextField helperText="Заказы принимаются с 8:00 до 22:00"
+                                           sx={{
+                                               '& .MuiInputBase-input': {
+                                                   cursor: "pointer"
+                                               }
+                                           }}
+                                           onClick={() => setOpenTime(true)}
+                                           {...params} />}
+                        />
+                    </LocalizationProvider>
+                    <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>
+                        {activeStep === 0 ?
+                            <Link to={START_ROUTE}
+                                  style={{textDecoration: 'none', color: 'black'}}>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => {
+                                        navigate(START_ROUTE)
+                                    }}
+                                    sx={{mr: 1}}
+                                >
+                                    На начальную страницу
+                                </Button>
+                            </Link>
+                            :
+                            <Button
+                                color="inherit"
+                                disabled={activeStep === 0}
+                                onClick={handleBack}
+                                sx={{mr: 1}}
+                            >
+                                Назад
+                            </Button>}
+                        <Button onClick={handleNext}
+                                disabled={checkInfo}>
+                            {activeStep === steps.length - 1 ? "Отправить заказ" : "Дальше"}
+                        </Button>
+                    </Box>
                 </Box>
             </Box>) : activeStep === steps.length - 1 ? (<Box sx={{mt: 2}}>
                 <Box sx={{ml: 4}}>

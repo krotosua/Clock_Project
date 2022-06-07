@@ -1,18 +1,39 @@
 import * as React from 'react';
-import {Box, List, ListItem, ListItemText, Typography, Divider, Button, Tooltip} from '@mui/material';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 import {useContext} from "react";
 import {Context} from "../../index";
+import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
+import Button from "@mui/material/Button";
+import {activateMaster} from "../../http/masterAPI";
+import {finishedOrder} from "../../http/orderAPI";
 
-const OrderList = observer(() => {
+
+const OrderList = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
-    const [open, setOpen] = useState(false)
+
+    function changeFinished(order) {
+        let changeInfo = {
+            id: order.id,
+            finished: !order.finished
+        }
+
+        finishedOrder(changeInfo)
+            .then(res => {
+                alertMessage('Данные мастера успешно изменены', false)
+                return order.finished = !order.finished
+            }, err => {
+                alertMessage('Не удалось изменить данные мастера', true)
+            })
+    }
 
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
-
-
             <List disablePadding>
                 <ListItem
                     key={1}
@@ -23,26 +44,24 @@ const OrderList = observer(() => {
                                   primary="№"
                     />
                     <ListItemText sx={{width: 10}}
-                                  primary="Имя"
+                                  primary="Имя клиента"
                     />
 
                     <ListItemText sx={{width: 10}}
-                                  primary="Начало заказа"
+                                  primary="Город"
+
                     />
                     <ListItemText sx={{width: 10}}
-                                  primary="Конец заказа"
+                                  primary="Дата/время начало"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Дата/время конец"
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Тип услуги"/>
 
                     <ListItemText sx={{width: 10}}
-                                  primary="Мастер"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Город"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Оценка"
+                                  primary="Статус"
                     />
 
 
@@ -58,9 +77,11 @@ const OrderList = observer(() => {
                         <ListItemText sx={{width: 10}}
                                       primary={index + 1}
                         />
-                        <Divider orientation="vertical" variant="middle" flexItem/>
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={`${order.date} ${time}`}
@@ -71,32 +92,17 @@ const OrderList = observer(() => {
 
                         <ListItemText sx={{width: 10}}
                                       primary={order.sizeClock.name}
-                        /><ListItemText sx={{width: 10}}
-                                        primary={order.master.name}
-                    />
-                        <ListItemText sx={{width: 10}}
-                                      primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
                         <ListItemText sx={{width: 10}}
-
                                       primary={
-                                          open ? <Box>aaaa</Box>
-                                              : <Tooltip title={!order.finished ?
-                                                  'Станет доступна после выполнения заказа'
-                                                  : "Оценить работу мастера"}
-                                                         placement="right"
-                                                         arrow>
-                                              <span>
-                                              <Button color="success"
-                                                      size="small"
-                                                      variant="outlined"
-                                                      disabled={!order.finished}
-                                                      onClick={() => setOpen(true)}>
-                                                  Оценить
-                                              </Button>
-                                                  </span>
-                                              </Tooltip>}
-                        />
+                                          <Button color={order.finished ? "success" : "error"}
+                                                  size="small"
+                                                  variant="outlined"
+                                                  onClick={() => changeFinished(order)}>
+                                              {order.finished ? "Закончен" : "Не закончен"}
+                                          </Button>
+                                      }
+                    />
 
                     </ListItem>)
                 })}
@@ -104,7 +110,6 @@ const OrderList = observer(() => {
             </List>
 
         </Box>
-    )
-        ;
+    );
 })
 export default OrderList;
