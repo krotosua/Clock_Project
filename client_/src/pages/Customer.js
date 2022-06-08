@@ -1,9 +1,9 @@
-import React, {useContext, useEffect} from 'react';
-import OrderList from '../components/userPageComponents/OrderList'
+import React, {useContext, useEffect, useState} from 'react';
+import OrderList from '../components/customerPageComponents/OrderList'
 import {Box, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import {ORDER_ROUTE} from "../utils/consts";
-import {useNavigate, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import {fetchCustomerOrders, } from "../http/orderAPI";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
@@ -41,6 +41,8 @@ const Customer = observer(() => {
                 <Box sx={{height: "650px"}}>
                     <OrderList/>
                 </Box>
+                <Link to={ORDER_ROUTE}
+                      style={{textDecoration: 'none', color: 'white'}}>
                 <Tooltip title="Добавить заказ" placement="top" arrow>
                     <Fab onClick={() => navigate(ORDER_ROUTE)}
                          color="primary"
@@ -49,7 +51,7 @@ const Customer = observer(() => {
                         <AddIcon/>
                     </Fab>
                 </Tooltip>
-
+                </Link>
             </Box>
             <Box style={{display: "flex", justifyContent: "center"}}>
                 <Pages context={orders}/>

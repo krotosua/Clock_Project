@@ -149,16 +149,20 @@ const MasterList = observer(({alertMessage}) => {
                                       primary={master.name}/>
 
                         <ListItemText sx={{width: 10}}
-                                      primary={<Rating name="read-only" value={master.rating} readOnly/>}/>
+                                      primary={
+                                          <Rating name="read-only" size="small" value={master.rating} precision={0.2}
+                                                  readOnly/>}/>
                         <ListItemText sx={{width: 10}}
                                       primary={cityList}/>
                         <ListItemText sx={{width: 10}}
-                                      primary={<Button color={master.isActivated ? "success" : "error"}
-                                                       size="small"
-                                                       variant="outlined"
-                                                       onClick={() => changeActiveted(master)}>
-                                          {master.isActivated ? "Актив" : "Не актив"}
-                                      </Button>}
+                                      primary={
+                                          <Button color={master.isActivated ? "success" : "error"}
+                                                  size="small"
+                                                  variant="outlined"
+                                                  onClick={() => changeActiveted(master)}>
+                                              {master.isActivated ? "Актив" : "Не актив"}
+                                          </Button>
+                                      }
                         />
                         <IconButton sx={{width: 5}}
                                     edge="end"
@@ -188,5 +192,5 @@ const MasterList = observer(({alertMessage}) => {
             <Pages context={masters}/>
         </Box>
     </Box>);
-})
-export default MasterList;
+        })
+        export default MasterList;

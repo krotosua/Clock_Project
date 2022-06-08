@@ -1,13 +1,24 @@
 import * as React from 'react';
 import {Box, List, ListItem, ListItemText, Typography, Divider, Button, Tooltip} from '@mui/material';
-import {useContext} from "react";
+import {useContext, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 
 const OrderList = observer(() => {
     let {orders, cities} = useContext(Context)
     const [open, setOpen] = useState(false)
+    const [dataForEdit, setDataForEdit] = useState({})
 
+    function createData(order) {
+console.log(order)
+        let data = {
+            orderId: order.id,
+            masterId: order.masterId,
+            userId: order.userId,
+        }
+        setDataForEdit(data)
+        setOpen((true))
+    }
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -80,7 +91,12 @@ const OrderList = observer(() => {
                         <ListItemText sx={{width: 10}}
 
                                       primary={
-                                          open ? <Box>aaaa</Box>
+                                          order.rating!==null ? <Box>
+                                                  <Rating
+                                                      readOnly
+                                                      precision={0.5}
+                                                      value={order.rating.rating}
+                                              /></Box>
                                               : <Tooltip title={!order.finished ?
                                                   'Станет доступна после выполнения заказа'
                                                   : "Оценить работу мастера"}
@@ -91,7 +107,11 @@ const OrderList = observer(() => {
                                                       size="small"
                                                       variant="outlined"
                                                       disabled={!order.finished}
-                                                      onClick={() => setOpen(true)}>
+                                                      onClick={() => {
+                                                          createData(order)
+
+
+                                                      }}>
                                                   Оценить
                                               </Button>
                                                   </span>
@@ -101,8 +121,13 @@ const OrderList = observer(() => {
                     </ListItem>)
                 })}
                 <Divider/>
+
             </List>
 
+            {open ? <MasterRating open={open}
+                                  dataForEdit={dataForEdit}
+                                  onClose={() => setOpen(false)}
+            /> : null}
         </Box>
     )
         ;
