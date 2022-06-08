@@ -164,7 +164,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
 
                                     <ListItemText sx={{width: 10}}
                                                   primary={
-                                                      <Rating name="read-only" value={master.rating} readOnly/>}/>
+                                                      <Rating name="read-only" size="small" value={master.rating}precision={0.2} readOnly/>}/>
                                     <ListItemText sx={{width: 10}}
                                                   primary={cityList}/>
                                     <ListItemText sx={{width: 10}}

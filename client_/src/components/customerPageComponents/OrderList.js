@@ -3,19 +3,32 @@ import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
+
 import {useContext, useState} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import Button from "@mui/material/Button";
-import {Tooltip} from "@mui/material";
+import {Rating, Tooltip} from "@mui/material";
+import MasterRating from "./MasterRating";
 
 
 const OrderList = observer(() => {
     let {orders, cities} = useContext(Context)
-    const [open, setOpen]=useState(false)
+    const [open, setOpen] = useState(false)
+    const [dataForEdit, setDataForEdit] = useState({})
 
+    function createData(order) {
+console.log(order)
+        let data = {
+            orderId: order.id,
+            masterId: order.masterId,
+            userId: order.userId,
+        }
+        console.log(data)
+        setDataForEdit(data)
+        setOpen((true))
+    }
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -66,7 +79,7 @@ const OrderList = observer(() => {
                         <ListItemText sx={{width: 10}}
                                       primary={index + 1}
                         />
-                        <Divider orientation="vertical" variant="middle" flexItem />
+                        <Divider orientation="vertical" variant="middle" flexItem/>
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}
                         />
@@ -88,29 +101,43 @@ const OrderList = observer(() => {
                         <ListItemText sx={{width: 10}}
 
                                       primary={
-                                          open? <Box>aaaa</Box>
-                                         : <Tooltip title={!order.finished?
-                                    'Станет доступна после выполнения заказа'
-                                    :"Оценить работу мастера"}
-                                                    placement="right"
-                                                    arrow>
+                                          order.rating!==null ? <Box>
+                                                  <Rating
+                                                      readOnly
+                                                      precision={0.5}
+                                                      value={order.rating.rating}
+                                              /></Box>
+                                              : <Tooltip title={!order.finished ?
+                                                  'Станет доступна после выполнения заказа'
+                                                  : "Оценить работу мастера"}
+                                                         placement="right"
+                                                         arrow>
                                               <span>
                                               <Button color="success"
                                                       size="small"
                                                       variant="outlined"
                                                       disabled={!order.finished}
-                                                      onClick={()=>setOpen(true)}>
+                                                      onClick={() => {
+                                                          createData(order)
+
+
+                                                      }}>
                                                   Оценить
                                               </Button>
                                                   </span>
-                                </Tooltip> }
+                                              </Tooltip>}
                         />
 
                     </ListItem>)
                 })}
                 <Divider/>
+
             </List>
 
+            {open ? <MasterRating open={open}
+                                  dataForEdit={dataForEdit}
+                                  onClose={() => setOpen(false)}
+            /> : null}
         </Box>
     )
         ;

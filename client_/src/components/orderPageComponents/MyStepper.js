@@ -6,7 +6,16 @@ import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import {Link, useNavigate} from "react-router-dom";
-import {CircularProgress, FormControlLabel, Radio, RadioGroup, Rating, TextField, Tooltip} from "@mui/material";
+import {
+    CircularProgress,
+    FormControlLabel,
+    Popover,
+    Radio,
+    RadioGroup,
+    Rating,
+    TextField,
+    Tooltip
+} from "@mui/material";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
 import {useContext, useEffect, useState} from "react";
@@ -24,14 +33,15 @@ import {DatePicker, TimePicker} from "@mui/lab";
 import {START_ROUTE} from "../../utils/consts";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
+import {checkEmail} from "../../http/userAPI";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
 const MyStepper = observer(({alertMessage}) => {
-    const {cities, size, masters} = useContext(Context);
+    const {cities, size, masters, user} = useContext(Context);
     const [activeStep, setActiveStep] = useState(0);
     const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(user.isAuth ? user.user.email : "");
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [chosenMaster, setChosenMaster] = useState(null);
@@ -46,62 +56,78 @@ const MyStepper = observer(({alertMessage}) => {
     const [loading, setLoading] = useState(true)
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [emailExists, setEmailExists] = useState(false)
+    const [regCustomer, setRegCustomer] = useState(null)
     const navigate = useNavigate();
-    const handleNext = () => {
-        if (activeStep === 0) {
-            setLoading(true)
-            fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id, masters.page, 3).then(
-                (res) => {
-                    if (res.status === 204) {
-                        setFreeMasters([])
-                        return
-                    }
-                    setFreeMasters(res.data.rows)
-                    masters.setMasters(res.data.rows);
-                    masters.setTotalCount(res.data.count);
-                },
-                (err) => {
-                    masters.setIsEmpty(true);
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
+
+    function getMasters() {
+        setLoading(true)
+        fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id, masters.page, 3).then(
+            (res) => {
+                if (res.status === 204) {
+                    setFreeMasters([])
+                    return
                 }
-            ).finally(() => setLoading(false));
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        } else if (activeStep === 1 && chosenMaster) {
-            setChosenMaster(Number(chosenMaster))
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        } else {
-            let body = {
-                name: name,
-                date: date,
-                time: time,
-                email: email,
-                cityId: cityChosen,
-                masterId: chosenMaster,
-                sizeClockId: size.selectedSize.id
+                setFreeMasters(res.data.rows)
+                masters.setMasters(res.data.rows);
+                masters.setTotalCount(res.data.count);
+            },
+            (err) => {
+                masters.setIsEmpty(true);
             }
-            createOrder(body).then(res => {
-                cities.setSelectedCity(null)
-                size.setSelectedSize({date: "00:00:00"})
+        ).finally(() => setLoading(false));
+    }
+
+
+    const handleNext = (event) => {
+        if (user.isAuth||regCustomer!==null) {
+            if (activeStep === 0) {
+                getMasters()
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            }, err => {
-                alertMessage('Мастер занят', true)
-                setActiveStep(1)
-                setLoading(true)
-                fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id).then(
-                    (res) => {
-                        if (res.status === 204) {
-                            setFreeMasters([])
-                            return
-                        }
-                        setFreeMasters(res.data.rows)
-                        masters.setMasters(res.data.rows);
+            } else if (activeStep === 1 && chosenMaster) {
+                setChosenMaster(Number(chosenMaster))
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            } else {
+                let body = {
+                    name: name,
+                    date: date,
+                    time: time,
+                    email: email,
+                    cityId: cityChosen,
+                    masterId: chosenMaster,
+                    sizeClockId: size.selectedSize.id
+                }
+                createOrder(body).then(res => {
+                    cities.setSelectedCity(null)
+                    size.setSelectedSize({date: "00:00:00"})
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                }, err => {
+                    alertMessage('Мастер занят', true)
+                    setActiveStep(1)
+                    setLoading(true)
+                    getMasters()
+                })
 
-                    },
-                    (err) => {
-                        masters.setIsEmpty(true);
-                    }
-                ).finally(() => setLoading(false));
-            })
-
+            }
+        } else {
+            setLoading(true)
+            checkEmail(email).then(res => {
+                if (res.status == 204) {
+                    setEmailExists(true)
+                }
+                else if(res.status == 200){
+                    setEmailExists(false)
+                }
+                    }).finally(()=>setLoading(false))
+            setAnchorEl(event.currentTarget)
         }
     };
     const handleBack = () => {
@@ -136,8 +162,7 @@ const MyStepper = observer(({alertMessage}) => {
                     }
                 ).finally(() => setLoading(false));
             }
-        }, [masters.page]
-    )
+        }, [masters.page])
 
 
     return (
@@ -233,7 +258,7 @@ const MyStepper = observer(({alertMessage}) => {
                             value={time}
                             open={openTime}
                             onChange={(newValue) => {
-                                setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(),0,0)));
+                                setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(), 0, 0)));
                                 setOpenTime(false)
                                 setChosenMaster(null)
                             }}
@@ -283,6 +308,59 @@ const MyStepper = observer(({alertMessage}) => {
                                 disabled={checkInfo}>
                             {activeStep === steps.length - 1 ? "Отправить заказ" : "Дальше"}
                         </Button>
+
+
+                            <Popover
+                                id={id}
+                                open={open}
+                                anchorEl={anchorEl}
+                                onClose={handleClose}
+                                anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'center',
+                                }}
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'center',
+                                }}
+
+                            >
+                                {loading ?
+                                    <Box sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}>
+                                        <CircularProgress/>
+                                    </Box> :
+                                    emailExists ?
+                                        <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
+                                            <Typography sx={{p: 2}}>
+                                                Хотите зарегестрироваться?
+                                            </Typography>
+                                            <Button onClick={() => {
+                                                setRegCustomer(true)
+                                                setAnchorEl(null)
+                                            }}>
+                                                Да
+                                            </Button>
+                                            <Button onClick={() => {
+                                                setAnchorEl(null)
+                                                setRegCustomer(false)
+                                            }}>
+                                                Нет
+                                            </Button>
+                                        </Box> :
+                                        <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
+                                            <Typography sx={{p: 2}}>
+                                                Прежде чем продолжить - авторизируйтесь
+                                            </Typography>
+                                            <Button>
+                                                Авторизироваться
+                                            </Button>
+                                        </Box>}
+                            </Popover>
+
                     </Box>
                 </Box>
             ) : activeStep === steps.length - 1 ? (
@@ -395,6 +473,8 @@ const MyStepper = observer(({alertMessage}) => {
                                                                           primary={master.name}/>
                                                             <ListItemText sx={{width: 10}}
                                                                           primary={<Rating name="read-only"
+                                                                                           size="small"
+                                                                                           precision={0.2}
                                                                                            value={master.rating}
                                                                                            readOnly/>}/>
                                                             <ListItemText sx={{width: 10}}
