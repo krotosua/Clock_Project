@@ -1,10 +1,9 @@
 import * as React from 'react';
 import Cards from "../components/startPageComponents/cards"
 import AboutCompany from "../components/startPageComponents/aboutCompany";
-import Button from "@mui/material/Button";
+import {Button, Box} from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
 import {ORDER_ROUTE} from "../utils/consts";
-import Box from "@mui/material/Box";
 
 const Start = () => {
     const navigate = useNavigate()

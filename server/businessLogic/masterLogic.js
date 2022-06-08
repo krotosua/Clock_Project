@@ -7,12 +7,10 @@ class MasterLogic {
     async create(req, res, next) {
         try {
             const {name, rating, email, password, cityId, userId, isActivated} = req.body
-            let master
-            if (isActivated) {
-                master = await Master.create({name, rating, email, password, userId, isActivated})
-            } else {
-                master = await Master.create({name, rating, email, password, userId, isActivated})
-            }
+
+
+            const master = await Master.create({name, rating, email, password, userId, isActivated})
+
 
             await master.addCity(cityId)
             return master
@@ -28,17 +26,12 @@ class MasterLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let masters = await Master.findAndCountAll({
-                attributes: ['name', "rating", "id", "isActivated"],
-                include: [{
-                    model: City,
-                    through: {
+                attributes: ['name', "rating", "id", "isActivated"], include: [{
+                    model: City, through: {
                         attributes: []
                     },
 
-                },
-                    {model: User,}
-                ],
-                exclude: [{
+                }, {model: User,}], exclude: [{
                     model: CitiesMasters
                 }]
             })
@@ -71,33 +64,20 @@ class MasterLogic {
                 masters = await Master.findAndCountAll({
                     where: {
                         isActivated: {[Op.is]: true}
-                    },
-                    include: [{
-                        model: City,
-                        where: {id: cityId},
-                        through: {
+                    }, include: [{
+                        model: City, where: {id: cityId}, through: {
                             attributes: []
                         }
                     }, {
-                        model: Order,
-                        where: {
-                            date: {[Op.eq]: date},
-                            [Op.not]: [
-                                {
-                                    [Op.or]: [{
-                                        [Op.and]: [
-                                            {time: {[Op.lt]: time}},
-                                            {endTime: {[Op.lte]: time}}
-                                        ]
-                                    }, {
-                                        [Op.and]: [
-                                            {time: {[Op.gte]: endTime}},
-                                            {endTime: {[Op.gt]: endTime}}
-                                        ]
-                                    }]
+                        model: Order, where: {
+                            date: {[Op.eq]: date}, [Op.not]: [{
+                                [Op.or]: [{
+                                    [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
+                                }, {
+                                    [Op.and]: [{time: {[Op.gte]: endTime}}, {endTime: {[Op.gt]: endTime}}]
                                 }]
-                        },
-                        required: false
+                            }]
+                        }, required: false
                     }]
                 })
             } else {
@@ -123,25 +103,15 @@ class MasterLogic {
             throw new ApiError.NotFound({message: 'Master not found'})
         }
         master = await Master.findOne({
-            where: {id: masterId},
-            include: [{
-                model: Order,
-                where: {
-                    date: {[Op.eq]: date},
-                    [Op.not]: [
-                        {
-                            [Op.or]: [{
-                                [Op.and]: [
-                                    {time: {[Op.lt]: time}},
-                                    {endTime: {[Op.lte]: time}}
-                                ]
-                            }, {
-                                [Op.and]: [
-                                    {time: {[Op.gte]: endTime}},
-                                    {endTime: {[Op.gt]: endTime}}
-                                ]
-                            }]
+            where: {id: masterId}, include: [{
+                model: Order, where: {
+                    date: {[Op.eq]: date}, [Op.not]: [{
+                        [Op.or]: [{
+                            [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
+                        }, {
+                            [Op.and]: [{time: {[Op.gte]: endTime}}, {endTime: {[Op.gt]: endTime}}]
                         }]
+                    }]
                 },
 
             }],
@@ -159,8 +129,7 @@ class MasterLogic {
             const {name, rating, cityId, isActivated} = req.body
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
-                name: name,
-                rating: rating,
+                name: name, rating: rating,
             })
             await master.setCities(cityId)
             return master
@@ -190,12 +159,8 @@ class MasterLogic {
             const master = await User.findOne({
 
                 include: {
-                    model: Master,
-                    where: {id: masterId},
-                    attributes: ['id'],
-                    include: {
-                        model: Order,
-                        attributes: ['id']
+                    model: Master, where: {id: masterId}, attributes: ['id'], include: {
+                        model: Order, attributes: ['id']
                     }
                 }
             })

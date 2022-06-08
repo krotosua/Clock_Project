@@ -1,6 +1,5 @@
 import * as React from 'react';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+import {Pagination, Stack} from '@mui/material';
 import {observer} from "mobx-react-lite";
 import {useState} from "react";
 

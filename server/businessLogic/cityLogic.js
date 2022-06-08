@@ -76,9 +76,7 @@ class CityLogic {
 
             if (cityId) {
                 const city = await City.findOne({
-                    where: {id: cityId},
-                    include: Master,
-                    attributes: ["id"]
+                    where: {id: cityId}, include: Master, attributes: ["id"]
                 })
                 if (city.masters.length == 0) {
                     await city.destroy()

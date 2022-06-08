@@ -74,6 +74,10 @@ const CitiesMasters = sequelize.define('cities_masters', {
 }, {timestamps: false})
 const Customer = sequelize.define('customer', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING, allowNull: false,
+        validate: {notEmpty: true}
+    },
 }, {timestamps: false})
 User.hasMany(Order)
 Order.belongsTo(User)

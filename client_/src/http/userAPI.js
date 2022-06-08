@@ -1,12 +1,12 @@
 import {$authHost, $host} from "./index";
 import jwt_decode from "jwt-decode";
 
-export const registration = async (email, password, isMaster,name,cities) => {
-  await $host.post('api/users/registration/', {email, password,isMaster,name,cityId:cities})
+export const registration = async (userData) => {
+    await $host.post('api/users/registration/', userData)
     return
 }
-export const registrationFromAdm = async (email, password, isMaster,isActivated,name,cities,) => {
-      await $host.post('api/users/registrationAdm/', {email, password,isMaster,name,cityId:cities,isActivated})
+export const registrationFromAdmin = async (userData) => {
+    await $host.post('api/users/registrationAdmin/', userData)
     return
 }
 
@@ -27,7 +27,7 @@ export const fetchUsers = async (page, limit = 8) => {
 export const deleteUser = async (id) => {
     await $authHost.delete('api/users/' + id,)
 }
-export const updateUser = async (userId,data) => {
+export const updateUser = async (userId, data) => {
 
-    await $authHost.put('api/users/' + userId,data)
+    await $authHost.put('api/users/' + userId, data)
 }

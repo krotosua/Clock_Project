@@ -13,7 +13,7 @@ const sequelize =
                     rejectUnauthorized: false
                 }
             }
-            
+
         })
 try {
     sequelize.authenticate()

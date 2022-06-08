@@ -16,7 +16,7 @@ import {createMaster, fetchMasters, updateMaster} from "../../../http/masterAPI"
 import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
-import {fetchUsers, registration, registrationFromAdm} from "../../../http/userAPI";
+import {fetchUsers, registration, registrationFromAdmin} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -33,7 +33,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateUser = (({open, onClose,  alertMessage,}) => {
+const CreateUser = (({open, onClose, alertMessage,}) => {
     const {cities, user} = useContext(Context)
     const [email, setEmail] = useState("")
     const [error, setError] = useState(false)
@@ -49,10 +49,18 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
     const [isMaster, setIsMaster] = useState(false)
 
-    const createUser = async() => {
-         isMaster?
-            registrationFromAdm(email, password, isMaster,true, name, cities.selectedCity,)
-                .then(res=>{
+    const createUser = () => {
+let masterData,customerData
+        isMaster ?
+            masterData={
+                email,password,isMaster,isActivated:true, name, cityId: cities.selectedCity
+            }:
+            customerData={
+                email,password,isMaster,isActivated:true, name,
+            }
+        isMaster ?
+            registrationFromAdmin(masterData)
+                .then(res => {
                     close()
 
                     alertMessage("Пользователь успешно добавлен", false)
@@ -70,31 +78,31 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
 
                 })
 
-             :
-            registrationFromAdm(email, password, isMaster,true)
-                .then(res=>{
-                close()
-                alertMessage("Пользователь успешно добавлен", false)
-                fetchUsers(user.page, 10).then(res => {
-                    if (res.status === 204) {
-                        return user.setIsEmpty(true)
+            :
+            registrationFromAdmin(customerData)
+                .then(res => {
+                    close()
+                    alertMessage("Пользователь успешно добавлен", false)
+                    fetchUsers(user.page, 10).then(res => {
+                        if (res.status === 204) {
+                            return user.setIsEmpty(true)
 
-                    }
-                    user.setIsEmpty(false)
-                    user.setUsersList(res.data.rows)
-                    user.setTotalCount(res.data.count)
-                }, error => user.setIsEmpty(true))
-            }, err => {
+                        }
+                        user.setIsEmpty(false)
+                        user.setUsersList(res.data.rows)
+                        user.setTotalCount(res.data.count)
+                    }, error => user.setIsEmpty(true))
+                }, err => {
 
                     alertMessage("Не удалось добавить пользователя", true)
 
-            })
+                })
 
     }
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword)
     };
-    function close() {
+    const close = () => {
         fetchUsers(user.page, 10).then(res => {
             user.setIsEmpty(false)
             user.setUsersList(res.data.rows)
@@ -105,10 +113,10 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
     }
 
     //--------------------Validation
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    let unlockButton = isMaster ?
-        !email  || reg.test(email) == false||!name||cities.selectedCity.length == 0:
-         !email  || reg.test(email) == false
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const unlockButton = isMaster ?
+        !email || reg.test(email) === false || !name || cities.selectedCity.length === 0 :
+        !email || reg.test(email) === false || !name
     return (
         <div>
             <Modal
@@ -121,16 +129,27 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
                         Регистрация нового пользователя
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
+                        <TextField
+                            error={error}
+                            sx={{my: 2}}
+                            id="name"
+                            label="Укажите имя мастера"
+                            variant="outlined"
+                            value={name}
+                            onChange={(e => {
+                                setName(e.target.value)
+                            })}
+                        />
                         <FormControl>
                             <TextField
-                                error={error || blurEmail && reg.test(email) == false}
+                                error={error || blurEmail && reg.test(email) === false}
                                 sx={{mb: 2}}
                                 id="Email"
                                 label="Email"
                                 variant="outlined"
                                 type={"email"}
                                 value={email}
-                                helperText={blurEmail && reg.test(email) == false ?
+                                helperText={blurEmail && reg.test(email) === false ?
                                     "Введите email формата: clock@clock.com" :
                                     error ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
                                 }
@@ -145,7 +164,7 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
-                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ?password !== passwordCheck : false}
+                                    error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
                                     id="Password"
                                     label="Пароль"
                                     type={showPassword ? 'text' : 'password'}
@@ -206,17 +225,6 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
                             {isMaster ?
                                 <Box>
                                     <SelectorMasterCity error={false}/>
-                                    <TextField
-                                        error={error}
-                                        sx={{mt: 2}}
-                                        id="name"
-                                        label="Укажите имя мастера"
-                                        variant="outlined"
-                                        value={name}
-                                        onChange={(e => {
-                                            setName(e.target.value)
-                                        })}
-                                    />
                                 </Box>
                                 : null}
 
@@ -225,7 +233,7 @@ const CreateUser = (({open, onClose,  alertMessage,}) => {
                                 <FormControlLabel
                                     label="Зарегестрировать как мастера"
                                     control={<Checkbox onChange={(e) => {
-                                         setIsMaster(!isMaster)
+                                        setIsMaster(!isMaster)
                                     }}/>}
                                 />
                             </Box>

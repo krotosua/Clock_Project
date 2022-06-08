@@ -18,9 +18,9 @@ const Activated = () => {
                     height: window.innerHeight - 60,
                 }}
             >
-          <Box sx={{mt:5}}>
-              Поздравляем вы успешно активировали почту
-          </Box>
+                <Box sx={{mt: 5}}>
+                    Поздравляем вы успешно активировали почту
+                </Box>
             </Container>
         </Box>
 

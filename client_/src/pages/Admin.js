@@ -1,13 +1,10 @@
 import React, {useState} from 'react';
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-
-import ListItemText from "@mui/material/ListItemText";
-import Divider from "@mui/material/Divider";
+import {Box, List, ListItemText, Divider, Container, Link, ListItemButton, styled} from "@mui/material";
 import CityList from "../components/adminPageComponents/CityList"
-import {Container, Link, ListItemButton, styled, Tooltip} from "@mui/material";
 import MasterList from "../components/adminPageComponents/MasterList";
 import OrderList from "../components/adminPageComponents/OrderList";
+import UserList from "../components/adminPageComponents/UserList";
+import SizeList from "../components/adminPageComponents/SizeClock";
 import {useLocation, useNavigate} from "react-router-dom";
 import {
     ADMIN_CITY_LIST_ROUTE,
@@ -15,10 +12,8 @@ import {
     ADMIN_ORDER_LIST_ROUTE, ADMIN_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
 } from "../utils/consts";
 import CreateCity from "../components/adminPageComponents/modals/CreateCity";
-import {observer} from "mobx-react-lite";
 import CreateMaster from "../components/adminPageComponents/modals/CreateMaster";
-import UserList from "../components/adminPageComponents/UserList";
-import SizeList from "../components/adminPageComponents/SizeClock";
+import {observer} from "mobx-react-lite";
 import CreateSize from "../components/adminPageComponents/modals/CreateSize";
 import MyAlert from "../components/adminPageComponents/MyAlert";
 

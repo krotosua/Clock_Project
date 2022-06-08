@@ -6,13 +6,13 @@ const {body, param} = require('express-validator')
 const checkRole = require("../middleware/checkRoleMiddleware");
 
 
-
 router.post("/registration/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
     body('isMaster').isBoolean(),
+    body("name").not().isEmpty().isString().trim().escape(),
     userController.registration)
-router.post("/registrationAdm/",
+router.post("/registrationAdmin/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
     body('isMaster').isBoolean(),

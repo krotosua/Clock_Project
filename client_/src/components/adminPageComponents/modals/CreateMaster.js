@@ -11,7 +11,7 @@ import SelectorMasterCity from "./SelectorMasterCity";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import {registrationFromAdm} from "../../../http/userAPI";
+import {registrationFromAdmin} from "../../../http/userAPI";
 
 const style = {
     position: 'absolute',
@@ -42,7 +42,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const addMaster = () => {
 
 
-        registrationFromAdm(email, password, true,true,masterName,cities.selectedCity,).then(res => {
+        registrationFromAdmin(email, password, true, true, masterName, cities.selectedCity,).then(res => {
 
             close()
             alertMessage("Мастер успешно добавлен", false)
@@ -77,7 +77,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const validButton = masterRating > 5 || masterRating < 0 || !masterName
     const validName = blurMasterName && masterName.length == 0
     const validRating = masterRating > 5 || masterRating < 0
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return (
         <div>
 

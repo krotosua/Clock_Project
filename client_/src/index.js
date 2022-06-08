@@ -9,8 +9,6 @@ import SizeStore from "./store/SizeStore";
 import "./style.css"
 
 
-
-
 export const Context = createContext(null)
 
 ReactDOM.render(

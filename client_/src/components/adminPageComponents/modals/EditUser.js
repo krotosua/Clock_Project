@@ -63,7 +63,7 @@ const [editPassword, setEditPassword] = useState(false)
         )
     }
 
-    function close() {
+    const close = () =>{
         fetchUsers(user.page, 10).then(res => {
             user.setIsEmpty(false)
             user.setUsersList(res.data.rows)
@@ -77,7 +77,7 @@ const [editPassword, setEditPassword] = useState(false)
     };
 
     //--------------------Validation
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
 
     return (
         <div>
