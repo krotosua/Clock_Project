@@ -1,19 +1,22 @@
-import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import * as React from 'react';
+import {
+    Box,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Typography,
+    Divider,
+    Tooltip,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
-import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import {deleteCity, fetchCity} from "../../http/cityAPI";
 import CreateCity from "./modals/CreateCity";
-import {Tooltip} from "@mui/material";
 import EditCity from "./modals/EditCity";
 import Pages from "../Pages";
 

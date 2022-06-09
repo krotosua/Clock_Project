@@ -20,6 +20,9 @@ async adminreg(req, res, next) {
     async check(req, res, next) {
         await userLogic.check(req, res, next)
     }
+    async checkEmail(req, res, next) {
+        await userLogic.checkEmail(req, res, next)
+    }
 
     async getAll(req, res, next) {
         await userLogic.getAll(req, res, next)

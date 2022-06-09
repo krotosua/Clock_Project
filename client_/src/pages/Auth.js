@@ -27,22 +27,23 @@ import MyAlert from "../components/adminPageComponents/MyAlert";
 import IconButton from "@mui/material/IconButton";
 import InputLabel from "@mui/material/InputLabel";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
+import Login from "../components/authPageComponents/Login";
 
 
 const Auth = observer(() => {
-    const {user, cities} = useContext(Context)
+    const {cities} = useContext(Context)
     const location = useLocation();
-    const navigate = useNavigate()
+
     const isLogin = location.pathname === LOGIN_ROUTE;
     const [email, setEmail] = useState('')
+    const [blurEmail, setBlurEmail] = useState(false)
     const [password, setPassword] = useState('')
-    const [passwordCheck, setPasswordCheck] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [blurPassword, setBlurPassword] = useState(false)
+    const [passwordCheck, setPasswordCheck] = useState('')
     const [showPasswordCheck, setShowPasswordCheck] = useState(false)
     const [error, setError] = useState(false)
-    const [blurPassword, setBlurPassword] = useState(false)
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
-    const [blurEmail, setBlurEmail] = useState(false)
     const [agree, setAgree] = useState(false)
     const [isMaster, setIsMaster] = useState(false)
     const [name, setName] = useState('')
@@ -57,11 +58,7 @@ const Auth = observer(() => {
     }
     const singIn = async () => {
         try {
-            let dataUser;
-            if (isLogin && password.length >= 6 && reg.test(email) !== false) {
-                dataUser = await login(email, password)
-            }
-            else if (password.length >= 6 && reg.test(email) !== false) {
+            if (password.length >= 6 && reg.test(email) !== false) {
                 isMaster?
                     await registration(email, password, isMaster,name,cities.selectedCity):
                     await registration(email, password, isMaster)
@@ -71,20 +68,6 @@ const Auth = observer(() => {
                 setError(true)
                 return
             }
-            console.log(dataUser)
-
-            if (dataUser.isActivated == false && dataUser.role !== "ADMIN") {
-                alertMessage("Требуется подтвердить Email", true)
-                return
-            }
-            user.setUser(dataUser)
-            user.setIsAuth(true)
-            user.setUserRole(dataUser.role)
-
-            dataUser.role === "CUSTOMER" && dataUser.isActivated === true ?
-                navigate(`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`) :
-                user.userRole === 'MASTER'&&dataUser.isActivated === true?
-                navigate(`${MASTER_ORDER_ROUTE}/${user.user.id}`) :navigate(ADMIN_ROUTE)
         } catch (e) {
             setError(true)
         }
@@ -99,6 +82,8 @@ const Auth = observer(() => {
          !agree || !email || password.length < 6 || reg.test(email) == false|| password !== passwordCheck
 
     return (
+        isLogin?
+            <Login alertMessage={alertMessage}/>:
         <Container
             maxWidth="xl"
             sx={{
@@ -110,95 +95,8 @@ const Auth = observer(() => {
             onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
         >
             <Card sx={{width: 800, p: 1}}>
-                {isLogin?
-                    (<CardContent>
-                        <Typography align="center" variant="h5">
-                            Авторизация
-                        </Typography>
-                        <Box
-                            sx={{
-                                width: 700,
-                                mt: 3,
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <FormControl error={true}>
-                                <TextField
-                                    error={error || blurEmail && reg.test(email) == false}
-                                    sx={{mb: 2}}
-                                    id="Email"
-                                    label="Email"
-                                    variant="outlined"
-                                    type={"email"}
-                                    value={email}
-                                    helperText={blurEmail && reg.test(email) == false ?
-                                        "Введите email формата: clock@clock.com" :
-                                        error && !isLogin ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
-                                    }
-                                    onFocus={() => setBlurEmail(false)}
-                                    onBlur={() => setBlurEmail(true)}
-                                    onChange={(e => {
-                                        setEmail(e.target.value)
-                                        setError(null)
-                                    })}
-                                />
 
-
-                                <FormControl variant="outlined">
-                                    <InputLabel htmlFor="Password">Пароль</InputLabel>
-                                    <OutlinedInput
-                                        error={error || blurPassword && password.length < 6 || blurPasswordCheck ?!isLogin&&password !== passwordCheck : false}
-                                        id="Password"
-                                        label="Пароль"
-                                        type={showPassword ? 'text' : 'password'}
-
-                                        value={password}
-                                        onChange={(e => {
-                                            setPassword(e.target.value)
-                                            setError(false)
-                                        })}
-                                        endAdornment={
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    onClick={handleClickShowPassword}
-                                                    edge="end"
-                                                >
-                                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        }
-                                        onFocus={() => setBlurPassword(false)}
-                                        onBlur={() => setBlurPassword(true)}
-                                    />
-                                    <FormHelperText>{blurPassword && password.length < 6 ?
-                                        "Длина пароля должна быть не менее 6 символов"
-                                        : ""}</FormHelperText>
-                                </FormControl>
-
-                                <Box
-                                    sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
-                                >
-                                        <div>
-                                            Нет аккаунта?
-                                            <NavLink to={REGISTRATION_ROUTE}
-                                                     onClick={() => setError(false)}> Зарегистрируйтесь.</NavLink>
-                                        </div>
-                                    <Button type="submit" variant="outlined"
-                                            color={"warning"} onClick={singIn}
-                                            disabled={  !email || password.length < 6 || reg.test(email) == false}>
-                                         Войти
-                                    </Button>
-                                </Box>
-
-                            </FormControl>
-                        </Box>
-                    </CardContent>
-                    )
-                :
-              (  <CardContent>
+               <CardContent>
                     <Typography align="center" variant="h5">
                         Регистрация
                     </Typography>
@@ -355,7 +253,7 @@ const Auth = observer(() => {
 
                         </FormControl>
                     </Box>
-                </CardContent>)}
+                </CardContent>
             </Card>
             <MyAlert open={open}
                      onClose={() => setOpen(false)}

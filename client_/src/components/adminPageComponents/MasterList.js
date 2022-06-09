@@ -1,24 +1,26 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import {
+    Box,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Typography,
+    Divider,
+    Tooltip,
+    Rating,
+    Button
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
-import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import {activateMaster, deleteMaster, fetchMasters} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
-import {Tooltip} from "@mui/material";
 import Pages from "../Pages";
-import {Rating} from '@mui/material';
-import Button from "@mui/material/Button";
 
 
 const MasterList = observer(({alertMessage, getValue}) => {
@@ -66,7 +68,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
     }
 
 
-    const delMaster = (id) => {
+    const removeMaster = (id) => {
         deleteMaster(id).then((res) => {
                 masters.setMasters(masters.masters.filter(obj => obj.id !== id));
                 alertMessage('Успешно удаленно', false)
@@ -149,7 +151,7 @@ const MasterList = observer(({alertMessage, getValue}) => {
                                         <IconButton sx={{width: 10}}
                                                     edge="end"
                                                     aria-label="delete"
-                                                    onClick={() => delMaster(master.id)}
+                                                    onClick={() => removeMaster(master.id)}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>}>
@@ -164,7 +166,8 @@ const MasterList = observer(({alertMessage, getValue}) => {
 
                                     <ListItemText sx={{width: 10}}
                                                   primary={
-                                                      <Rating name="read-only" size="small" value={master.rating}precision={0.2} readOnly/>}/>
+                                                      <Rating name="read-only" size="small" value={master.rating}
+                                                              precision={0.2} readOnly/>}/>
                                     <ListItemText sx={{width: 10}}
                                                   primary={cityList}/>
                                     <ListItemText sx={{width: 10}}

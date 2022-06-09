@@ -13,19 +13,17 @@ import {Rating, Tooltip} from "@mui/material";
 import MasterRating from "./MasterRating";
 
 
-const OrderList = observer(() => {
+const OrderListCustomer = observer(() => {
     let {orders, cities} = useContext(Context)
     const [open, setOpen] = useState(false)
     const [dataForEdit, setDataForEdit] = useState({})
 
     function createData(order) {
-console.log(order)
         let data = {
             orderId: order.id,
             masterId: order.masterId,
             userId: order.userId,
         }
-        console.log(data)
         setDataForEdit(data)
         setOpen((true))
     }
@@ -142,4 +140,4 @@ console.log(order)
     )
         ;
 })
-export default OrderList;
+export default OrderListCustomer;

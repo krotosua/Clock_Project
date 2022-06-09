@@ -4,20 +4,21 @@ const ApiError = require("../error/ApiError");
 class MailService {
     constructor() {
         this.transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
+            host: process.env.MAIL_HOST,
+            port: process.env.MAIL_PORT,
             secure: false,
             auth: {
-                user: 'clockbotproject@gmail.com',
-                pass: 'passwordsecret',
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASSWORD,
             },
         })
+
     }
 
-    sendMail(name, date, time, email, size, masterName, cityName, next) {
+    sendMail(name, date, time, email, size, masterName, cityName,password, next) {
 
         this.transporter.sendMail({
-            from: `clockbotproject@gmail.com`,
+            from:  process.env.MAIL_USER,
             to: email,
             subject: 'Подтверждение заказа',
             text: 'Письмо о успешно выполненной брони',
@@ -28,6 +29,7 @@ class MailService {
                 <p>Размер часов: ${size}</p>
                 <p>Мастер:${masterName} в городе ${cityName}</p>
                 <p>Хорошего, дня!</p>
+              <p>  ${password?`Ваш пароль: ${password}`:""}</p>
 </div>`,
         }, err => {
             if (err) {
@@ -40,7 +42,7 @@ class MailService {
     sendActivationMail(  email,activationLink,next) {
 
         this.transporter.sendMail({
-            from: `clockbotproject@gmail.com`,
+            from:  process.env.MAIL_USER,
             to: email,
             subject: 'Активация аккаунта на',
             text: "",

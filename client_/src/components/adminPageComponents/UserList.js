@@ -12,7 +12,6 @@ import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import {Tooltip} from "@mui/material";
 import {deleteUser, fetchUsers} from "../../http/userAPI";
-
 import Pages from "../Pages";
 import EditIcon from "@mui/icons-material/Edit";
 import EditUser from "./modals/EditUser";

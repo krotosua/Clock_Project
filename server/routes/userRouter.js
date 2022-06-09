@@ -17,15 +17,17 @@ router.post("/admreg/",
 router.post("/registrationAdm/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
-    body('isMaster').isBoolean(),
-
-
     userController.registrationFromAdmin)
 router.post('/login/',
     body('email').isEmail(),
     body('password').isLength({min: 6}),
     userController.login)
 router.get('/auth/', authMiddleware, userController.check)
+
+router.get('/checkEmail/',
+    body('email').isEmail(),
+    userController.checkEmail)
+
 router.get('/activate/:link', userController.activate)
 router.get("/", checkRole("ADMIN"), userController.getAll)
 router.put('/:userId',

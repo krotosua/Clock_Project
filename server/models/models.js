@@ -75,6 +75,13 @@ const CitiesMasters = sequelize.define('cities_masters', {
 }, {timestamps: false})
 const Customer = sequelize.define('customer', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING,
+        validate: {
+            notEmpty: true,
+            len: [3, 30]
+        }
+    },
 }, {timestamps: false})
 const Rating = sequelize.define('rating', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},

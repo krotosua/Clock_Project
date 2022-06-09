@@ -5,7 +5,7 @@ import {
 
 } from "@mui/material";
 import React, {useContext, useEffect, useState} from "react";
-import MyStepper from "../components/orderPageComponents/MyStepper"
+import OrderStepper from "../components/orderPageComponents/OrderStepper"
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 import {fetchSize} from "../http/sizeAPI";
@@ -54,7 +54,7 @@ const Order = observer(() => {
         >
             <Card sx={{width: 1000, p: 1, bgcolor: '#f5f5f5'}}>
                 <CardContent>
-                    <MyStepper alertMessage={alertMessage}/>
+                    <OrderStepper alertMessage={alertMessage}/>
                 </CardContent>
             </Card>
             <MyAlert open={open}

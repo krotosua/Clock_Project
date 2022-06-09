@@ -11,7 +11,6 @@ class MasterController {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-
                 const {cityId} = req.body
                 await cityLogic.checkMasterCityId(cityId)
                 const master = await masterLogic.create(req, res, next)

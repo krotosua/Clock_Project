@@ -6,6 +6,7 @@ const ApiError = require("../error/ApiError");
 const sequelize = require("../db");
 const cityLogic = require("../businessLogic/cityLogic");
 const {validationResult} = require("express-validator");
+const {Customer} = require("../models/models");
 
 class OrderController {
 
@@ -16,26 +17,28 @@ class OrderController {
         }
         try {
             const result = await sequelize.transaction(async () => {
-                let {sizeClockId, date, time, masterId, cityId} = req.body
-                const clock = await sizeLogic.CheckClock(next, sizeClockId)
+                let {sizeClockId, date, time, masterId, cityId, changeName,name} = req.body
+                    const clock = await sizeLogic.CheckClock(next, sizeClockId)
                 let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
                 let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
                 time = new Date(time)
                 const city = await cityLogic.checkCityId(cityId)
                 await masterLogic.checkOrders(res, next, masterId, date, time, endTime, clock)
-                const user = await userLogic.GetOrCreateUser(req, res, next)
+                const user = await userLogic.GetOrCreateUser(req, res, next,)
                 if (!user) {
                     throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 const userId = user.dataValues.id
+                if(changeName){
+                    await Customer.update({name:name},{where:{userId:userId}})
+                }
+
                 const order = await orderLogic.create(req, res, next, userId, time, endTime)
                 if (!order) {
                     throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 let data = {
-                    order: order,
-                    city: city,
-                    clock: clock
+                    order, city, clock, user
                 }
                 return data
             })
