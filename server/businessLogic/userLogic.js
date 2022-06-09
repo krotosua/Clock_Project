@@ -8,9 +8,9 @@ const uuid = require("uuid")
 const masterController = require("../controllers/masterController")
 const sequelize = require("../db");
 
-const generateJwt = (id, email, role, isActivated) => {
+const generateJwt = (id, email, role, isActivated,name) => {
     return jwt.sign(
-        {id, email, role, isActivated},
+        {id, email, role, isActivated,name},
         process.env.SECRET_KEY,
         {expiresIn: '24h'}
     )
@@ -55,15 +55,16 @@ class UserLogic {
             next(ApiError.badRequest(e.message))
         }
     }
+
     async adminreg(req, res, next) {
         try {
-                const {email, password,role} = req.body
-           let isActivated= true
-                const hashPassword = await bcrypt.hash(password, 5)
+            const {email, password, role} = req.body
+            let isActivated = true
+            const hashPassword = await bcrypt.hash(password, 5)
 
-                const user = await User.create({email, role, password: hashPassword,isActivated})
+            const user = await User.create({email, role, password: hashPassword, isActivated})
 
-                return res.status(201).json({user})
+            return res.status(201).json({user})
 
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -78,7 +79,7 @@ class UserLogic {
             }
             const result = await sequelize.transaction(async () => {
                 const {email, password, isMaster, isActivated, name} = req.body
-                console.log(req.body)
+            
                 let role = isMaster ? "MASTER" : "CUSTOMER"
                 const candidate = await User.findOne({where: {email}})
                 if (candidate) {
@@ -106,9 +107,9 @@ class UserLogic {
         }
     }
 
-    async GetOrCreateUser(req, res, next,) {
+    async GetOrCreateUser(req, res, next) {
         try {
-            let {email} = req.body
+            let {email,name,regCustomer} = req.body
             if (!email) {
                 throw new Error('Email is wrong')
             }
@@ -116,7 +117,25 @@ class UserLogic {
             if (candidate) {
                 return candidate
             }
-            const user = await User.create({email})
+            let user
+            if(regCustomer){
+            const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const passwordLength = 8;
+            let password = "";
+            for (let i = 0; i <= passwordLength; i++) {
+                const randomNumber = Math.floor(Math.random() * chars.length);
+                password += chars.substring(randomNumber, randomNumber +1);
+            }
+            const hashPassword = await bcrypt.hash(password, 5)
+                req.body.password=password
+            user = await User.create({email,password:hashPassword,isActivated:true})
+                await Customer.create({userId: user.id,name})
+            }
+
+            else{
+                user = await User.create({email})
+            }
+
             return user
         } catch (e) {
             throw new Error('Email is wrong')
@@ -139,7 +158,12 @@ class UserLogic {
             if (!comparePassword) {
                 return next(ApiError.Unauthorized({message: 'Wrong password'}))
             }
-            const token = generateJwt(user.id, user.email, user.role, user.isActivated)
+            if(user.role==="CUSTOMER"){
+               const customer= await Customer.findOne({where:{userId:user.id}})
+                const token = generateJwt(user.id, user.email, user.role, user.isActivated,customer.name)
+                return res.status(201).json({token})
+            }
+            const token = generateJwt(user.id, user.email, user.role, user.isActivated,)
 
             return res.status(201).json({token})
         } catch (e) {
@@ -148,8 +172,23 @@ class UserLogic {
     }
 
     async check(req, res) {
-        const token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated)
+        let token
+        if(req.user.role==="CUSTOMER"){
+             token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated,req.user.name)
+        }else{
+            token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated)
+        }
+
         return res.status(200).json({token})
+    }
+
+    async checkEmail(req, res) {
+        const {email} = req.query
+        const user = await User.findOne({where: {email: email}})
+        if (!user) {
+            return res.status(204).send({message: "204"})
+        }
+        return res.status(200).json({user})
     }
 
     async update(user, password) {
@@ -223,7 +262,7 @@ class UserLogic {
                 await user.destroy()
                 return res.status(204).json({message: "success"})
             } else {
-                return next(ApiError.Conflict( "Customer has orders"))
+                return next(ApiError.Conflict("Customer has orders"))
             }
             return res.status(204).json("success")
         } catch (e) {

@@ -1,6 +1,15 @@
 import * as React from 'react';
 import {
-    Box, List, ListItem, ListItemText, IconButton, Typography, Divider, Tooltip, Rating, Button
+    Box,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Typography,
+    Divider,
+    Tooltip,
+    Rating,
+    Button
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -127,55 +136,57 @@ const MasterList = observer(({alertMessage}) => {
                 </ListItem>
 
                 <Divider orientation="vertical"/>
-                {masters.IsEmpty ? <h1>Список пуст</h1> : masters.masters.map((master, index) => {
-                    let cityList = createCityList(master)
-                    return (<ListItem
-                        key={master.id}
-                        divider
-                        secondaryAction={<IconButton sx={{width: 10}}
-                                                     edge="end"
-                                                     aria-label="delete"
-                                                     onClick={() => removeMaster(master.id)}
-                        >
-                            <DeleteIcon/>
-                        </IconButton>}>
-                        <ListItemText sx={{width: 10}}
-                                      primary={index + 1}
-                        />
-                        <ListItemText sx={{width: 10}}
-                                      primary={master.user.id}/>
+                {masters.IsEmpty ? <h1>Список пуст</h1> :
+                    masters.masters.map((master, index) => {
+                        let cityList = createCityList(master)
+                        return (<ListItem
+                            key={master.id}
+                            divider
+                            secondaryAction={
+                                <IconButton sx={{width: 10}}
+                                            edge="end"
+                                            aria-label="delete"
+                                            onClick={() => removeMaster(master.id)}
+                                >
+                                    <DeleteIcon/>
+                                </IconButton>}>
+                            <ListItemText sx={{width: 10}}
+                                          primary={index + 1}
+                            />
+                            <ListItemText sx={{width: 10}}
+                                          primary={master.user.id}/>
 
-                        <ListItemText sx={{width: 10}}
-                                      primary={master.name}/>
+                            <ListItemText sx={{width: 10}}
+                                          primary={master.name}/>
 
-                        <ListItemText sx={{width: 10}}
-                                      primary={
-                                          <Rating name="read-only" size="small" value={master.rating} precision={0.2}
-                                                  readOnly/>}/>
-                        <ListItemText sx={{width: 10}}
-                                      primary={cityList}/>
-                        <ListItemText sx={{width: 10}}
-                                      primary={
-                                          <Button color={master.isActivated ? "success" : "error"}
-                                                  size="small"
-                                                  variant="outlined"
-                                                  onClick={() => changeActiveted(master)}>
-                                              {master.isActivated ? "Актив" : "Не актив"}
-                                          </Button>
-                                      }
-                        />
-                        <IconButton sx={{width: 5}}
-                                    edge="end"
-                                    aria-label="Edit"
-                                    onClick={() => {
-                                        forEdit(master)
+                            <ListItemText sx={{width: 10}}
+                                          primary={
+                                              <Rating name="read-only" size="small" value={master.rating}
+                                                      precision={0.2} readOnly/>}/>
+                            <ListItemText sx={{width: 10}}
+                                          primary={cityList}/>
+                            <ListItemText sx={{width: 10}}
+                                          primary={
+                                              <Button color={master.isActivated ? "success" : "error"}
+                                                      size="small"
+                                                      variant="outlined"
+                                                      onClick={() => changeActiveted(master)}>
+                                                  {master.isActivated ? "Актив" : "Не актив"}
+                                              </Button>
+                                          }
+                            />
+                            <IconButton sx={{width: 5}}
+                                        edge="end"
+                                        aria-label="Edit"
+                                        onClick={() => {
+                                            forEdit(master)
 
-                                    }}
-                        >
-                            <EditIcon/>
-                        </IconButton>
-                    </ListItem>)
-                })}
+                                        }}
+                            >
+                                <EditIcon/>
+                            </IconButton>
+                        </ListItem>)
+                    })}
             </List>
             {editVisible ? <EditMaster open={editVisible}
                                        onClose={() => setEditVisible(false)}
@@ -192,5 +203,5 @@ const MasterList = observer(({alertMessage}) => {
             <Pages context={masters}/>
         </Box>
     </Box>);
-        })
-        export default MasterList;
+})
+export default MasterList;

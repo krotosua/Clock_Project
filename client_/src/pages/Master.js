@@ -1,9 +1,9 @@
 import React, {useContext, useEffect, useState} from 'react';
-import OrderList from '../components/masterPageComponents/OrderList'
+import OrderListMaster from '../components/masterPageComponents/OrderListMaster'
 import Box from "@mui/material/Box";
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import {Tooltip} from "@mui/material";
+import {CircularProgress, Tooltip} from "@mui/material";
 import {ORDER_ROUTE} from "../utils/consts";
 import {useNavigate, useParams} from "react-router-dom";
 import {fetchMasterOrders} from "../http/orderAPI";
@@ -20,6 +20,7 @@ const Master = observer(() => {
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
+    const [loading, setLoading] = useState(true)
     const alertMessage = (message, bool) => {
         setOpen(true)
         setMessage(message)
@@ -32,7 +33,6 @@ const Master = observer(() => {
                 orders.setIsEmpty(true)
                 return
             }
-            console.log(res.data.rows)
             res.data.rows.map(item => {
                 item.date = new Date(item.date).toLocaleDateString("uk-UA")
             })
@@ -40,13 +40,27 @@ const Master = observer(() => {
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
-        }).catch(error =>setActivated(false) )
+        }).catch(error =>setActivated(false) ).finally(()=>setLoading(false))
     }
     useEffect(() => {
-        getOrders()
+
+           getOrders()
+
+
     }, [orders.page])
 
-
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
+    }
     return (
         <Box>
             {activated?
@@ -54,7 +68,7 @@ const Master = observer(() => {
 
                     <h2>Список заказов</h2>
                     <Box sx={{height: "650px"}}>
-                        <OrderList alertMessage={alertMessage}/>
+                        <OrderListMaster alertMessage={alertMessage}/>
 
                     </Box>
                     <Box style={{display: "flex", justifyContent: "center"}}>

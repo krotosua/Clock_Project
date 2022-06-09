@@ -1,4 +1,4 @@
-const {Order, Master, SizeClock, City, User} = require('../models/models')
+const {Order, Master, SizeClock, Rating, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const MailService = require("../service/mailService")
 
@@ -32,7 +32,12 @@ class OrderLogic {
                     model: SizeClock,
                     attributes: ['name'],
 
-                }], limit, offset
+                },
+                    {
+                        model: Rating,
+                        attributes: ["rating"],
+
+                    }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -164,11 +169,12 @@ class OrderLogic {
         try {
             const cityName = result.city.name
             const size = result.clock.name
-            let {name, date, time, email, masterId,} = req.body
+            let {name, date, time, email, masterId,password} = req.body
+
             const master = await Master.findByPk(masterId)
             date = new Date(Date.parse(date)).toLocaleDateString('uk-UA')
             time = new Date(Date.parse(time)).toLocaleTimeString('uk-UA')
-            MailService.sendMail(name, date, time, email, size, master.name, cityName, next)
+            MailService.sendMail(name, date, time, email, size, master.name, cityName,password, next)
 
         } catch (e) {
             return next(ApiError.badRequest(e.message))

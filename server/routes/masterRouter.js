@@ -37,7 +37,6 @@ router.put('/activate/:masterId',
 
 router.put('/rating/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
-    body("isActivated").not().isEmpty().isBoolean(),
     checkRole("CUSTOMER"), masterController.ratingUpdate)
 
 router.delete('/:masterId',

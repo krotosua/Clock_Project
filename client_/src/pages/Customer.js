@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import OrderList from '../components/customerPageComponents/OrderList'
+import OrderListCustomer from '../components/customerPageComponents/OrderListCustomer'
 import {Box, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import {ORDER_ROUTE} from "../utils/consts";
@@ -39,7 +39,7 @@ const Customer = observer(() => {
             <Box sx={{height: "800px", pt: 5, position: "relative"}}>
                 <h2>Список заказов</h2>
                 <Box sx={{height: "650px"}}>
-                    <OrderList/>
+                    <OrderListCustomer/>
                 </Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>

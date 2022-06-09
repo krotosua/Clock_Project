@@ -13,7 +13,7 @@ import {activateMaster} from "../../http/masterAPI";
 import {finishedOrder} from "../../http/orderAPI";
 
 
-const OrderList = observer(({alertMessage}) => {
+const OrderListMaster = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
 
     function changeFinished(order) {
@@ -24,10 +24,10 @@ const OrderList = observer(({alertMessage}) => {
 
         finishedOrder(changeInfo)
             .then(res => {
-                alertMessage('Данные мастера успешно изменены', false)
+                alertMessage('Статус заказа успешно изменен', false)
                 return order.finished = !order.finished
             }, err => {
-                alertMessage('Не удалось изменить данные мастера', true)
+                alertMessage('Не удалось изменить статус заказа', true)
             })
     }
 
@@ -112,4 +112,4 @@ const OrderList = observer(({alertMessage}) => {
         </Box>
     );
 })
-export default OrderList;
+export default OrderListMaster;

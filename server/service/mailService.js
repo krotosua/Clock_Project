@@ -15,7 +15,7 @@ class MailService {
 
     }
 
-    sendMail(name, date, time, email, size, masterName, cityName, next) {
+    sendMail(name, date, time, email, size, masterName, cityName,password, next) {
 
         this.transporter.sendMail({
             from:  process.env.MAIL_USER,
@@ -29,6 +29,7 @@ class MailService {
                 <p>Размер часов: ${size}</p>
                 <p>Мастер:${masterName} в городе ${cityName}</p>
                 <p>Хорошего, дня!</p>
+              <p>  ${password?`Ваш пароль: ${password}`:""}</p>
 </div>`,
         }, err => {
             if (err) {

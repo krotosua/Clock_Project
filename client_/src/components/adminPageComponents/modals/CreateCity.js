@@ -1,9 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import {FormControl, TextField} from "@mui/material";
+import {FormControl, TextField,Box,Button,Modal} from "@mui/material";
 import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
@@ -99,3 +96,6 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
 };
 
 export default CreateCity;
+
+export class EditCity {
+}

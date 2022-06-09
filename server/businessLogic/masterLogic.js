@@ -2,6 +2,7 @@ const {Master, City, Order, CitiesMasters, User, Rating} = require('../models/mo
 const ApiError = require('../error/ApiError')
 const {Op} = require("sequelize");
 const sizeLogic = require("./sizeLogic");
+const sequelize = require("../db");
 
 class MasterLogic {
     async create(req, res, next) {
@@ -140,17 +141,24 @@ class MasterLogic {
 
     async ratingUpdate(req, res, next) {
         try {
-            const {userId} = req.params
-            let { rating,review, orderId,masterId } = req.body
+            const result = await sequelize.transaction(async () => {
+            const {masterId} = req.params
+            let { rating,review, orderId,userId } = req.body
+                const existsRating = await Rating.findOne({where: {orderId:orderId}})
+                if (existsRating){
+                    throw new Error ("Rating already exists")
+                }
            await Rating.create({ rating,review,userId, masterId, orderId})
            let allRating= await Rating.findAndCountAll({where:{masterId:masterId},
             attributes:["rating"]})
-            rating = allRating.rows.reduce((sum,current)=> sum+current,0)/allRating.count
+            rating = allRating.rows.reduce((sum,current)=> sum+current.rating,0)/allRating.count
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
                 rating: rating,
             })
             return  master
+            })
+            return res.status(201).json(result)
         } catch (e) {
             return next(ApiError.badRequest({message: "Wrong request"}))
         }

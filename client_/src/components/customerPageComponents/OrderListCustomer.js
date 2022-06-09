@@ -4,13 +4,12 @@ import {useContext, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 
-const OrderList = observer(() => {
+const OrderListCustomer = observer(() => {
     let {orders, cities} = useContext(Context)
     const [open, setOpen] = useState(false)
     const [dataForEdit, setDataForEdit] = useState({})
 
     function createData(order) {
-console.log(order)
         let data = {
             orderId: order.id,
             masterId: order.masterId,
@@ -132,4 +131,4 @@ console.log(order)
     )
         ;
 })
-export default OrderList;
+export default OrderListCustomer;
