@@ -3,15 +3,24 @@ import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import {FormControl, FormHelperText, InputAdornment, OutlinedInput, TextField} from "@mui/material";
-import {createMaster, fetchMasters} from "../../../http/masterAPI";
+import {
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    FormHelperText,
+    InputAdornment,
+    OutlinedInput,
+    TextField
+} from "@mui/material";
+import {createMaster, fetchMasters, updateMaster} from "../../../http/masterAPI";
+import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
-import {observer} from "mobx-react-lite";
 import SelectorMasterCity from "./SelectorMasterCity";
+import {fetchUsers, updateUser} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import {registrationFromAdmin} from "../../../http/userAPI";
+
 
 const style = {
     position: 'absolute',
@@ -24,12 +33,11 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateMaster = observer(({open, onClose, alertMessage}) => {
-    let {cities, masters} = useContext(Context)
-    const [masterName, setMasterName] = useState("")
-    const [masterRating, setMasterRating] = useState("")
-    const [blurMasterName, setBlurMasterName] = useState(false)
-    const [email, setEmail] = useState('')
+const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
+    const {cities, user} = useContext(Context)
+    const [userEmail, setUserEmail] = useState(userToEdit.email)
+const [blurEmail, setBlurEmail] = useState(false)
+const [editPassword, setEditPassword] = useState(false)
     const [password, setPassword] = useState('')
     const [passwordCheck, setPasswordCheck] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -37,50 +45,42 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const [error, setError] = useState(false)
     const [blurPassword, setBlurPassword] = useState(false)
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
-    const [blurEmail, setBlurEmail] = useState(false)
-    const [errMaster, setErrMaster] = useState(false)
-    const addMaster = () => {
-
-
-        registrationFromAdmin(email, password, true, true, masterName, cities.selectedCity,).then(res => {
-
-            close()
-            alertMessage("Мастер успешно добавлен", false)
-            fetchMasters(null, null, masters.page, 10).then(res => {
-                if (res.status === 204) {
-                    return masters.setIsEmpty(true)
-                }
-                masters.setIsEmpty(false)
-                masters.setMasters(res.data.rows)
-                masters.setTotalCount(res.data.rows.length)
-            }, (err) => {
-                return masters.setIsEmpty(true)
-
-            })
-        }, err => {
-            setErrMaster(true)
-            alertMessage("Не удалось добавить мастера", true)
-        })
+    const changeUser = () => {
+        const changeInfo = {
+            email:userEmail
+        }
+        if(editPassword){
+            changeInfo.password = password
+        }
+        updateUser(userToEdit.id,changeInfo).then(
+            res=>{
+                close()
+                alertMessage("Успешно измененно",false)
+            },err=>{
+                console.log(err)
+                alertMessage("Не удалось изменить ",true)
+            }
+        )
     }
-    const close = () => {
-        setMasterName("")
-        setMasterRating("")
-        setErrMaster(false)
-        setBlurMasterName(false)
-        cities.setSelectedCity("")
+
+    const close = () =>{
+        fetchUsers(user.page, 10).then(res => {
+            user.setIsEmpty(false)
+            user.setUsersList(res.data.rows)
+            user.setTotalCount(res.data.count)
+        }, (err) => {
+        })
         onClose()
     }
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword)
     };
+
     //--------------------Validation
-    const validButton = masterRating > 5 || masterRating < 0 || !masterName
-    const validName = blurMasterName && masterName.length == 0
-    const validRating = masterRating > 5 || masterRating < 0
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+
     return (
         <div>
-
             <Modal
                 open={open}
                 onClose={close}
@@ -88,50 +88,33 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                 <Box sx={style}>
 
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Добавить мастера
+                        Изменить данные пользователя
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={validName}
-                                helperText={validName ? "Введите имя мастера" : ""}
-                                sx={{my: 1}}
+                                error={blurEmail && reg.test(userEmail) == false}
+                                label="Изменить email пользователя"
+                                sx={{mt: 1}}
                                 id="masterName"
-                                label={`Укажите имя мастера`}
                                 variant="outlined"
-                                value={masterName}
+                                value={userEmail}
                                 required
-                                onFocus={() => setBlurMasterName(false)}
-                                onBlur={() => setBlurMasterName(true)}
-                                onChange={e => setMasterName(e.target.value)}
-                            />
-                            <TextField
-                                error={error || blurEmail && reg.test(email) == false}
-                                sx={{mb: 1}}
-                                id="Email"
-                                label="Email"
-                                variant="outlined"
-                                type={"email"}
-                                value={email}
-                                helperText={blurEmail && reg.test(email) == false ?
-                                    "Введите email формата: clock@clock.com" :
-                                    error ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
-                                }
                                 onFocus={() => setBlurEmail(false)}
                                 onBlur={() => setBlurEmail(true)}
-                                onChange={(e => {
-                                    setEmail(e.target.value)
-                                    setError(null)
-                                })}
+                                onChange={e => setUserEmail(e.target.value)}
+
                             />
 
+                        </FormControl>
+                        {editPassword?
 
-                            <FormControl variant="outlined">
+                                <FormControl sx={{my: 1}}  variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
                                     error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
                                     id="Password"
-                                    label="Пароль"
+                                    label="Новый пароль"
                                     type={showPassword ? 'text' : 'password'}
 
                                     value={password}
@@ -156,13 +139,15 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                 <FormHelperText>{blurPassword && password.length < 6 ?
                                     "Длина пароля должна быть не менее 6 символов"
                                     : ""}</FormHelperText>
-                            </FormControl>
-                            <FormControl sx={{my: 1}} variant="outlined">
+                            </FormControl>:null}
+
+                        {editPassword?
+                            <FormControl variant="outlined">
                                 <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
                                 <OutlinedInput
                                     error={error || blurPasswordCheck && password !== passwordCheck}
                                     id="Check Password"
-                                    label="Подтвердить пароль"
+                                    label="Подтвердить новый пароль"
                                     type={showPasswordCheck ? 'text' : 'password'}
                                     value={passwordCheck}
                                     onChange={(e => {
@@ -186,34 +171,24 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                 <FormHelperText
                                     error={true}>{blurPasswordCheck && password !== passwordCheck ? "Пароли не совпадают" : ""}</FormHelperText>
 
-                            </FormControl>
-                            <TextField
-                                sx={{mb: 1}}
-                                id="masterRating"
-                                error={validRating}
-                                helperText={validRating ? 'Введите рейтинг от 0 до 5' : false}
-                                label={`Укажите рейтинг от 0 до 5`}
-                                variant="outlined"
-                                value={masterRating}
-                                type="number"
-                                InputProps={{
-                                    inputProps: {
-                                        max: 5, min: 0
-                                    }
-                                }}
-                                onChange={e => setMasterRating(Number(e.target.value))}
-                            />
-                            <SelectorMasterCity open={open} error={errMaster}/>
+                            </FormControl>:null}
 
-                        </FormControl>
+
+                        <Box>
+                            <FormControlLabel
+                                label="Сменить пароль"
+                                control={
+                                    <Checkbox onChange={(e) => setEditPassword(e.target.checked)}/>}
+
+                            />
+                        </Box>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
-                            <Button color="success" sx={{flexGrow: 1,}}
-                                    variant="outlined"
-                                    onClick={addMaster}
-                                    disabled={validButton}>
-                                Добавить
+                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                                    disabled={blurEmail && reg.test(userEmail) == false}
+                                    onClick={changeUser}>
+                                Изменить
                             </Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>
@@ -226,4 +201,4 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     );
 });
 
-export default CreateMaster;
+export default EditUser;

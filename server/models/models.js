@@ -12,8 +12,8 @@ const User = sequelize.define('user', {
     password: {
         type: DataTypes.STRING,
     },
-    role: {type: DataTypes.STRING, defaultValue: "USER"},
-    isActivated:{type:DataTypes.BOOLEAN, defaultValue: false},
+    role: {type: DataTypes.STRING, defaultValue: "CUSTOMER"},
+    isActivated: {type: DataTypes.BOOLEAN, defaultValue: false},
     activationLink: {type: DataTypes.STRING}
 
 }, {timestamps: false})
@@ -29,8 +29,9 @@ const Master = sequelize.define('master', {
         validate: {
             min: 0,
             max: 5
-        }
-    }
+        }, defaultValue: 0
+    },
+    isActivated: {type: DataTypes.BOOLEAN, defaultValue: false},
 }, {timestamps: false})
 const City = sequelize.define('city', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -71,8 +72,22 @@ const Order = sequelize.define('order', {
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 }, {timestamps: false})
+const Customer = sequelize.define('customer', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {
+        type: DataTypes.STRING, allowNull: false,
+        validate: {notEmpty: true}
+    },
+}, {timestamps: false})
 User.hasMany(Order)
 Order.belongsTo(User)
+
+
+User.hasOne(Customer)
+Customer.belongsTo(User)
+
+User.hasOne(Master, {onDelete: 'CASCADE'})
+Master.belongsTo(User, {onDelete: 'CASCADE'})
 
 Master.hasMany(Order)
 Order.belongsTo(Master)
@@ -89,5 +104,6 @@ module.exports = {
     City,
     Master,
     SizeClock,
-    CitiesMasters
+    CitiesMasters,
+    Customer
 }

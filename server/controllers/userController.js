@@ -1,15 +1,14 @@
 const userLogic = require('../businessLogic/userLogic');
-const masterLogic = require("../businessLogic/masterLogic");
+
 
 
 class UserController {
     async registration(req, res, next) {
         await userLogic.registration(req, res, next)
-        if (req.body.role == "MASTER") {
-            req.body.rating = 0
-            const master = await masterLogic.create(req, res, next)
-            return master
-        }
+    }
+
+    async registrationFromAdmin(req,res,next){
+        await userLogic.registrationFromAdmin(req, res, next)
     }
 
     async login(req, res, next) {

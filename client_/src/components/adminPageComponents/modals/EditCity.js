@@ -49,7 +49,7 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
     }
 
     //--------------------Validation
-    const validName = blurCityName && cityName.length == 0
+    const validName = blurCityName && cityName.length === 0
     return (
         <div>
             <Modal

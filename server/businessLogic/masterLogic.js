@@ -1,4 +1,4 @@
-const {Master, City, Order, CitiesMasters} = require('../models/models')
+const {Master, City, Order, CitiesMasters, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const {Op} = require("sequelize");
 const sizeLogic = require("./sizeLogic");
@@ -6,8 +6,12 @@ const sizeLogic = require("./sizeLogic");
 class MasterLogic {
     async create(req, res, next) {
         try {
-            const {name, rating, cityId} = req.body
-            const master = await Master.create({name, rating})
+            const {name, rating, email, password, cityId, userId, isActivated} = req.body
+
+
+            const master = await Master.create({name, rating, email, password, userId, isActivated})
+
+
             await master.addCity(cityId)
             return master
         } catch (e) {
@@ -22,16 +26,12 @@ class MasterLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let masters = await Master.findAndCountAll({
-                attributes: ['name', "rating", "id"],
-                include: [{
-                    model: City,
-                    through: {
+                attributes: ['name', "rating", "id", "isActivated"], include: [{
+                    model: City, through: {
                         attributes: []
-                    }
+                    },
 
-                },
-                ],
-                exclude: [{
+                }, {model: User,}], exclude: [{
                     model: CitiesMasters
                 }]
             })
@@ -62,32 +62,22 @@ class MasterLogic {
             let masters
             if (cityId) {
                 masters = await Master.findAndCountAll({
-                    include: [{
-                        model: City,
-                        where: {id: cityId},
-                        through: {
+                    where: {
+                        isActivated: {[Op.is]: true}
+                    }, include: [{
+                        model: City, where: {id: cityId}, through: {
                             attributes: []
                         }
                     }, {
-                        model: Order,
-                        where: {
-                            date: {[Op.eq]: date},
-                            [Op.not]: [
-                                {
-                                    [Op.or]: [{
-                                        [Op.and]: [
-                                            {time: {[Op.lt]: time}},
-                                            {endTime: {[Op.lte]: time}}
-                                        ]
-                                    }, {
-                                        [Op.and]: [
-                                            {time: {[Op.gte]: endTime}},
-                                            {endTime: {[Op.gt]: endTime}}
-                                        ]
-                                    }]
+                        model: Order, where: {
+                            date: {[Op.eq]: date}, [Op.not]: [{
+                                [Op.or]: [{
+                                    [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
+                                }, {
+                                    [Op.and]: [{time: {[Op.gte]: endTime}}, {endTime: {[Op.gt]: endTime}}]
                                 }]
-                        },
-                        required: false
+                            }]
+                        }, required: false
                     }]
                 })
             } else {
@@ -113,25 +103,15 @@ class MasterLogic {
             throw new ApiError.NotFound({message: 'Master not found'})
         }
         master = await Master.findOne({
-            where: {id: masterId},
-            include: [{
-                model: Order,
-                where: {
-                    date: {[Op.eq]: date},
-                    [Op.not]: [
-                        {
-                            [Op.or]: [{
-                                [Op.and]: [
-                                    {time: {[Op.lt]: time}},
-                                    {endTime: {[Op.lte]: time}}
-                                ]
-                            }, {
-                                [Op.and]: [
-                                    {time: {[Op.gte]: endTime}},
-                                    {endTime: {[Op.gt]: endTime}}
-                                ]
-                            }]
+            where: {id: masterId}, include: [{
+                model: Order, where: {
+                    date: {[Op.eq]: date}, [Op.not]: [{
+                        [Op.or]: [{
+                            [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
+                        }, {
+                            [Op.and]: [{time: {[Op.gte]: endTime}}, {endTime: {[Op.gt]: endTime}}]
                         }]
+                    }]
                 },
 
             }],
@@ -146,13 +126,27 @@ class MasterLogic {
     async update(req, res, next) {
         try {
             const {masterId} = req.params
-            const {name, rating, cityId} = req.body
+            const {name, rating, cityId, isActivated} = req.body
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
-                name: name,
-                rating: rating,
+                name: name, rating: rating,
             })
             await master.setCities(cityId)
+            return master
+        } catch (e) {
+            return next(ApiError.badRequest({message: "Wrong request"}))
+        }
+    }
+
+    async activate(req, res, next) {
+        try {
+            const {masterId} = req.params
+            const {isActivated} = req.body
+            console.log(masterId)
+            const master = await Master.findOne({where: {id: masterId}})
+            await master.update({
+                isActivated: isActivated,
+            })
             return master
         } catch (e) {
             return next(ApiError.badRequest({message: "Wrong request"}))
@@ -162,14 +156,15 @@ class MasterLogic {
     async deleteOne(req, res, next) {
         try {
             const {masterId} = req.params
-            const master = await Master.findOne({
-                where: {id: masterId},
+            const master = await User.findOne({
+
                 include: {
-                    model: Order,
-                    attributes: ['id']
+                    model: Master, where: {id: masterId}, attributes: ['id'], include: {
+                        model: Order, attributes: ['id']
+                    }
                 }
             })
-            if (master.orders.length == 0) {
+            if (master.master.orders.length == 0) {
                 await master.destroy()
                 return res.status(204).json({message: "success"})
             } else {

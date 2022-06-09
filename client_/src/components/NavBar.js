@@ -1,12 +1,8 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import {AppBar, Toolbar, Typography, Button, Container, CssBaseline} from '@mui/material';
 import {useContext} from "react";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
-import {Container, CssBaseline} from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
 import {ADMIN_ROUTE, LOGIN_ROUTE, START_ROUTE, USER_ORDER_ROUTE} from "../utils/consts";
 
@@ -28,7 +24,7 @@ const NavBar = observer(() => {
             <CssBaseline/>
             <AppBar color="warning" position="fixed">
                 <Container maxWidth="xl">
-                    {user.isAuth&&user.user.isActivated||user.userRole =="ADMIN" ?
+                    {user.isAuth && user.user.isActivated || user.userRole == "ADMIN" ?
                         <Toolbar>
 
                             <Typography variant="h6" component="div" sx={{flexGrow: 1}}>

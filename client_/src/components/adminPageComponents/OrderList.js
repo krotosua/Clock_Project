@@ -1,22 +1,17 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import {
+    Box, List, ListItem, ListItemText, IconButton, Typography, Divider, Tooltip,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
-import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
-import {deleteOrder, fetchAlLOrders} from "../../http/orderAPI";
 import Pages from "../Pages";
+import {deleteOrder, fetchAlLOrders} from "../../http/orderAPI";
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
-import {Tooltip} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import EditOrder from "./modals/EditOrder";
 
 
@@ -47,7 +42,7 @@ const OrderList = observer(({alertMessage}) => {
     }, [orders.page])
 
 
-    const delOrder = (id) => {
+    const removeOrder = (id) => {
         deleteOrder(id).then((res) => {
             orders.setOrders(orders.orders.filter(obj => obj.id !== id));
             alertMessage('Успешно удаленно', false)
@@ -60,7 +55,7 @@ const OrderList = observer(({alertMessage}) => {
 
     }
 
-    function editOrder(order, time) {
+    const editOrder = (order, time) => {
         setOrderToEdit(order)
         setIdToEdit(order.id)
         let pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
@@ -71,130 +66,122 @@ const OrderList = observer(({alertMessage}) => {
     }
 
 
-    return (
-        <Box>
-            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
-                <Typography sx={{mt: 4, mb: 2}}
-                            variant="h6"
-                            component="div">
-                    Заказы
-                </Typography>
+    return (<Box>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
+            <Typography sx={{mt: 4, mb: 2}}
+                        variant="h6"
+                        component="div">
+                Заказы
+            </Typography>
 
-                <List disablePadding>
-                    <ListItem
-                        key={1}
+            <List disablePadding>
+                <ListItem
+                    key={1}
+                    divider
+                    secondaryAction={<Link to={ORDER_ROUTE}
+                                           style={{textDecoration: 'none', color: 'white'}}>
+                        <Tooltip title={'Добавить заказ'}
+                                 placement="top"
+                                 arrow>
+                            <IconButton sx={{width: 5}}
+                                        edge="end"
+                                        aria-label="add"
+                                        onClick={() => navigate(ORDER_ROUTE)}
+                            >
+                                <AddIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </Link>}
+                >
+                    <ListItemText sx={{width: 10}}
+                                  primary="№"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Имя"
+                    />
+
+                    <ListItemText sx={{width: 10}}
+                                  primary="Дата и время"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Размер часов"/>
+
+                    <ListItemText sx={{width: 10}}
+                                  primary="Мастер"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Город"
+
+                    />
+
+
+                </ListItem>
+                <Divider orientation="vertical"/>
+                {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
+                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
+                    return (<ListItem
+                        key={order.id}
                         divider
-                        secondaryAction={
-                            <Link to={ORDER_ROUTE}
-                                  style={{textDecoration: 'none', color: 'white'}}>
-                                <Tooltip title={'Добавить заказ'}
-                                         placement="top"
-                                         arrow>
-                                    <IconButton sx={{width: 5}}
-                                                edge="end"
-                                                aria-label="add"
-                                                onClick={() => navigate(ORDER_ROUTE)}
-                                    >
-                                        <AddIcon/>
-                                    </IconButton>
-                                </Tooltip>
-                            </Link>
-                        }
+                        secondaryAction={<Tooltip title={'Удалить заказ'}
+                                                  placement="right"
+                                                  arrow>
+                            <IconButton sx={{width: 5}}
+                                        edge="end"
+                                        aria-label="delete"
+                                        onClick={() => removeOrder(order.id)}
+                            >
+                                <DeleteIcon/>
+                            </IconButton>
+                        </Tooltip>}
                     >
                         <ListItemText sx={{width: 10}}
-                                      primary="№"
+                                      primary={index + 1}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary="Имя"
-                        />
-
-                        <ListItemText sx={{width: 10}}
-                                      primary="Дата и время"
+                                      primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary="Размер часов"/>
-
+                                      primary={`${order.date} ${time}`}
+                        /> <ListItemText sx={{width: 10}}
+                                         primary={order.sizeClock.name}/>
                         <ListItemText sx={{width: 10}}
-                                      primary="Мастер"
-                        />
+                                      primary={order.master.name}/>
                         <ListItemText sx={{width: 10}}
-                                      primary="Город"
-
-                        />
-
-
-                    </ListItem>
-                    <Divider orientation="vertical"/>
-                    {orders.IsEmpty ? <h1>Список пуст</h1> :
-                        orders.orders.map((order, index) => {
-                            const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
-                            return (<ListItem
-                                key={order.id}
-                                divider
-                                secondaryAction={
-                                    <Tooltip title={'Удалить заказ'}
-                                             placement="right"
-                                             arrow>
-                                        <IconButton sx={{width: 5}}
-                                                    edge="end"
-                                                    aria-label="delete"
-                                                    onClick={() => delOrder(order.id)}
-                                        >
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    </Tooltip>
-                                }
+                                      primary={cities.cities.find(city => city.id === order.cityId).name}
+                        />{new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
+                        <Tooltip title={'Изменить заказ'}
+                                 placement="left"
+                                 arrow>
+                            <IconButton sx={{width: 5}}
+                                        edge="end"
+                                        aria-label="Edit"
+                                        onClick={() => editOrder(order, time)}
                             >
-                                <ListItemText sx={{width: 10}}
-                                              primary={index + 1}
-                                />
-                                <ListItemText sx={{width: 10}}
-                                              primary={order.name}
-                                />
-                                <ListItemText sx={{width: 10}}
-                                              primary={`${order.date} ${time}`}
-                                /> <ListItemText sx={{width: 10}}
-                                                 primary={order.sizeClock.name}/>
-                                <ListItemText sx={{width: 10}}
-                                              primary={order.master.name}/>
-                                <ListItemText sx={{width: 10}}
-                                              primary={cities.cities.find(city => city.id === order.cityId).name}
-                                />{new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date
-                            && new Date().toLocaleTimeString("uk-UA") > time ? null :
-                                <Tooltip title={'Изменить заказ'}
-                                         placement="left"
-                                         arrow>
-                                    <IconButton sx={{width: 5}}
-                                                edge="end"
-                                                aria-label="Edit"
-                                                onClick={() => editOrder(order, time)}
-                                    >
-                                        <EditIcon/>
-                                    </IconButton>
-                                </Tooltip>}
+                                <EditIcon/>
+                            </IconButton>
+                        </Tooltip>}
 
-                            </ListItem>)
-                        })}
-                    <Divider/>
-                </List>
+                    </ListItem>)
+                })}
+                <Divider/>
+            </List>
 
-                {editVisible ? <EditOrder
-                    open={editVisible}
-                    onClose={() => {
-                        setEditVisible(false)
-                    }}
-                    orderToEdit={orderToEdit}
-                    alertMessage={alertMessage}
-                    idToEdit={idToEdit}
-                    dateToEdit={dateToEdit}
-                    timeToEdit={timeToEdit}
-                /> : null}
+            {editVisible ? <EditOrder
+                open={editVisible}
+                onClose={() => {
+                    setEditVisible(false)
+                }}
+                orderToEdit={orderToEdit}
+                alertMessage={alertMessage}
+                idToEdit={idToEdit}
+                dateToEdit={dateToEdit}
+                timeToEdit={timeToEdit}
+            /> : null}
 
-            </Box>
-            <Box sx={{display: "flex", justifyContent: "center"}}>
-                <Pages context={orders}/>
-            </Box>
         </Box>
-    );
+        <Box sx={{display: "flex", justifyContent: "center"}}>
+            <Pages context={orders}/>
+        </Box>
+    </Box>);
 })
 export default OrderList;

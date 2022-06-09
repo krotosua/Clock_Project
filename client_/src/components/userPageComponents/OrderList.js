@@ -1,18 +1,12 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
+import {Box,List,ListItem,ListItemText,Typography,Divider} from '@mui/material';
 import {useContext} from "react";
 import {Context} from "../../index";
-import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 
 
 const OrderList = observer(() => {
     let {orders, cities} = useContext(Context)
-
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
             <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">

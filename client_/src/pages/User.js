@@ -1,9 +1,7 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 import OrderList from '../components/userPageComponents/OrderList'
-import Box from "@mui/material/Box";
-import Fab from '@mui/material/Fab';
+import {Box, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import {Tooltip} from "@mui/material";
 import {ORDER_ROUTE} from "../utils/consts";
 import {useNavigate, useParams} from "react-router-dom";
 import {fetchUserOrders} from "../http/orderAPI";

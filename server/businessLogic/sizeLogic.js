@@ -69,6 +69,7 @@ class SizeLogic {
                     include: Order,
                     attributes: ["id"]
                 })
+                
                 if (size.orders.length == 0) {
                     await size.destroy()
                     return res.status(204).json({message: "success"})

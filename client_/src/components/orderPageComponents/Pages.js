@@ -1,6 +1,5 @@
 import * as React from 'react';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+import {Pagination, Stack} from '@mui/material';
 import {observer} from "mobx-react-lite";
 import {useState} from "react";
 
@@ -14,8 +13,7 @@ const Pages = observer(({context}) => {
     };
 
 
-    return (
-        <Stack spacing={2} sx={{my: 2}}>
+    return (<Stack spacing={2} sx={{my: 2}}>
             <Pagination color='warning'
                         count={pageCount}
                         page={currentPage}

@@ -4,13 +4,21 @@ const userController = require('../controllers/userController')
 const authMiddleware = require('../middleware/authMiddleware')
 const {body, param} = require('express-validator')
 const checkRole = require("../middleware/checkRoleMiddleware");
-const sizeController = require("../controllers/sizeController");
 
 
 router.post("/registration/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
+    body('isMaster').isBoolean(),
+    body("name").not().isEmpty().isString().trim().escape(),
     userController.registration)
+router.post("/registrationAdmin/",
+    body('email').isEmail(),
+    body('password').isLength({min: 6}),
+    body('isMaster').isBoolean(),
+
+
+    userController.registrationFromAdmin)
 router.post('/login/',
     body('email').isEmail(),
     body('password').isLength({min: 6}),

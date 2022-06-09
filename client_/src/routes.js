@@ -1,17 +1,23 @@
 import Admin from "./pages/Admin";
 import {
-    ADMIN_CITY_LIST_ROUTE, ADMIN_MASTER_LIST_ROUTE, ADMIN_ORDER_LIST_ROUTE,
-    ADMIN_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
+    ADMIN_CITY_LIST_ROUTE,
+    ADMIN_MASTER_LIST_ROUTE,
+    ADMIN_ORDER_LIST_ROUTE,
+    ADMIN_ROUTE, ADMIN_SIZES_ROUTE,
+    ADMIN_USERS_ROUTE,
     LOGIN_ROUTE,
     ORDER_ROUTE,
     REGISTRATION_ROUTE,
     START_ROUTE,
-    USER_ORDER_ROUTE
+    USER_ORDER_ROUTE,
+    ACTIVATED_ROUTE
 } from "./utils/consts";
 import User from "./pages/User";
 import Start from "./pages/Start";
 import Order from "./pages/Order";
 import Auth from "./pages/Auth";
+import Activated from "./pages/Activated";
+
 
 export const adminRoutes = [{
     path: ADMIN_ROUTE,
@@ -58,6 +64,10 @@ export const publicRoutes = [
     {
         path: LOGIN_ROUTE,
         Component: Auth
+    },
+    {
+        path: ACTIVATED_ROUTE,
+        Component: Activated
     }
 
 ]
