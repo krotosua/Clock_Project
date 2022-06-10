@@ -16,7 +16,7 @@ import {finishedOrder} from "../../http/orderAPI";
 const OrderListMaster = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
 
-    function changeFinished(order) {
+    const changeFinished = (order)=> {
         const changeInfo = {
             id: order.id,
             finished: !order.finished

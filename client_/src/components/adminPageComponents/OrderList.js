@@ -125,8 +125,6 @@ const OrderList = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Город"
                     />
-
-
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
