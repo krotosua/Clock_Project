@@ -10,14 +10,14 @@ import {
     REGISTRATION_ROUTE,
     START_ROUTE,
     MASTER_ORDER_ROUTE,
-    CUSTOMER_ORDER_ROUTE,ACTIVATED_ROUTE
+    CUSTOMER_ORDER_ROUTE, ACTIVATED_ROUTE, CONGRATULATION_ROUTE
 } from "./utils/consts";
 import Customer from "./pages/Customer";
 import Start from "./pages/Start";
 import Order from "./pages/Order";
 import Auth from "./pages/Auth";
 import Master from "./pages/Master";
-import Activated from "./pages/Activated";
+import MessagePage from "./pages/MessagePage";
 
 
 export const adminRoutes = [{
@@ -68,6 +68,11 @@ export const publicRoutes = [
         Component: Order
     },
     {
+        path: CONGRATULATION_ROUTE,
+        Component: MessagePage
+    },
+
+    {
         path: REGISTRATION_ROUTE,
         Component: Auth
     },
@@ -77,7 +82,7 @@ export const publicRoutes = [
     },
     {
         path: ACTIVATED_ROUTE,
-        Component: Activated
+        Component: MessagePage
     }
 
 ]

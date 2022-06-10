@@ -20,7 +20,6 @@ import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
 import {checkEmail} from "../../http/userAPI";
-import Auth from "../../pages/Auth";
 import Login from "../authPageComponents/Login";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
@@ -28,10 +27,10 @@ const steps = ["Заполните форму заказа", "Выбор мас�
 const OrderStepper = observer(({alertMessage}) => {
     const {cities, size, masters, user} = useContext(Context);
     const [activeStep, setActiveStep] = useState(0);
-    const [name, setName] = useState(user.isAuth ? user.user.name : "");
-    const [email, setEmail] = useState(user.isAuth ? user.user.email : "");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
     const [date, setDate] = useState(new Date());
-    const [time, setTime] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
+    const [time, setTime] = useState(new Date(new Date().setUTCHours(new Date().getUTCHours() + 1, 0, 0)));
     const [chosenMaster, setChosenMaster] = useState(null);
     const [sizeClock, setSizeClock] = useState(null);
     const [cityChosen, setCityChosen] = useState(null);
@@ -41,7 +40,7 @@ const OrderStepper = observer(({alertMessage}) => {
     const [error, setError] = useState(false)
     const [errorTimePicker, setErrorTimePicker] = useState(false)
     const [errorDatePicket, setErrorDatePicker] = useState(false)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -54,7 +53,6 @@ const OrderStepper = observer(({alertMessage}) => {
     const handleClose = () => {
         setAnchorEl(null);
     };
-
     const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
 
@@ -69,9 +67,7 @@ const OrderStepper = observer(({alertMessage}) => {
                 setFreeMasters(res.data.rows)
                 masters.setMasters(res.data.rows);
                 masters.setTotalCount(res.data.count);
-                if (user.user.name !== name && changeName === null) {
-                    setAnchorEl(true)
-                }
+
             },
             (err) => {
                 masters.setIsEmpty(true);
@@ -82,11 +78,12 @@ const OrderStepper = observer(({alertMessage}) => {
 
     const handleNext = (event) => {
         if (user.isAuth || regCustomer !== null) {
-
-
+            if (user.user.name !== name && changeName === null) {
+                setAnchorEl(event.currentTarget)
+                return
+            }
             if (activeStep === 0) {
                 getMasters()
-
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
             } else if (activeStep === 1 && chosenMaster) {
                 setChosenMaster(Number(chosenMaster))
@@ -106,6 +103,9 @@ const OrderStepper = observer(({alertMessage}) => {
                 createOrder(body).then(res => {
                     cities.setSelectedCity(null)
                     size.setSelectedSize({date: "00:00:00"})
+                    if (changeName) {
+                        user.setUserName(name)
+                    }
                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 }, err => {
                     alertMessage('Мастер занят', true)
@@ -119,9 +119,9 @@ const OrderStepper = observer(({alertMessage}) => {
             setLoading(true)
             checkEmail(email).then(res => {
                 if (res.status == 204) {
-                    setEmailExists(true)
-                } else if (res.status == 200) {
                     setEmailExists(false)
+                } else if (res.status == 200) {
+                    setEmailExists(true)
                 }
             }).finally(() => setLoading(false))
             setAnchorEl(event.currentTarget)
@@ -136,12 +136,20 @@ const OrderStepper = observer(({alertMessage}) => {
         event ? setChosenMaster(event.target.value) : setChosenMaster(master);
     };
 
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    let checkInfo = !name || !email
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const checkInfo = !name || !email
         || !date || !time || !cities.selectedCity
         || !size.selectedSize.id || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket
 
+
+    useEffect(() => {
+        if (user.isAuth) {
+            setName(user.userName)
+            setEmail(user.user.email)
+        }
+
+    }, [])
 
     useEffect(() => {
         if (activeStep === 1) {
@@ -167,13 +175,12 @@ const OrderStepper = observer(({alertMessage}) => {
     return (
         isAuth ?
             <Box>
-
                 <Login
-                    getMasters={()=>getMasters()}
+                    getMasters={() => getMasters()}
                     nextPage={() => {
-                    setActiveStep((prevActiveStep) => prevActiveStep + 1)
-                    setIsAuth(false)
-                }}/>
+                        setActiveStep(0)
+                        setIsAuth(false)
+                    }}/>
             </Box>
             :
 
@@ -209,8 +216,8 @@ const OrderStepper = observer(({alertMessage}) => {
                         <TextField
                             required
                             sx={{mt: 1}}
-                            error={blurEmail && reg.test(email) == false}
-                            helperText={blurEmail && reg.test(email) == false ? "Введите email формата:clock@clock.com " : ""}
+                            error={blurEmail && reg.test(email) === false}
+                            helperText={blurEmail && reg.test(email) === false ? "Введите email формата:clock@clock.com " : ""}
                             id="Email"
                             onFocus={() => setBlurEmail(false)}
                             onBlur={() => setBlurEmail(true)}
@@ -277,7 +284,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                     e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
                                 ampm={false}
                                 views={["hours"]}
-                                minTime={date.toLocaleDateString('uk-UA') == new Date().toLocaleDateString('uk-UA') ?
+                                minTime={date.toLocaleDateString('uk-UA') === new Date().toLocaleDateString('uk-UA') ?
                                     new Date(0, 0, 0, new Date().getHours() + 1) :
                                     new Date(0, 0, 0, 8)}
                                 maxTime={new Date(0, 0, 0, 22)}
@@ -319,8 +326,6 @@ const OrderStepper = observer(({alertMessage}) => {
                                     disabled={checkInfo}>
                                 {activeStep === steps.length - 1 ? "Отправить заказ" : "Дальше"}
                             </Button>
-
-
                             <Popover
                                 id={id}
                                 open={open}
@@ -347,27 +352,6 @@ const OrderStepper = observer(({alertMessage}) => {
                                     emailExists ?
                                         <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
                                             <Typography sx={{p: 2}}>
-                                                Хотите зарегестрироваться?
-                                            </Typography>
-                                            <Button onClick={() => {
-                                                setRegCustomer(true)
-                                                setAnchorEl(null)
-                                                getMasters()
-                                                setActiveStep((prevActiveStep) => prevActiveStep + 1)
-                                            }}>
-                                                Да
-                                            </Button>
-                                            <Button onClick={() => {
-                                                setAnchorEl(null)
-                                                setRegCustomer(false)
-                                                getMasters()
-                                                setActiveStep((prevActiveStep) => prevActiveStep + 1)
-                                            }}>
-                                                Нет
-                                            </Button>
-                                        </Box> :
-                                        <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
-                                            <Typography sx={{p: 2}}>
                                                 Прежде чем продолжить - авторизируйтесь
                                             </Typography>
                                             <Button onClick={() => {
@@ -376,7 +360,54 @@ const OrderStepper = observer(({alertMessage}) => {
                                             }}>
                                                 Авторизироваться
                                             </Button>
-                                        </Box>}
+                                        </Box>
+                                        : user.isAuth && user.user.name !== name && changeName === null ?
+                                            <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
+                                                <Typography sx={{p: 2}}>
+                                                    Сменить Ваши персональные данные?
+                                                </Typography>
+                                                <Button onClick={() => {
+                                                    setAnchorEl(null)
+                                                    setChangeName(true)
+                                                    getMasters()
+                                                    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+
+                                                }}>
+                                                    Да
+                                                </Button>
+                                                <Button onClick={() => {
+                                                    setAnchorEl(null)
+                                                    setChangeName(false)
+                                                    getMasters()
+                                                    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+                                                }}>
+                                                    Нет
+                                                </Button>
+                                            </Box> : <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
+                                                <Typography sx={{p: 2}}>
+                                                    Хотите зарегестрироваться?
+                                                </Typography>
+                                                <Button onClick={() => {
+                                                    setRegCustomer(true)
+                                                    setAnchorEl(null)
+                                                    setChangeName(true)
+                                                    getMasters()
+                                                    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+                                                }}>
+                                                    Да
+                                                </Button>
+                                                <Button onClick={() => {
+                                                    setRegCustomer(false)
+                                                    setAnchorEl(null)
+                                                    setChangeName(false)
+                                                    getMasters()
+                                                    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+                                                }}>
+                                                    Нет
+                                                </Button>
+
+                                            </Box>
+                                }
                             </Popover>
 
                         </Box>

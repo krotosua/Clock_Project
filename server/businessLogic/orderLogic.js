@@ -47,6 +47,7 @@ class OrderLogic {
             next(ApiError.badRequest(e.message))
         }
     }
+
     async getMasterOrders(req, res, next) {
         try {
             let {userId} = req.params
@@ -56,12 +57,14 @@ class OrderLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let orders
-            let master = await Master.findOne({where:{userId:userId},
-            attributes:['id',"isActivated"]})
+            let master = await Master.findOne({
+                where: {userId: userId},
+                attributes: ['id', "isActivated"]
+            })
 
-           if(!master.isActivated){
-               return next(ApiError.forbidden("Doesn`t activated"))
-           }
+            if (!master.isActivated) {
+                return next(ApiError.forbidden("Doesn`t activated"))
+            }
             orders = await Order.findAndCountAll({
                 where: {masterId: master.id},
                 include: [{
@@ -136,6 +139,7 @@ class OrderLogic {
             next(ApiError.badRequest(e.message))
         }
     }
+
     async finished(req, res, next) {
         try {
             const {orderId} = req.params
@@ -169,12 +173,12 @@ class OrderLogic {
         try {
             const cityName = result.city.name
             const size = result.clock.name
-            let {name, date, time, email, masterId,password} = req.body
+            let {name, date, time, email, masterId, password} = req.body
 
             const master = await Master.findByPk(masterId)
             date = new Date(Date.parse(date)).toLocaleDateString('uk-UA')
             time = new Date(Date.parse(time)).toLocaleTimeString('uk-UA')
-            MailService.sendMail(name, date, time, email, size, master.name, cityName,password, next)
+            MailService.sendMail(name, date, time, email, size, master.name, cityName, password, next)
 
         } catch (e) {
             return next(ApiError.badRequest(e.message))

@@ -11,8 +11,6 @@ class MasterLogic {
 
 
             const master = await Master.create({name, rating, email, password, userId, isActivated})
-
-
             await master.addCity(cityId)
             return master
         } catch (e) {
@@ -120,14 +118,14 @@ class MasterLogic {
         if (master) {
             throw new ApiError.badRequest({message: 'Master has orders'})
         }
-        return res.status(204).json({message: "Master hasn`t orders"})
+        return
 
     }
 
     async update(req, res, next) {
         try {
             const {masterId} = req.params
-            const {name, rating, cityId, } = req.body
+            const {name, rating, cityId,} = req.body
             const master = await Master.findOne({where: {id: masterId}})
             await master.update({
                 name: name, rating: rating,
@@ -142,21 +140,23 @@ class MasterLogic {
     async ratingUpdate(req, res, next) {
         try {
             const result = await sequelize.transaction(async () => {
-            const {masterId} = req.params
-            let { rating,review, orderId,userId } = req.body
-                const existsRating = await Rating.findOne({where: {orderId:orderId}})
-                if (existsRating){
-                    throw new Error ("Rating already exists")
+                const {masterId} = req.params
+                let {rating, orderId, userId} = req.body
+                const existsRating = await Rating.findOne({where: {orderId: orderId}})
+                if (existsRating) {
+                    throw new Error("Rating already exists")
                 }
-           await Rating.create({ rating,review,userId, masterId, orderId})
-           let allRating= await Rating.findAndCountAll({where:{masterId:masterId},
-            attributes:["rating"]})
-            rating = allRating.rows.reduce((sum,current)=> sum+current.rating,0)/allRating.count
-            const master = await Master.findOne({where: {id: masterId}})
-            await master.update({
-                rating: rating,
-            })
-            return  master
+                await Rating.create({rating, userId, masterId, orderId})
+                let allRating = await Rating.findAndCountAll({
+                    where: {masterId: masterId},
+                    attributes: ["rating"]
+                })
+                rating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count
+                const master = await Master.findOne({where: {id: masterId}})
+                await master.update({
+                    rating: rating,
+                })
+                return master
             })
             return res.status(201).json(result)
         } catch (e) {

@@ -4,7 +4,7 @@ import {Box, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import {ORDER_ROUTE} from "../utils/consts";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {fetchCustomerOrders, } from "../http/orderAPI";
+import {fetchCustomerOrders,} from "../http/orderAPI";
 import {Context} from "../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../components/Pages";
@@ -43,14 +43,14 @@ const Customer = observer(() => {
                 </Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>
-                <Tooltip title="Добавить заказ" placement="top" arrow>
-                    <Fab onClick={() => navigate(ORDER_ROUTE)}
-                         color="primary"
-                         aria-label="add"
-                         sx={{position: 'absolute', bottom: 50, right: 50,}}>
-                        <AddIcon/>
-                    </Fab>
-                </Tooltip>
+                    <Tooltip title="Добавить заказ" placement="top" arrow>
+                        <Fab onClick={() => navigate(ORDER_ROUTE)}
+                             color="warning"
+                             aria-label="add"
+                             sx={{position: 'absolute', bottom: 50, right: 50,}}>
+                            <AddIcon/>
+                        </Fab>
+                    </Tooltip>
                 </Link>
             </Box>
             <Box style={{display: "flex", justifyContent: "center"}}>

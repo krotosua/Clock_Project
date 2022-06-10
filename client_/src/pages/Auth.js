@@ -13,11 +13,10 @@ import {
     useNavigate
 } from "react-router-dom";
 import {
-    ADMIN_ROUTE,
-    LOGIN_ROUTE,
-    REGISTRATION_ROUTE, MASTER_ORDER_ROUTE, CUSTOMER_ORDER_ROUTE,
+    CONGRATULATION_ROUTE,
+    LOGIN_ROUTE, START_ROUTE,
 } from "../utils/consts";
-import {login, registration} from "../http/userAPI";
+import {registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 import SelectorMasterCity from "../components/adminPageComponents/modals/SelectorMasterCity";
@@ -29,7 +28,7 @@ import Login from "../components/authPageComponents/Login";
 const Auth = observer(() => {
     const {cities} = useContext(Context)
     const location = useLocation();
-
+    const navigate = useNavigate()
     const isLogin = location.pathname === LOGIN_ROUTE;
     const [email, setEmail] = useState('')
     const [blurEmail, setBlurEmail] = useState(false)
@@ -54,7 +53,7 @@ const Auth = observer(() => {
     }
     const singIn = async () => {
         try {
-            let customerData, masterData, dataUser
+            let customerData, masterData
             isMaster ?
                 masterData = {
                     email, password, isMaster, name, cityId: cities.selectedCity
@@ -62,10 +61,11 @@ const Auth = observer(() => {
                 customerData = {
                     email, password, isMaster, name
                 }
-            else if (password.length >= 6 && reg.test(email) !== false) {
-                isMaster?
-                    await registration(masterData):
+            if (password.length >= 6 && reg.test(email) !== false) {
+                isMaster ?
+                    await registration(masterData) :
                     await registration(customerData)
+                navigate(CONGRATULATION_ROUTE)
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
                 return
             } else {
@@ -86,63 +86,76 @@ const Auth = observer(() => {
         !agree || !email || password.length < 6 || reg.test(email) === false || !name || password !== passwordCheck
 
     return (
-        isLogin?
-            <Login alertMessage={alertMessage}/>:
-        <Container
-            maxWidth="xl"
-            sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: window.innerHeight - 60,
-            }}
-            onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
-        >
-            <Card sx={{width: 800, p: 1}}>
+        isLogin ?
+            <Login alertMessage={alertMessage}/> :
+            <Container
+                maxWidth="xl"
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: window.innerHeight - 60,
+                }}
+                onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
+            >
+                <Card sx={{width: 800, p: 1}}>
 
-               <CardContent>
-                    <Typography align="center" variant="h5">
-                        Регистрация
-                    </Typography>
-                    <Box
-                        sx={{
-                            width: 700,
-                            mt: 3,
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <FormControl error={true}>
-                            <TextField
-                                error={error || blurEmail && reg.test(email) == false}
-                                sx={{mb: 2}}
-                                id="Email"
-                                label="Email"
-                                variant="outlined"
-                                type={"email"}
-                                value={email}
-                                helperText={blurEmail && reg.test(email) == false ?
-                                    "Введите email формата: clock@clock.com" :
-                                    error ? "Пользователь с таким email уже существует" : ""
-                                }
-                                onFocus={() => setBlurEmail(false)}
-                                onBlur={() => setBlurEmail(true)}
-                                onChange={(e => {
-                                    setEmail(e.target.value)
-                                    setError(null)
-                                })}
-                            />
+                    <CardContent>
+                        <Typography align="center" variant="h5">
+                            Регистрация
+                        </Typography>
+                        <Box
+                            sx={{
+                                width: 700,
+                                mt: 3,
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <FormControl error={true}>
+                                <TextField
+                                    error={error}
+                                    sx={{mb: 2}}
+                                    id="name"
+                                    label="Укажите Ваше имя"
+                                    variant="outlined"
+                                    value={name}
+                                    onChange={(e => {
+                                        setName(e.target.value)
+                                    })}
+                                />
+                                <TextField
+                                    error={error || blurEmail && reg.test(email) == false}
+
+                                    sx={{mb: 2}}
+                                    id="Email"
+                                    label="Email"
+                                    variant="outlined"
+                                    type={"email"}
+                                    value={email}
+                                    helperText={blurEmail && reg.test(email) == false ?
+                                        "Введите email формата: clock@clock.com" :
+                                        error ? "Пользователь с таким email уже существует" : ""
+                                    }
+                                    onFocus={() => setBlurEmail(false)}
+                                    onBlur={() => setBlurEmail(true)}
+                                    onChange={(e => {
+                                        setEmail(e.target.value)
+                                        setError(null)
+                                    })}
+                                />
 
 
                                 <FormControl variant="outlined">
-                                    <InputLabel htmlFor="Password">Пароль</InputLabel>
+                                    <InputLabel autocomplete="off" htmlFor="Password">Пароль</InputLabel>
                                     <OutlinedInput
+                                        autocomplete="new-password"
                                         error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
                                         id="Password"
                                         label="Пароль"
                                         type={showPassword ? 'text' : 'password'}
-
+                                        autocomplete="off"
                                         value={password}
                                         onChange={(e => {
                                             setPassword(e.target.value)
@@ -169,6 +182,7 @@ const Auth = observer(() => {
                                 <FormControl sx={{my: 2}} variant="outlined">
                                     <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
                                     <OutlinedInput
+                                        autocomplete="new-password"
                                         error={error || blurPasswordCheck && password !== passwordCheck}
                                         id="Check Password"
                                         label="Подтвердить пароль"
@@ -230,12 +244,12 @@ const Auth = observer(() => {
                                 >
 
                                     <div>
-                                        Есть аккаунта? <NavLink to={LOGIN_ROUTE}
-                                                                onClick={() => {
-                                                                    setAgree(false)
-                                                                    setIsMaster(false)
-                                                                    setError(false)
-                                                                }}>Войти.</NavLink>
+                                        Есть аккаунт? <NavLink to={LOGIN_ROUTE}
+                                                               onClick={() => {
+                                                                   setAgree(false)
+                                                                   setIsMaster(false)
+                                                                   setError(false)
+                                                               }}>Войти.</NavLink>
                                     </div>
 
                                     <Button type="submit" variant="outlined"
@@ -245,15 +259,15 @@ const Auth = observer(() => {
                                     </Button>
                                 </Box>
 
-                        </FormControl>
-                    </Box>
-                </CardContent>
-            </Card>
-            <MyAlert open={open}
-                     onClose={() => setOpen(false)}
-                     message={message}
-                     isError={isError}/>
-        </Container>
+                            </FormControl>
+                        </Box>
+                    </CardContent>
+                </Card>
+                <MyAlert open={open}
+                         onClose={() => setOpen(false)}
+                         message={message}
+                         isError={isError}/>
+            </Container>
 
     )
 });

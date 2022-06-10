@@ -82,7 +82,6 @@ const Customer = sequelize.define('customer', {
 }, {timestamps: false})
 const Rating = sequelize.define('rating', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    review:{type: DataTypes.STRING,allowNull:true},
     rating: {
         type: DataTypes.INTEGER, allowNull: false,
         validate: {

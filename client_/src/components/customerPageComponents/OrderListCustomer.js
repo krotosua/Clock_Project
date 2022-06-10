@@ -1,8 +1,9 @@
 import * as React from 'react';
-import {Box, List, ListItem, ListItemText, Typography, Divider, Button, Tooltip} from '@mui/material';
+import {Box, List, ListItem, ListItemText, Typography, Divider, Button, Tooltip, Rating} from '@mui/material';
 import {useContext, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
+import MasterRating from "./MasterRating";
 
 const OrderListCustomer = observer(() => {
     let {orders, cities} = useContext(Context)
@@ -89,18 +90,17 @@ const OrderListCustomer = observer(() => {
                         />
                         <ListItemText sx={{width: 10}}
 
-                                      primary={
-                                          order.rating!==null ? <Box>
-                                                  <Rating
-                                                      readOnly
-                                                      precision={0.5}
-                                                      value={order.rating.rating}
+                                      primary={order.rating !== null ? <Box>
+                                              <Rating
+                                                  readOnly
+                                                  precision={0.5}
+                                                  value={order.rating.rating}
                                               /></Box>
-                                              : <Tooltip title={!order.finished ?
-                                                  'Станет доступна после выполнения заказа'
-                                                  : "Оценить работу мастера"}
-                                                         placement="right"
-                                                         arrow>
+                                          : <Tooltip title={!order.finished ?
+                                              'Станет доступна после выполнения заказа'
+                                              : "Оценить работу мастера"}
+                                                     placement="right"
+                                                     arrow>
                                               <span>
                                               <Button color="success"
                                                       size="small"
@@ -114,7 +114,7 @@ const OrderListCustomer = observer(() => {
                                                   Оценить
                                               </Button>
                                                   </span>
-                                              </Tooltip>}
+                                          </Tooltip>}
                         />
 
                     </ListItem>)

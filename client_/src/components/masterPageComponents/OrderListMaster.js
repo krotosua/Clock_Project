@@ -102,7 +102,7 @@ const OrderListMaster = observer(({alertMessage}) => {
                                               {order.finished ? "Закончен" : "Не закончен"}
                                           </Button>
                                       }
-                    />
+                        />
 
                     </ListItem>)
                 })}

@@ -46,13 +46,14 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
         onClose()
     }
     //--------------------Validation
-    const validName = blurCityName && cityName.length == 0
+    const validName = blurCityName && cityName.length === 0
     return (
-        <div>
+        <div >
 
             <Modal
                 open={open}
                 onClose={close}
+
             >
                 <Box sx={style}>
 

@@ -28,13 +28,19 @@ router.get('/checkEmail/',
     body('email').isEmail(),
     userController.checkEmail)
 
+router.put('/activate/:userId',
+    param("userId").not().isEmpty().isInt({gt: 0}),
+    body("isActivated").not().isEmpty().isBoolean(),
+    checkRole("ADMIN"), userController.activateAdmin)
+
 router.get('/activate/:link', userController.activate)
+
 router.get("/", checkRole("ADMIN"), userController.getAll)
+
 router.put('/:userId',
     param("userId").not().isEmpty().isInt({gt: 0}),
-    body("name").not().isEmpty().isString().trim().escape(),
-    body("date").not().isEmpty().isString(),
     checkRole("ADMIN"), userController.updateUser)
+
 router.delete('/:userId', checkRole("ADMIN"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     userController.deleteOne)

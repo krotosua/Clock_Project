@@ -12,11 +12,9 @@ import {
     OutlinedInput,
     TextField
 } from "@mui/material";
-import {createMaster, fetchMasters, updateMaster} from "../../../http/masterAPI";
-import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
-import {fetchUsers, registration, registrationFromAdmin} from "../../../http/userAPI";
+import {fetchUsers, registrationFromAdmin} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -77,7 +75,6 @@ let masterData,customerData
                     alertMessage("Не удалось добавить пользователя", true)
 
                 })
-
             :
             registrationFromAdmin(customerData)
                 .then(res => {
@@ -133,7 +130,7 @@ let masterData,customerData
                             error={error}
                             sx={{my: 2}}
                             id="name"
-                            label="Укажите имя мастера"
+                            label="Укажите имя"
                             variant="outlined"
                             value={name}
                             onChange={(e => {
@@ -164,6 +161,7 @@ let masterData,customerData
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
+                                    autocomplete="new-password"
                                     error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
                                     id="Password"
                                     label="Пароль"
@@ -195,6 +193,7 @@ let masterData,customerData
                             <FormControl sx={{my: 2}} variant="outlined">
                                 <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
                                 <OutlinedInput
+                                    autocomplete="new-password"
                                     error={error || blurPasswordCheck && password !== passwordCheck}
                                     id="Check Password"
                                     label="Подтвердить пароль"

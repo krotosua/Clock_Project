@@ -11,7 +11,12 @@ class MailService {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASSWORD,
             },
+            tls: {
+                rejectUnauthorized: false
+            }
         })
+
+
 
     }
 
@@ -58,6 +63,26 @@ class MailService {
 
         })
 
+    }
+
+    updateMail(email,password){
+        this.transporter.sendMail({
+            from:  process.env.MAIL_USER,
+            to: email,
+            subject: 'Активация аккаунта на',
+            text: "",
+            html:
+                `<div>
+                Данные для входа измененны:
+                email: ${email}
+                 <p>  ${password?`Ваш пароль: ${password}`:""}</p>
+</div>`,
+        }, err => {
+            if (err) {
+                return next(ApiError.badRequest(err.message))
+            }
+
+        })
     }
 }
 

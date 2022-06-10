@@ -41,13 +41,12 @@ function getLabelText(value) {
 const MasterRating = ({open, onClose, dataForEdit}) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(-1);
-    const [review, setReview] = useState("");
     let {orders} = useContext(Context)
     const {id} = useParams()
-    function postReview() {
+
+    const sendRating = () => {
         let post = {
             rating: rating,
-            review: review,
             orderId: dataForEdit.orderId,
             masterId: dataForEdit.masterId,
             userId: dataForEdit.userId,
@@ -119,26 +118,11 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
 
 
                     </Box>
-                    <Box>
-                        <TextField
-                            fullWidth
-                            sx={{mt: 1}}
-                            id="review"
-                            label="Добавить комментарий"
-                            variant="outlined"
-                            value={review}
-                            rows={6}
-                            multiline
-                            onChange={e => {
-                                setReview(e.target.value)
-                            }}
-                        />
-                    </Box>
                     <Box
                         sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                     >
                         <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                onClick={postReview}
+                                onClick={sendRating}
                         > Отправить отзыв</Button>
                         <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                 onClick={close}> Закрыть</Button>

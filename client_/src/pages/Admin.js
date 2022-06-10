@@ -40,7 +40,7 @@ const Admin = observer(() => {
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
-     const alertMessage = (message, bool) => {
+    const alertMessage = (message, bool) => {
         setOpen(true)
         setMessage(message)
         setIsError(bool)

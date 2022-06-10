@@ -4,7 +4,7 @@ export default class CityStore {
     constructor() {
         this._cities = []
         this._isEmpty = false
-        this._selectedCity = null
+        this._selectedCity = 0
         this._page = 1
         this._totalCount = 0
         this._limit = 10

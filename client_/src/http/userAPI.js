@@ -23,7 +23,7 @@ export const check = async () => {
 }
 export const checkEmail = async (email) => {
 
-     let result = await $host.get('api/users/checkEmail/', {params: {email: email}})
+    let result = await $host.get('api/users/checkEmail/', {params: {email: email}})
     return result
 }
 export const fetchUsers = async (page, limit = 8) => {
@@ -33,6 +33,9 @@ export const deleteUser = async (id) => {
     await $authHost.delete('api/users/' + id,)
 }
 export const updateUser = async (userId, data) => {
-
     await $authHost.put('api/users/' + userId, data)
+}
+export const activateUser = async (user) => {
+    await $authHost.put('api/users/activate/' + user.id, user)
+
 }

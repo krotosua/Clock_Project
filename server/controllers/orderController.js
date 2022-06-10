@@ -6,7 +6,6 @@ const ApiError = require("../error/ApiError");
 const sequelize = require("../db");
 const cityLogic = require("../businessLogic/cityLogic");
 const {validationResult} = require("express-validator");
-const {Customer} = require("../models/models");
 
 class OrderController {
 
@@ -17,8 +16,8 @@ class OrderController {
         }
         try {
             const result = await sequelize.transaction(async () => {
-                let {sizeClockId, date, time, masterId, cityId, changeName,name} = req.body
-                    const clock = await sizeLogic.CheckClock(next, sizeClockId)
+                let {sizeClockId, date, time, masterId, cityId, changeName, name} = req.body
+                const clock = await sizeLogic.CheckClock(next, sizeClockId)
                 let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
                 let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
                 time = new Date(time)
@@ -29,9 +28,6 @@ class OrderController {
                     throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 const userId = user.dataValues.id
-                if(changeName){
-                    await Customer.update({name:name},{where:{userId:userId}})
-                }
 
                 const order = await orderLogic.create(req, res, next, userId, time, endTime)
                 if (!order) {
@@ -43,9 +39,9 @@ class OrderController {
                 return data
             })
             await orderLogic.sendMessage(req, res, next, result)
-            return res.status(201)
+            return res.status(201).json(result.order)
         } catch (e) {
-            return next(ApiError.badRequest({message: "Wrong request"}))
+            return next(ApiError.badRequest("Wrong request"))
         }
 
     }

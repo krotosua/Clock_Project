@@ -5,6 +5,7 @@ export default class UserStore {
         this._isAuth = false
         this._user = {}
         this._userRole = ""
+        this._userName=""
         this._usersList = []
         this._isEmpty = false
         this._page = 1
@@ -23,6 +24,9 @@ export default class UserStore {
 
     setUserRole(role) {
         this._userRole = role
+    }
+    setUserName(name) {
+        this._userName = name
     }
 
     setUsersList(users) {
@@ -55,6 +59,9 @@ export default class UserStore {
 
     get userRole() {
         return this._userRole
+    }
+    get userName() {
+        return this._userName
     }
 
     get usersList() {

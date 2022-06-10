@@ -42,9 +42,9 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit}) => {
     }
 
 
-    function change(prop, value) { // изменение input поля
-        cities.setCities(cities.cities.map(obj =>
-            obj.id == idToEdit ? {...obj, [prop]: value} : obj
+    const change = (prop, value) => { // изменение input поля
+        cities.setCities(cities.cities.map(city =>
+            city.id == idToEdit ? {...city, [prop]: value} : city
         ));
     }
 

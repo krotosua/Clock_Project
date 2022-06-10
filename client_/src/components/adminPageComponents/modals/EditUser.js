@@ -34,10 +34,10 @@ const style = {
     p: 4,
 };
 const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
-    const {cities, user} = useContext(Context)
+    const {user} = useContext(Context)
     const [userEmail, setUserEmail] = useState(userToEdit.email)
-const [blurEmail, setBlurEmail] = useState(false)
-const [editPassword, setEditPassword] = useState(false)
+    const [blurEmail, setBlurEmail] = useState(false)
+    const [editPassword, setEditPassword] = useState(false)
     const [password, setPassword] = useState('')
     const [passwordCheck, setPasswordCheck] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -47,23 +47,23 @@ const [editPassword, setEditPassword] = useState(false)
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
     const changeUser = () => {
         const changeInfo = {
-            email:userEmail
+            email: userEmail
         }
-        if(editPassword){
+        if (editPassword) {
             changeInfo.password = password
         }
-        updateUser(userToEdit.id,changeInfo).then(
-            res=>{
+        updateUser(userToEdit.id, changeInfo).then(
+            res => {
                 close()
-                alertMessage("Успешно измененно",false)
-            },err=>{
+                alertMessage("Успешно измененно", false)
+            }, err => {
                 console.log(err)
-                alertMessage("Не удалось изменить ",true)
+                alertMessage("Не удалось изменить ", true)
             }
         )
     }
 
-    const close = () =>{
+    const close = () => {
         fetchUsers(user.page, 10).then(res => {
             user.setIsEmpty(false)
             user.setUsersList(res.data.rows)
@@ -92,6 +92,7 @@ const [editPassword, setEditPassword] = useState(false)
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
+
                             <TextField
                                 error={blurEmail && reg.test(userEmail) == false}
                                 label="Изменить email пользователя"
@@ -107,16 +108,16 @@ const [editPassword, setEditPassword] = useState(false)
                             />
 
                         </FormControl>
-                        {editPassword?
+                        {editPassword ?
 
-                                <FormControl sx={{my: 1}}  variant="outlined">
+                            <FormControl sx={{my: 1}} variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
                                     error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
                                     id="Password"
                                     label="Новый пароль"
                                     type={showPassword ? 'text' : 'password'}
-
+                                    autocomplete="new-password"
                                     value={password}
                                     onChange={(e => {
                                         setPassword(e.target.value)
@@ -139,15 +140,16 @@ const [editPassword, setEditPassword] = useState(false)
                                 <FormHelperText>{blurPassword && password.length < 6 ?
                                     "Длина пароля должна быть не менее 6 символов"
                                     : ""}</FormHelperText>
-                            </FormControl>:null}
+                            </FormControl> : null}
 
-                        {editPassword?
+                        {editPassword ?
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
                                 <OutlinedInput
                                     error={error || blurPasswordCheck && password !== passwordCheck}
                                     id="Check Password"
                                     label="Подтвердить новый пароль"
+                                    autocomplete="new-password"
                                     type={showPasswordCheck ? 'text' : 'password'}
                                     value={passwordCheck}
                                     onChange={(e => {
@@ -171,7 +173,7 @@ const [editPassword, setEditPassword] = useState(false)
                                 <FormHelperText
                                     error={true}>{blurPasswordCheck && password !== passwordCheck ? "Пароли не совпадают" : ""}</FormHelperText>
 
-                            </FormControl>:null}
+                            </FormControl> : null}
 
 
                         <Box>

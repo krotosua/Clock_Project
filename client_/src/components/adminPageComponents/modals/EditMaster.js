@@ -50,7 +50,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
     }
 
 
-    function close() {
+    const close = () => {
         fetchMasters(null, null, masters.page, 10).then(res => {
             masters.setMasters(res.data.rows)
             masters.setTotalCount(res.data.rows.length)
