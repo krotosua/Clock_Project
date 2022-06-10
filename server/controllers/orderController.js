@@ -16,7 +16,8 @@ class OrderController {
         }
         try {
             const result = await sequelize.transaction(async () => {
-                let {sizeClockId, date, time, masterId, cityId, changeName, name} = req.body
+                const {sizeClockId, date, masterId, cityId} = req.body
+                let {time} = req.body
                 const clock = await sizeLogic.CheckClock(next, sizeClockId)
                 let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
                 let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
@@ -34,7 +35,10 @@ class OrderController {
                     throw new ApiError.badRequest({message: "Customer is wrong"})
                 }
                 let data = {
-                    order, city, clock, user
+                    order,
+                    city,
+                    clock,
+                    user
                 }
                 return data
             })
@@ -53,7 +57,8 @@ class OrderController {
         }
         try {
             const result = await sequelize.transaction(async () => {
-                let {sizeClockId, date, time, masterId, cityId, changedMaster} = req.body
+                const {sizeClockId, date, masterId, cityId, changedMaster} = req.body
+                let {time} = req.body
                 const clock = await sizeLogic.CheckClock(next, sizeClockId)
                 let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
                 let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))

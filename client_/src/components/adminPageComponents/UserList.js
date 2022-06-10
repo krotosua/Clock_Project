@@ -25,7 +25,6 @@ const UserList = observer(({alertMessage}) => {
         fetchUsers(user.page, 10).then(res => {
             if (res.status === 204) {
                 return user.setIsEmpty(true)
-
             }
             user.setIsEmpty(false)
             user.setUsersList(res.data.rows)
@@ -37,8 +36,9 @@ const UserList = observer(({alertMessage}) => {
 
     }, [])
     const changeActiveted = async (user) => {
-        let changeInfo = {
-            id: user.id, isActivated: !user.isActivated
+        const changeInfo = {
+            id: user.id,
+            isActivated: !user.isActivated
         }
 
         activateUser(changeInfo)
@@ -53,7 +53,7 @@ const UserList = observer(({alertMessage}) => {
 
     const removeUser = (id) => {
         deleteUser(id).then(data => {
-            user.setUsersList(user.usersList.filter(obj => obj.id !== id));
+            user.setUsersList(user.usersList.filter(user => user.id !== id));
             alertMessage('Успешно удаленно', false)
             getUsers()
 

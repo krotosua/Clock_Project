@@ -17,7 +17,7 @@ const OrderListMaster = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
 
     function changeFinished(order) {
-        let changeInfo = {
+        const changeInfo = {
             id: order.id,
             finished: !order.finished
         }

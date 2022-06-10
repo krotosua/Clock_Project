@@ -5,21 +5,20 @@ import {
     List, ListItem, ListItemText, Divider, Popover
 
 } from "@mui/material";
-
+import {useContext, useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
+import {fetchMastersForOrder} from "../../http/masterAPI";
+import {observer} from "mobx-react-lite";
+import {createOrder} from "../../http/orderAPI";
+import {checkEmail} from "../../http/userAPI";
+import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
-import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {LocalizationProvider, DatePicker, TimePicker} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
-import {observer} from "mobx-react-lite";
-import {fetchMastersForOrder} from "../../http/masterAPI";
-import {createOrder} from "../../http/orderAPI";
-import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
-import {checkEmail} from "../../http/userAPI";
 import Login from "../authPageComponents/Login";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
@@ -75,10 +74,11 @@ const OrderStepper = observer(({alertMessage}) => {
         ).finally(() => setLoading(false));
     }
 
-
     const handleNext = (event) => {
         if (user.isAuth || regCustomer !== null) {
-            if (user.user.name !== name && changeName === null) {
+            if (user.userName !== name && changeName === null) {
+                setEmailExists(false)
+                setRegCustomer(false)
                 setAnchorEl(event.currentTarget)
                 return
             }
@@ -89,7 +89,7 @@ const OrderStepper = observer(({alertMessage}) => {
                 setChosenMaster(Number(chosenMaster))
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
             } else {
-                let body = {
+                const body = {
                     name,
                     date,
                     time,
@@ -176,6 +176,7 @@ const OrderStepper = observer(({alertMessage}) => {
         isAuth ?
             <Box>
                 <Login
+                    orderEmail={email}
                     getMasters={() => getMasters()}
                     nextPage={() => {
                         setActiveStep(0)
@@ -187,11 +188,9 @@ const OrderStepper = observer(({alertMessage}) => {
             <Box sx={{width: "100%"}}>
                 <Stepper activeStep={activeStep}>
                     {steps.map((label) => {
-                        const stepProps = {};
-                        const labelProps = {};
                         return (
-                            <Step key={label} {...stepProps}>
-                                <StepLabel {...labelProps}>{label}</StepLabel>
+                            <Step key={label} >
+                                <StepLabel >{label}</StepLabel>
                             </Step>
                         );
                     })}
@@ -339,7 +338,6 @@ const OrderStepper = observer(({alertMessage}) => {
                                     vertical: 'top',
                                     horizontal: 'center',
                                 }}
-
                             >
                                 {loading ?
                                     <Box sx={{
@@ -361,7 +359,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                                 Авторизироваться
                                             </Button>
                                         </Box>
-                                        : user.isAuth && user.user.name !== name && changeName === null ?
+                                        : user.isAuth && user.userName !== name && changeName === null ?
                                             <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
                                                 <Typography sx={{p: 2}}>
                                                     Сменить Ваши персональные данные?

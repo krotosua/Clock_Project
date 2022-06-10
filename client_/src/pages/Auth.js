@@ -53,18 +53,15 @@ const Auth = observer(() => {
     }
     const singIn = async () => {
         try {
-            let customerData, masterData
-            isMaster ?
-                masterData = {
-                    email, password, isMaster, name, cityId: cities.selectedCity
-                } :
-                customerData = {
-                    email, password, isMaster, name
-                }
+            const dataUser = {
+                email,
+                password,
+                isMaster,
+                name,
+                cityId: cities.selectedCity ?? undefined
+            }
             if (password.length >= 6 && reg.test(email) !== false) {
-                isMaster ?
-                    await registration(masterData) :
-                    await registration(customerData)
+                    await registration(dataUser)
                 navigate(CONGRATULATION_ROUTE)
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
                 return
@@ -148,14 +145,13 @@ const Auth = observer(() => {
 
 
                                 <FormControl variant="outlined">
-                                    <InputLabel autocomplete="off" htmlFor="Password">Пароль</InputLabel>
+                                    <InputLabel autoComplete="new-password" htmlFor="Password">Пароль</InputLabel>
                                     <OutlinedInput
-                                        autocomplete="new-password"
+                                        autoComplete="new-password"
                                         error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
                                         id="Password"
                                         label="Пароль"
                                         type={showPassword ? 'text' : 'password'}
-                                        autocomplete="off"
                                         value={password}
                                         onChange={(e => {
                                             setPassword(e.target.value)
@@ -182,7 +178,7 @@ const Auth = observer(() => {
                                 <FormControl sx={{my: 2}} variant="outlined">
                                     <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
                                     <OutlinedInput
-                                        autocomplete="new-password"
+                                        autoComplete="new-password"
                                         error={error || blurPasswordCheck && password !== passwordCheck}
                                         id="Check Password"
                                         label="Подтвердить пароль"

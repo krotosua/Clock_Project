@@ -52,20 +52,6 @@ class UserLogic {
         }
     }
 
-    async adminreg(req, res, next) {
-        try {
-            const {email, password, role} = req.body
-            let isActivated = true
-            const hashPassword = await bcrypt.hash(password, 5)
-
-            const user = await User.create({email, role, password: hashPassword, isActivated})
-
-            return res.status(201).json({user})
-
-        } catch (e) {
-            next(ApiError.badRequest(e.message))
-        }
-    }
 
     async registrationFromAdmin(req, res, next) {
 
@@ -107,17 +93,13 @@ class UserLogic {
     async GetOrCreateUser(req, res, next) {
         try {
             let {email, name, regCustomer, changeName} = req.body
-            if (!email) {
-                throw new Error('Email is wrong')
-            }
             const candidate = await User.findOne({where: {email}})
-            if (changeName) {
-                const customer = await Customer.findOne({where: {userId: candidate.id}})
-                await customer.update({name: name})
-            }
 
-            if (candidate) {
-
+            if (candidate.password !== null) {
+                if (changeName) {
+                    const customer = await Customer.findOne({where: {userId: candidate.id}})
+                    await customer.update({name: name})
+                }
                 return candidate
             }
             let user
@@ -131,12 +113,16 @@ class UserLogic {
                 }
                 const hashPassword = await bcrypt.hash(password, 5)
                 req.body.password = password
-                user = await User.create({email, password: hashPassword, isActivated: true})
+                if (candidate) {
+                    user = await candidate.update({password: hashPassword, isActivated: true})
+                } else {
+                    user = await User.create({email, password: hashPassword, isActivated: true})
+                }
+
                 await Customer.create({userId: user.id, name})
             } else {
                 user = await User.create({email})
             }
-
             return user
         } catch (e) {
             throw new Error('Email is wrong')
@@ -151,7 +137,17 @@ class UserLogic {
                 return res.status(400).json({errors: errors.array()});
             }
             const {email, password} = req.body
-            const user = await User.findOne({where: {email}})
+            const user = await User.findOne({
+                where: {email},
+                include: [{
+                    model: Master,
+                    attributes: ["name"]
+                }, {
+                    model: Customer,
+                    attributes: ["name"]
+                }]
+            })
+
             if (!user) {
                 return next(ApiError.NotFound({message: 'Customer with this name not found'}))
             }
@@ -159,12 +155,15 @@ class UserLogic {
             if (!comparePassword) {
                 return next(ApiError.Unauthorized({message: 'Wrong password'}))
             }
-            if (user.role === "CUSTOMER") {
-                const customer = await Customer.findOne({where: {userId: user.id}})
-                const token = generateJwt(user.id, user.email, user.role, user.isActivated, customer.name)
-                return res.status(201).json({token})
+            let token
+            if (user.master !== null) {
+                token = generateJwt(user.id, user.email, user.role, user.isActivated, user.master.name)
+            } else if (user.customer !== null) {
+                token = generateJwt(user.id, user.email, user.role, user.isActivated, user.customer.name)
+            } else {
+                token = generateJwt(user.id, user.email, user.role, user.isActivated)
             }
-            const token = generateJwt(user.id, user.email, user.role, user.isActivated,)
+
 
             return res.status(201).json({token})
         } catch (e) {
@@ -173,13 +172,7 @@ class UserLogic {
     }
 
     async check(req, res) {
-        let token
-        if (req.user.role === "CUSTOMER") {
-            token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated, req.user.name)
-        } else {
-            token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated)
-        }
-
+        const token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated, req.user.name)
         return res.status(200).json({token})
     }
 
@@ -209,7 +202,6 @@ class UserLogic {
             if (password) {
                 hashPassword = await bcrypt.hash(password, 5)
             }
-
             await user.update({
                 email: email, password: hashPassword,
             })
@@ -257,7 +249,7 @@ class UserLogic {
                         }
                     },], attributes: ["id", "role"]
             })
-            if (user.role === "CUSTOMER" && user.orders.length == 0 || user.role === "MASTER" && user.master.orders.length == 0) {
+            if (user.role === "CUSTOMER" && user.orders.length === 0 || user.role === "MASTER" && user.master.orders.length === 0) {
                 await user.destroy()
                 return res.status(204).json({message: "success"})
             } else {
@@ -292,7 +284,6 @@ class UserLogic {
             await user.update({
                 isActivated: isActivated,
             })
-            console.log(user)
             return res.status(201).json(user)
         } catch (e) {
             return next(ApiError.badRequest({message: "Wrong request"}))

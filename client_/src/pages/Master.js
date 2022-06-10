@@ -16,7 +16,7 @@ const Master = observer(() => {
     const navigate = useNavigate()
     let {orders} = useContext(Context)
     const {id} = useParams()
-    const [activated,setActivated]=useState(false)
+    const [activated, setActivated] = useState(false)
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
@@ -40,13 +40,10 @@ const Master = observer(() => {
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
-        }).catch(error =>setActivated(false) ).finally(()=>setLoading(false))
+        }).catch(error => setActivated(false)).finally(() => setLoading(false))
     }
     useEffect(() => {
-
-           getOrders()
-
-
+        getOrders()
     }, [orders.page])
 
     if (loading) {
@@ -63,7 +60,7 @@ const Master = observer(() => {
     }
     return (
         <Box>
-            {activated?
+            {activated ?
                 <Box sx={{height: "800px", pt: 5, position: "relative"}}>
 
                     <h2>Список заказов</h2>

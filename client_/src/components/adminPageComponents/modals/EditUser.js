@@ -57,7 +57,6 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                 close()
                 alertMessage("Успешно измененно", false)
             }, err => {
-                console.log(err)
                 alertMessage("Не удалось изменить ", true)
             }
         )

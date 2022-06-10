@@ -54,7 +54,8 @@ const MasterList = observer(({alertMessage}) => {
 
     const changeActiveted = (master) => {
         let changeInfo = {
-            id: master.id, isActivated: !master.isActivated
+            id: master.id,
+            isActivated: !master.isActivated
         }
 
         activateMaster(changeInfo)
@@ -138,7 +139,6 @@ const MasterList = observer(({alertMessage}) => {
                 <Divider orientation="vertical"/>
                 {masters.IsEmpty ? <h1>Список пуст</h1> :
                     masters.masters.map((master, index) => {
-                        let cityList = createCityList(master)
                         return (<ListItem
                             key={master.id}
                             divider
@@ -164,24 +164,21 @@ const MasterList = observer(({alertMessage}) => {
                                               <Rating name="read-only" size="small" value={master.rating}
                                                       precision={0.2} readOnly/>}/>
                             <ListItemText sx={{width: 10}}
-                                          primary={cityList}/>
+                                          primary={createCityList(master)}/>
                             <ListItemText sx={{width: 10}}
                                           primary={
                                               <Button color={master.isActivated ? "success" : "error"}
                                                       size="small"
                                                       variant="outlined"
                                                       onClick={() => changeActiveted(master)}>
-                                                  {master.isActivated ? "Актив" : "Не актив"}
+                                                  {master.isActivated ? "Активный" : "Не активный"}
                                               </Button>
                                           }
                             />
                             <IconButton sx={{width: 5}}
                                         edge="end"
                                         aria-label="Edit"
-                                        onClick={() => {
-                                            forEdit(master)
-
-                                        }}
+                                        onClick={() => forEdit(master)}
                             >
                                 <EditIcon/>
                             </IconButton>

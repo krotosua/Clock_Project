@@ -23,7 +23,7 @@ export const check = async () => {
 }
 export const checkEmail = async (email) => {
 
-    let result = await $host.get('api/users/checkEmail/', {params: {email: email}})
+    const result = await $host.get('api/users/checkEmail/', {params: {email: email}})
     return result
 }
 export const fetchUsers = async (page, limit = 8) => {

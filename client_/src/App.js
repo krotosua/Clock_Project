@@ -18,7 +18,6 @@ const App = observer(() => {
         if (localStorage.getItem('token') !== "" ||
             localStorage.getItem('token')) {
             check().then(data => {
-
                 user.setUser(data)
                 user.setUserName(data.name)
                 user.setIsAuth(true)

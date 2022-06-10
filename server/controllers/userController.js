@@ -9,9 +9,6 @@ class UserController {
         await userLogic.registration(req, res, next)
     }
 
-    async adminreg(req, res, next) {
-        await userLogic.adminreg(req, res, next)
-    }
 
     async registrationFromAdmin(req, res, next) {
         await userLogic.registrationFromAdmin(req, res, next)

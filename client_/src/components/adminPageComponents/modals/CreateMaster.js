@@ -42,7 +42,11 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const addMaster = () => {
 
         const masterData = {
-            email, password, isMaster: true,name: masterName, cityId: cities.selectedCity
+            email,
+            password,
+            isMaster: true,
+            name: masterName,
+            cityId: cities.selectedCity
         }
 
 

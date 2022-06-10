@@ -58,7 +58,6 @@ class MasterController {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-
             const master = await masterLogic.activate(req, res, next)
             return res.status(201).json(master)
         } catch (e) {

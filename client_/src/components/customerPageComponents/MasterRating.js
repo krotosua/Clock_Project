@@ -34,7 +34,7 @@ const style = {
     p: 4,
 };
 
-function getLabelText(value) {
+const getLabelText = (value) => {
     return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
 }
 
@@ -45,7 +45,7 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
     const {id} = useParams()
 
     const sendRating = () => {
-        let post = {
+        const post = {
             rating: rating,
             orderId: dataForEdit.orderId,
             masterId: dataForEdit.masterId,

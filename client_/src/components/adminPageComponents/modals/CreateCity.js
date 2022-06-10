@@ -1,6 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Typography from "@mui/material/Typography";
-import {FormControl, TextField,Box,Button,Modal} from "@mui/material";
+import {FormControl, TextField, Box, Button, Modal} from "@mui/material";
 import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
@@ -48,7 +48,7 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
     //--------------------Validation
     const validName = blurCityName && cityName.length === 0
     return (
-        <div >
+        <div>
 
             <Modal
                 open={open}
@@ -97,6 +97,3 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
 };
 
 export default CreateCity;
-
-export class EditCity {
-}

@@ -37,7 +37,9 @@ const MessagePage = () => {
                     </Typography>
                     <Link to={LOGIN_ROUTE}
                           style={{textDecoration: 'none', color: 'black'}}>
-                        <Button size="large" color="warning" variant="contained" fullwidth
+                        <Button size="large"
+                                color="warning"
+                                variant="contained"
                                 onClick={() => navigate(LOGIN_ROUTE)}>
                             Перейти к авторизации
                         </Button>
@@ -72,7 +74,7 @@ const MessagePage = () => {
                             </Typography>
                             <Link to={START_ROUTE}
                                   style={{textDecoration: 'none', color: 'black'}}>
-                                <Button size="large" variant="outlined" fullwidth onClick={() => navigate(START_ROUTE)}>
+                                <Button size="large" variant="outlined"  onClick={() => navigate(START_ROUTE)}>
                                     Вернуться на стартовую страницу
                                 </Button>
                             </Link>

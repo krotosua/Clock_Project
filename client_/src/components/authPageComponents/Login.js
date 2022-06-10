@@ -32,11 +32,11 @@ import {login} from "../../http/userAPI";
 import {Context} from "../../index";
 
 
-const Login = observer(({alertMessage, nextPage, getMasters}) => {
+const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
     const {user} = useContext(Context)
     const location = useLocation()
     const isOrder = location.pathname === ORDER_ROUTE;
-    const [email, setEmail] = useState('')
+    const [email, setEmail] = useState(orderEmail || '')
     const [blurEmail, setBlurEmail] = useState(false)
     const [blurPassword, setBlurPassword] = useState(false)
     const [password, setPassword] = useState('')
@@ -60,7 +60,7 @@ const Login = observer(({alertMessage, nextPage, getMasters}) => {
             user.setUser(dataUser)
             user.setIsAuth(true)
             user.setUserRole(dataUser.role)
-
+            user.setUserName(dataUser.name)
             if (isOrder) {
                 getMasters()
                 nextPage()
@@ -79,7 +79,7 @@ const Login = observer(({alertMessage, nextPage, getMasters}) => {
         setShowPassword(!showPassword)
     };
     //////////////
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return (
         <Container
             maxWidth="xl"
@@ -89,7 +89,7 @@ const Login = observer(({alertMessage, nextPage, getMasters}) => {
                 alignItems: "center",
                 height: window.innerHeight - 60,
             }}
-            onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
+            onKeyDown={(e) => e.keyCode === 13 ? singIn() : null}
         >
             <Card sx={{width: 800, p: 1}}>
                 <CardContent>
@@ -107,14 +107,14 @@ const Login = observer(({alertMessage, nextPage, getMasters}) => {
                     >
                         <FormControl error={true}>
                             <TextField
-                                error={error || blurEmail && reg.test(email) == false}
+                                error={error || blurEmail && reg.test(email) === false}
                                 sx={{mb: 2}}
                                 id="Email"
                                 label="Email"
                                 variant="outlined"
                                 type={"email"}
                                 value={email}
-                                helperText={blurEmail && reg.test(email) == false ?
+                                helperText={blurEmail && reg.test(email) === false ?
                                     "Введите email формата: clock@clock.com" : error ? "Неверный email или пароль" : ""
                                 }
                                 onFocus={() => setBlurEmail(false)}
@@ -129,7 +129,7 @@ const Login = observer(({alertMessage, nextPage, getMasters}) => {
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
-                                    autocomplete="new-password"
+                                    autoComplete="new-password"
                                     error={error || blurPassword && password.length < 6}
                                     id="Password"
                                     label="Пароль"

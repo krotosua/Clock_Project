@@ -1,6 +1,17 @@
 import * as React from 'react';
 import {
-    Box, List, ListItem, ListItemText, IconButton, Typography, Divider, Tooltip,
+    Box,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Typography,
+    Divider,
+    Tooltip,
+    InputLabel,
+    FormControl,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -22,6 +33,8 @@ const OrderList = observer(({alertMessage}) => {
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [orderToEdit, setOrderToEdit] = useState(null)
+    const [status,setStatus] = useState("Preparing")
+
     const navigate = useNavigate()
     const getOrders = () => {
         fetchAlLOrders(orders.page, 8).then(res => {
@@ -111,7 +124,6 @@ const OrderList = observer(({alertMessage}) => {
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Город"
-
                     />
 
 
@@ -148,7 +160,10 @@ const OrderList = observer(({alertMessage}) => {
                                       primary={order.master.name}/>
                         <ListItemText sx={{width: 10}}
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
-                        />{new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
+                        />
+
+                        {new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
+
                         <Tooltip title={'Изменить заказ'}
                                  placement="left"
                                  arrow>
