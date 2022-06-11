@@ -1,4 +1,4 @@
-const {Order, Master, SizeClock, City, User} = require('../models/models')
+const {Order, Master, SizeClock, Rating, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const MailService = require("../service/mailService")
 
@@ -25,6 +25,48 @@ class OrderLogic {
             let orders
             orders = await Order.findAndCountAll({
                 where: {userId: userId},
+                include: [{
+                    model: Master,
+                    attributes: ['name'],
+                }, {
+                    model: SizeClock,
+                    attributes: ['name'],
+
+                },
+                    {
+                        model: Rating,
+                        attributes: ["rating"],
+
+                    }], limit, offset
+            })
+            if (!orders.count) {
+                return res.status(204).json({message: "List is empty"})
+            }
+            return res.status(200).json(orders)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async getMasterOrders(req, res, next) {
+        try {
+            let {userId} = req.params
+
+            let {limit, page} = req.query
+            page = page || 1
+            limit = limit || 12
+            let offset = page * limit - limit
+            let orders
+            let master = await Master.findOne({
+                where: {userId: userId},
+                attributes: ['id', "isActivated"]
+            })
+
+            if (!master.isActivated) {
+                return next(ApiError.forbidden("Doesn`t activated"))
+            }
+            orders = await Order.findAndCountAll({
+                where: {masterId: master.id},
                 include: [{
                     model: Master,
                     attributes: ['name'],
@@ -98,6 +140,24 @@ class OrderLogic {
         }
     }
 
+    async finished(req, res, next) {
+        try {
+            const {orderId} = req.params
+            const {finished} = req.body
+            if (orderId <= 0) {
+                next(ApiError.badRequest({message: "cityId is wrong"}))
+            }
+            const order = await Order.findOne({where: {id: orderId}})
+            await order.update({
+                finished: finished,
+            })
+
+            return order
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
     async deleteOne(req, res, next) {
         try {
             const {orderId} = req.params
@@ -113,11 +173,12 @@ class OrderLogic {
         try {
             const cityName = result.city.name
             const size = result.clock.name
-            let {name, date, time, email, masterId,} = req.body
+            let {name, date, time, email, masterId, password} = req.body
+
             const master = await Master.findByPk(masterId)
-            date = new Date(Date.parse(date)).toLocaleDateString()
-            time = new Date(Date.parse(time)).toLocaleTimeString()
-            MailService.sendMail(name, date, time, email, size, master.name, cityName, next)
+            date = new Date(Date.parse(date)).toLocaleDateString('uk-UA')
+            time = new Date(Date.parse(time)).toLocaleTimeString('uk-UA')
+            MailService.sendMail(name, date, time, email, size, master.name, cityName, password, next)
 
         } catch (e) {
             return next(ApiError.badRequest(e.message))

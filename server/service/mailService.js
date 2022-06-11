@@ -11,11 +11,16 @@ class MailService {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASSWORD,
             },
+            tls: {
+                rejectUnauthorized: false
+            }
         })
+
+
 
     }
 
-    sendMail(name, date, time, email, size, masterName, cityName, next) {
+    sendMail(name, date, time, email, size, masterName, cityName,password, next) {
 
         this.transporter.sendMail({
             from:  process.env.MAIL_USER,
@@ -29,6 +34,7 @@ class MailService {
                 <p>Размер часов: ${size}</p>
                 <p>Мастер:${masterName} в городе ${cityName}</p>
                 <p>Хорошего, дня!</p>
+              <p>  ${password?`Ваш пароль: ${password}`:""}</p>
 </div>`,
         }, err => {
             if (err) {
@@ -57,6 +63,26 @@ class MailService {
 
         })
 
+    }
+
+    updateMail(email,password){
+        this.transporter.sendMail({
+            from:  process.env.MAIL_USER,
+            to: email,
+            subject: 'Активация аккаунта на',
+            text: "",
+            html:
+                `<div>
+                Данные для входа измененны:
+                email: ${email}
+                 <p>  ${password?`Ваш пароль: ${password}`:""}</p>
+</div>`,
+        }, err => {
+            if (err) {
+                return next(ApiError.badRequest(err.message))
+            }
+
+        })
     }
 }
 

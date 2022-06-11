@@ -134,7 +134,7 @@ const EditOrder = observer(({
         event ? setChosenMaster(event.target.value) : setChosenMaster(master);
     };
 
-    function dateChange(newDate) {
+    const dateChange = (newDate) => {
         setDate(newDate);
         setOpenList(false)
         setChosenMaster(null)
@@ -144,8 +144,8 @@ const EditOrder = observer(({
         setFreeMasters([])
     }
 
-    function timeChange(newDate) {
-        setTime(newDate);
+    const timeChange = (newValue) => {
+        setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(), 0, 0)));
         setOpenList(false)
         setChosenMaster(null)
         setOpenTime(false)
@@ -161,8 +161,8 @@ const EditOrder = observer(({
         onClose()
     }
     //--------------------Validation
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    let checkInfo = openList == false || !idToEdit || !name || !email
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const checkInfo = openList == false || !idToEdit || !name || !email
         || !date || !time || !cityChosen
         || !chosenMaster || !sizeClock || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket

@@ -19,6 +19,7 @@ const App = observer(() => {
             localStorage.getItem('token')) {
             check().then(data => {
                 user.setUser(data)
+                user.setUserName(data.name)
                 user.setIsAuth(true)
                 user.setUserRole(data.role)
 
@@ -64,7 +65,10 @@ const App = observer(() => {
             <Box sx={{bgcolor: '#eceaea'}}>
 
                 <CssBaseline/>
-                <Container sx={{bgcolor: '#fff', mt: 6, height: document.documentElement.clientHeight - 48}}>
+                <Container sx={{
+                    bgcolor: '#fff', mt: 6,
+                    height: document.documentElement.clientHeight - 48
+                }}>
                     <AppRouter/>
                 </Container>
                 <Box sx={{width: "100%", bgcolor: '#eceaea'}}>

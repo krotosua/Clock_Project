@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-    Box, List, ListItem, ListItemText, IconButton, Typography, Divider, Tooltip,
+    Box, List, ListItem, ListItemText, IconButton, Typography, Divider, Tooltip, Button,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -9,13 +9,15 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
-import {deleteUser, fetchUsers} from "../../http/userAPI";
+import {activateUser, deleteUser, fetchUsers} from "../../http/userAPI";
 import EditUser from "./modals/EditUser";
 import CreateUser from "./modals/CreateUser";
 
 
 const UserList = observer(({alertMessage}) => {
+
     let {user} = useContext(Context)
+
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
@@ -23,7 +25,6 @@ const UserList = observer(({alertMessage}) => {
         fetchUsers(user.page, 10).then(res => {
             if (res.status === 204) {
                 return user.setIsEmpty(true)
-
             }
             user.setIsEmpty(false)
             user.setUsersList(res.data.rows)
@@ -32,10 +33,27 @@ const UserList = observer(({alertMessage}) => {
     }
     useEffect(() => {
         getUsers()
+
     }, [])
+    const changeActiveted = async (user) => {
+        const changeInfo = {
+            id: user.id,
+            isActivated: !user.isActivated
+        }
+
+        activateUser(changeInfo)
+            .then(res => {
+                alertMessage('Данные мастера успешно изменены', false)
+                return user.isActivated = !user.isActivated
+            }, err => {
+                alertMessage('Не удалось изменить данные мастера', true)
+            })
+
+    }
+
     const removeUser = (id) => {
         deleteUser(id).then(data => {
-            user.setUsersList(user.usersList.filter(obj => obj.id !== id));
+            user.setUsersList(user.usersList.filter(user => user.id !== id));
             alertMessage('Успешно удаленно', false)
             getUsers()
 
@@ -73,6 +91,9 @@ const UserList = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Роль пользователя"
                     />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Статус"
+                    />
                 </ListItem>
                 <Divider orientation="vertical"/>
 
@@ -108,6 +129,15 @@ const UserList = observer(({alertMessage}) => {
                             <ListItemText sx={{width: 10}}
                                           primary={user.role}
                             />
+                            <ListItemText sx={{width: 10}}
+                                          primary={<Button color={user.isActivated ? "success" : "error"}
+                                                           size="small"
+                                                           variant="outlined"
+                                                           onClick={() => changeActiveted(user)}
+                                          >
+                                              {user.isActivated ? "Актив" : "Не актив"}
+                                          </Button>}
+                            />
                             {user.role !== "ADMIN" ? <Tooltip title={'Изменить данные пользователя'}
                                                               placement="left"
                                                               arrow>
@@ -119,9 +149,11 @@ const UserList = observer(({alertMessage}) => {
                                                 setUserToEdit(user)
                                             }}
                                 >
+
                                     <EditIcon/>
                                 </IconButton>
                             </Tooltip> : null}
+
                         </ListItem>
 
                     )

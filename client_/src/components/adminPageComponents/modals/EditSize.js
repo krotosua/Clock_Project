@@ -51,9 +51,9 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit, dateToEdit
         })
     }
 
-    function change(prop, value) { // изменение input поля
-        size.setSize(size.size.map(obj =>
-            obj.id == idToEdit ? {...obj, [prop]: value} : obj
+    const change = (prop, value) => { // изменение input поля
+        size.setSize(size.size.map(size =>
+            size.id == idToEdit ? {...size, [prop]: value} : size
         ));
     }
 

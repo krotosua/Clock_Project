@@ -19,6 +19,9 @@ router.post("/",
 router.get('/:userId', checkRole("CUSTOMER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getUserOrders)
+router.get('/master/:userId', checkRole("MASTER"),
+    param("userId").not().isEmpty().isInt({gt: 0}),
+    orderController.getMasterOrders)
 router.get('/', checkRole("ADMIN"), orderController.getAllOrders)
 
 router.put("/:orderId",
@@ -32,6 +35,14 @@ router.put("/:orderId",
     body("masterId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
     checkRole("ADMIN"), orderController.update)
+
+router.put("/finished/:orderId",
+    param("orderId").not().isEmpty().isInt({gt: 0}),
+
+
+    checkRole("MASTER"), orderController.finished)
+
+
 router.delete("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
     checkRole("ADMIN"),

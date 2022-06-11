@@ -21,6 +21,11 @@ export const check = async () => {
     localStorage.setItem('token', data.token)
     return jwt_decode(data.token)
 }
+export const checkEmail = async (email) => {
+
+    const result = await $host.get('api/users/checkEmail/', {params: {email: email}})
+    return result
+}
 export const fetchUsers = async (page, limit = 8) => {
     return await $authHost.get('api/users/', {params: {page, limit}})
 }
@@ -28,6 +33,9 @@ export const deleteUser = async (id) => {
     await $authHost.delete('api/users/' + id,)
 }
 export const updateUser = async (userId, data) => {
-
     await $authHost.put('api/users/' + userId, data)
+}
+export const activateUser = async (user) => {
+    await $authHost.put('api/users/activate/' + user.id, user)
+
 }

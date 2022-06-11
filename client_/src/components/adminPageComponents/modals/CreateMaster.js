@@ -41,8 +41,16 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const [errMaster, setErrMaster] = useState(false)
     const addMaster = () => {
 
+        const masterData = {
+            email,
+            password,
+            isMaster: true,
+            name: masterName,
+            cityId: cities.selectedCity
+        }
 
-        registrationFromAdmin(email, password, true, true, masterName, cities.selectedCity,).then(res => {
+
+        registrationFromAdmin(masterData).then(res => {
 
             close()
             alertMessage("Мастер успешно добавлен", false)
@@ -78,8 +86,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const validName = blurMasterName && masterName.length == 0
     const validRating = masterRating > 5 || masterRating < 0
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    return (
-        <div>
+    return (<div>
 
             <Modal
                 open={open}
@@ -113,10 +120,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                 variant="outlined"
                                 type={"email"}
                                 value={email}
-                                helperText={blurEmail && reg.test(email) == false ?
-                                    "Введите email формата: clock@clock.com" :
-                                    error ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""
-                                }
+                                helperText={blurEmail && reg.test(email) == false ? "Введите email формата: clock@clock.com" : error ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""}
                                 onFocus={() => setBlurEmail(false)}
                                 onBlur={() => setBlurEmail(true)}
                                 onChange={(e => {
@@ -139,23 +143,19 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                         setPassword(e.target.value)
                                         setError(false)
                                     })}
-                                    endAdornment={
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                aria-label="toggle password visibility"
-                                                onClick={handleClickShowPassword}
-                                                edge="end"
-                                            >
-                                                {showPassword ? <VisibilityOff/> : <Visibility/>}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    }
+                                    endAdornment={<InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowPassword}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                        </IconButton>
+                                    </InputAdornment>}
                                     onFocus={() => setBlurPassword(false)}
                                     onBlur={() => setBlurPassword(true)}
                                 />
-                                <FormHelperText>{blurPassword && password.length < 6 ?
-                                    "Длина пароля должна быть не менее 6 символов"
-                                    : ""}</FormHelperText>
+                                <FormHelperText>{blurPassword && password.length < 6 ? "Длина пароля должна быть не менее 6 символов" : ""}</FormHelperText>
                             </FormControl>
                             <FormControl sx={{my: 1}} variant="outlined">
                                 <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
@@ -169,17 +169,15 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                         setPasswordCheck(e.target.value)
                                         setError(false)
                                     })}
-                                    endAdornment={
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                aria-label="toggle password visibility"
-                                                onClick={() => setShowPasswordCheck(!showPasswordCheck)}
-                                                edge="end"
-                                            >
-                                                {showPasswordCheck ? <VisibilityOff/> : <Visibility/>}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    }
+                                    endAdornment={<InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={() => setShowPasswordCheck(!showPasswordCheck)}
+                                            edge="end"
+                                        >
+                                            {showPasswordCheck ? <VisibilityOff/> : <Visibility/>}
+                                        </IconButton>
+                                    </InputAdornment>}
                                     onFocus={() => setBlurPasswordCheck(false)}
                                     onBlur={() => setBlurPasswordCheck(true)}
                                 />
@@ -222,8 +220,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
 
                 </Box>
             </Modal>
-        </div>
-    );
+        </div>);
 });
 
 export default CreateMaster;

@@ -9,7 +9,10 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {
     ADMIN_CITY_LIST_ROUTE,
     ADMIN_MASTER_LIST_ROUTE,
-    ADMIN_ORDER_LIST_ROUTE, ADMIN_ROUTE, ADMIN_SIZES_ROUTE, ADMIN_USERS_ROUTE,
+    ADMIN_ORDER_LIST_ROUTE,
+    ADMIN_ROUTE,
+    ADMIN_SIZES_ROUTE,
+    ADMIN_USERS_ROUTE,
 } from "../utils/consts";
 import CreateCity from "../components/adminPageComponents/modals/CreateCity";
 import CreateMaster from "../components/adminPageComponents/modals/CreateMaster";
@@ -46,6 +49,7 @@ const Admin = observer(() => {
         setIsError(bool)
     }
 
+
     const preventDefault = (event) => event.preventDefault();
 
     return (
@@ -53,17 +57,13 @@ const Admin = observer(() => {
         <Container disableGutters
                    sx={{pt: 2}}>
             <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gridTemplateRows: 'auto',
-                gridTemplateAreas: `"menu main main main" 
+                display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'auto', gridTemplateAreas: `"menu main main main" 
                                     "menu main main main"
                                     "menu main main main"`
 
             }}>
                 <List sx={{
-                    width: '100%', maxWidth: 250,
-                    gridArea: 'menu',
+                    width: '100%', maxWidth: 250, gridArea: 'menu',
                 }}
                       component="nav"
                       aria-label="mailbox folders">
@@ -125,17 +125,13 @@ const Admin = observer(() => {
                 </List>
                 <Box sx={{gridArea: 'main', ml: 1}}>
                     {cityList ? <CityList alertMessage={alertMessage}
-                        /> :
-                        masterList ? <MasterList alertMessage={alertMessage}
-                            /> :
-                            sizeList ? <SizeList alertMessage={alertMessage}
-                                /> :
-                                orderList || adminRoute ? <OrderList
-                                        alertMessage={alertMessage}
-                                    /> :
-                                    usersList ? <UserList
-                                        alertMessage={alertMessage}
-                                    /> : <Box sx={{height: "800px"}}> </Box>}
+                    /> : masterList ? <MasterList alertMessage={alertMessage}
+                    /> : sizeList ? <SizeList alertMessage={alertMessage}
+                    /> : orderList || adminRoute ? <OrderList
+                        alertMessage={alertMessage}
+                    /> : usersList ? <UserList
+                        alertMessage={alertMessage}
+                    /> : <Box sx={{height: "800px"}}> </Box>}
 
                 </Box>
 

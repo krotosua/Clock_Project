@@ -1,9 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
+import React, {useContext, useState} from 'react';
 import Typography from "@mui/material/Typography";
-import {FormControl, TextField} from "@mui/material";
+import {FormControl, TextField, Box, Button, Modal} from "@mui/material";
 import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
@@ -49,13 +46,14 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
         onClose()
     }
     //--------------------Validation
-    const validName = blurCityName && cityName.length == 0
+    const validName = blurCityName && cityName.length === 0
     return (
         <div>
 
             <Modal
                 open={open}
                 onClose={close}
+
             >
                 <Box sx={style}>
 

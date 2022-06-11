@@ -13,9 +13,7 @@ class sizeController {
 
     async getAll(req, res, next) {
         await sizeLogic.getAll(req, res, next)
-
     }
-
 
     async update(req, res, next) {
         const errors = validationResult(req);
