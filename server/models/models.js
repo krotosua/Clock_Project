@@ -38,7 +38,8 @@ const City = sequelize.define('city', {
     name: {
         type: DataTypes.STRING, unique: true, allowNull: false,
         validate: {notEmpty: true}
-    }
+    },
+    price: {type: DataTypes.INTEGER}
 }, {timestamps: false})
 const SizeClock = sequelize.define('sizeClock', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -65,11 +66,10 @@ const Order = sequelize.define('order', {
 
         }
     },
-    date: {type: DataTypes.DATEONLY,},
     time: {type: DataTypes.DATE,},
     endTime: {type: DataTypes.DATE},
     status: {type: DataTypes.STRING, defaultValue: "WAITING"},
-    price: {type: DataTypes.DOUBLE}
+    price: {type: DataTypes.INTEGER}
 }, {timestamps: false})
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -80,10 +80,6 @@ const Customer = sequelize.define('customer', {
         type: DataTypes.STRING, allowNull: false,
         validate: {notEmpty: true}
     },
-}, {timestamps: false})
-const Price = sequelize.define('price', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    price: {type: DataTypes.DOUBLE}
 }, {timestamps: false})
 const Rating = sequelize.define('rating', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -118,13 +114,6 @@ Master.belongsTo(User, {onDelete: 'CASCADE'})
 Order.hasOne(Rating, {onDelete: 'CASCADE'})
 Rating.belongsTo(Order)
 
-City.belongsToMany(SizeClock, {through: "price"})
-SizeClock.belongsToMany(City, {through: "price"})
-City.hasMany(Price)
-Price.belongsTo(City)
-SizeClock.hasMany(Price)
-Price.belongsTo(City)
-
 
 City.belongsToMany(Master, {through: CitiesMasters})
 Master.belongsToMany(City, {through: CitiesMasters})
@@ -141,5 +130,4 @@ module.exports = {
     CitiesMasters,
     Customer,
     Rating,
-    Price
 }

@@ -63,8 +63,8 @@ const OrderListCustomer = observer(() => {
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
-                    const endTime = new Date(order.endTime).toLocaleTimeString("uk-UA").slice(0, 5)
+                    const time = new Date(order.time).toLocaleString("uk-UA")
+                    const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem
                         key={order.id}
                         divider
@@ -72,15 +72,15 @@ const OrderListCustomer = observer(() => {
                         <ListItemText sx={{width: 10}}
                                       primary={index + 1}
                         />
-                        <Divider orientation="vertical" variant="middle" flexItem/>
+
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${time}`}
+                                      primary={time}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${endTime}`}
+                                      primary={endTime}
                         />
 
                         <ListItemText sx={{width: 10}}

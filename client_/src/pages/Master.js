@@ -57,7 +57,7 @@ const Master = observer(() => {
     return (
         <Box>
             {activated ?
-                <Box sx={{height: "800px", pt: 5, position: "relative"}}>
+                <Box sx={{height: "750px", pt: 5, position: "relative"}}>
 
                     <h2>Список заказов</h2>
                     <Box sx={{height: "650px"}}>

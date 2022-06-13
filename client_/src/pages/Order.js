@@ -22,7 +22,6 @@ const Order = observer(() => {
         setMessage(message)
         setIsError(bool)
     }
-
     useEffect(() => {
         fetchCity().then(res => {
             if (res.status === 204) {

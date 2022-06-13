@@ -1,22 +1,13 @@
-const {SizeClock, Order, Price, City} = require('../models/models')
+const {SizeClock, Order,} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const sequelize = require("../db");
 
 class SizeLogic {
     async create(req, res, next) {
         try {
-            const result = await sequelize.transaction(async () => {
-                const {name, date, priceList} = req.body
-                const size = await SizeClock.create({name, date})
-                const list = priceList.map((item, obj) => obj = {
-                    cityId: item.cityId,
-                    price: item.price,
-                    sizeClockId: size.id
-                })
-                await Price.bulkCreate(list)
-                return size
-            });
-            return res.status(201).json(result)
+            const {name, date} = req.body
+            const size = await SizeClock.create({name, date})
+            return res.status(201).json(size)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -24,24 +15,14 @@ class SizeLogic {
 
     async update(req, res, next) {
         try {
-            const result = await sequelize.transaction(async () => {
-                const {sizeId} = req.params
-                const {name, date, priceList} = req.body
-                const size = await SizeClock.findOne({where: {id: sizeId}})
-                await size.update({
-                    name: name,
-                    date: date
-                })
-                await Price.destroy({where: {sizeClockId: sizeId}})
-                const list = priceList.map((item, obj) => obj = {
-                    cityId: item.cityId,
-                    price: item.price,
-                    sizeClockId: size.id
-                })
-                await Price.bulkCreate(list)
-                return size
-            });
-            return res.status(201).json(result)
+            const {sizeId} = req.params
+            const {name, date,} = req.body
+            const size = await SizeClock.findOne({where: {id: sizeId}})
+            await size.update({
+                name: name,
+                date: date
+            })
+            return res.status(201).json(size)
 
         } catch (e) {
             return next(ApiError.badRequest(e.message))
@@ -57,31 +38,6 @@ class SizeLogic {
             let offset = page * limit - limit
             let sizes
             sizes = await SizeClock.findAndCountAll({
-                include: Price,
-                limit, offset
-            })
-            if (!sizes.count) {
-                return res.status(204).json({message: "List is empty"})
-            }
-            return res.status(200).json(sizes)
-        } catch (e) {
-            next(ApiError.badRequest(e.message))
-        }
-    }
-
-    async getForCity(req, res, next) {
-        try {
-            const {cityId} = req.params
-            let {limit, page} = req.query
-            page = page || 1
-            limit = limit || 12
-            let offset = page * limit - limit
-            let sizes
-            sizes = await SizeClock.findAndCountAll({
-                include: [{
-                    model: Price,
-                    where: {cityId}
-                }],
                 limit, offset
             })
             if (!sizes.count) {

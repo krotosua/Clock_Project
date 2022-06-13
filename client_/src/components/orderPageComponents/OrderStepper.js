@@ -1,8 +1,23 @@
 import * as React from "react";
 import {
-    Box, Stepper, Step, StepLabel, Button, Typography,
-    CircularProgress, FormControlLabel, Radio, RadioGroup, Rating, TextField, Tooltip,
-    List, ListItem, ListItemText, Divider, Popover
+    Box,
+    Stepper,
+    Step,
+    StepLabel,
+    Button,
+    Typography,
+    CircularProgress,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Rating,
+    TextField,
+    Tooltip,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
+    Popover
 
 } from "@mui/material";
 import {useContext, useEffect, useState} from "react";
@@ -20,7 +35,6 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
 import Login from "../authPageComponents/Login";
-import {getSizeForCity} from "../../http/sizeAPI";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -28,67 +42,51 @@ const OrderStepper = observer(({alertMessage}) => {
     const {cities, size, masters, user} = useContext(Context);
     const [activeStep, setActiveStep] = useState(0);
     const [name, setName] = useState("");
+    const [changeName, setChangeName] = useState(null)
     const [email, setEmail] = useState("");
+    const [emailExists, setEmailExists] = useState(false)
+    const [regCustomer, setRegCustomer] = useState(null)
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date(new Date().setUTCHours(new Date().getUTCHours() + 1, 0, 0)));
     const [chosenMaster, setChosenMaster] = useState(null);
     const [sizeClock, setSizeClock] = useState(null);
     const [cityChosen, setCityChosen] = useState(null);
     const [freeMasters, setFreeMasters] = useState([]);
-    const [blurName, setBlurName] = useState(false)
-    const [blurEmail, setBlurEmail] = useState(false)
     const [error, setError] = useState(false)
     const [errorTimePicker, setErrorTimePicker] = useState(false)
     const [errorDatePicket, setErrorDatePicker] = useState(false)
+    const [blurName, setBlurName] = useState(false)
+    const [blurEmail, setBlurEmail] = useState(false)
     const [loading, setLoading] = useState(false)
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const [emailExists, setEmailExists] = useState(false)
-    const [regCustomer, setRegCustomer] = useState(null)
     const [isAuth, setIsAuth] = useState(false)
-    const [changeName, setChangeName] = useState(null)
     const navigate = useNavigate();
+
 
     const handleClose = () => {
         setAnchorEl(null);
     };
     const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
-    const getSize = async () => {
+
+    const getMasters = async () => {
         setLoading(true)
         try {
-            size.setSize([])
-            size.setSelectedSize({date: "00:00:00"})
-            const sizes = await getSizeForCity(cities.selectedCity)
-            if (sizes.status === 204) {
-                return size.setIsEmpty(true)
+            const res = await fetchMastersForOrder(cities.selectedCity, new Date(new Date(date).setHours(time.getHours(), 0, 0)),
+                size.selectedSize.id, masters.page, 3)
+            if (res.status === 204) {
+                setFreeMasters([])
+                return
             }
-            size.setSize(sizes.data.rows)
-            setLoading(false)
-            return
+            setFreeMasters(res.data.rows)
+            masters.setMasters(res.data.rows);
+            masters.setTotalCount(res.data.count);
         } catch (e) {
-            size.setIsEmpty(true)
-            setLoading(false)
+            return masters.setIsEmpty(true);
         }
-
-    }
-    const getMasters = () => {
-        setLoading(true)
-        fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id, masters.page, 3).then(
-            (res) => {
-                if (res.status === 204) {
-                    setFreeMasters([])
-                    return
-                }
-                setFreeMasters(res.data.rows)
-                masters.setMasters(res.data.rows);
-                masters.setTotalCount(res.data.count);
-            },
-            (err) => {
-                masters.setIsEmpty(true);
-            }
-        ).finally(() => setLoading(false));
+        setLoading(false)
     }
 
     const handleNext = (event) => {
@@ -106,21 +104,23 @@ const OrderStepper = observer(({alertMessage}) => {
                 setChosenMaster(Number(chosenMaster))
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
             } else {
-                const body = {
+
+                const orderInfo = {
                     name,
-                    date,
-                    time,
+                    time: new Date(new Date(date).setHours(time.getHours(), 0, 0)),
                     email,
                     changeName,
                     cityId: cityChosen,
                     masterId: chosenMaster,
                     sizeClockId: size.selectedSize.id,
-                    price:size.selectedSize.prices[0].price,
-                    regCustomer
+                    regCustomer,
+                    price: size.selectedSize.date.slice(0, 2) * cities.cities
+                        .find(city => city.id === cities.selectedCity).price
                 }
-                createOrder(body).then(res => {
+                createOrder(orderInfo).then(res => {
                     cities.setSelectedCity(null)
                     size.setSelectedSize({date: "00:00:00"})
+                    masters.setMasters([])
                     if (changeName) {
                         user.setUserName(name)
                     }
@@ -136,9 +136,9 @@ const OrderStepper = observer(({alertMessage}) => {
         } else {
             setLoading(true)
             checkEmail(email).then(res => {
-                if (res.status == 204) {
+                if (res.status === 204) {
                     setEmailExists(false)
-                } else if (res.status == 200) {
+                } else if (res.status === 200) {
                     setEmailExists(true)
                 }
             }).finally(() => setLoading(false))
@@ -162,7 +162,7 @@ const OrderStepper = observer(({alertMessage}) => {
 
     useEffect(() => {
         if (user.isAuth) {
-            setName(user.userName)
+            user.userRole !== "ADMIN" ? setName(user.userName) : setName("")
             setEmail(user.user.email)
         }
 
@@ -252,18 +252,15 @@ const OrderStepper = observer(({alertMessage}) => {
                         >
                             <SelectorCity cityChosen={cityChosen}
                                           cleanMaster={() => setChosenMaster(null)}
-                                          getSize={() => getSize()}
                                           setCityChosen={() => setCityChosen(cities.selectedCity)}
                             />
                             <SelectorSize sizeClock={sizeClock}
                                           cleanMaster={() => setChosenMaster(null)}
-                                          disaledSelector={!cities.selectedCity}
-                                          loading={loading}
                                           setSizeClock={() => setSizeClock(size.selectedSize.id)}/>
                         </Box>
                         <Box sx={{my: 2}}>Стоимость
-                            услуги: {size.selectedSize.date !== "00:00:00" ? size.selectedSize.prices[0].price + " грн" : null}
-                        </Box>
+                            услуги: <b>{size.selectedSize.date !== "00:00:00" && cities.selectedCity ? size.selectedSize.date.slice(0, 2) * cities.cities
+                                .find(city => city.id === cities.selectedCity).price + " грн" : null} </b></Box>
                         <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                             <DatePicker
                                 mask='__.__.____'
@@ -447,9 +444,10 @@ const OrderStepper = observer(({alertMessage}) => {
                                     заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
                                 <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
                                 <Box> Имя мастера: <b>{freeMasters.find(item => item.id == chosenMaster).name}</b></Box>
-                                <Box sx={{my:1}}>Стоимость
-                                    услуги: <b>{size.selectedSize.date !== "00:00:00" ? size.selectedSize.prices[0].price + " грн" : null}</b>
-                                </Box>
+                                <Box sx={{my: 2}}>Стоимость
+                                    услуги: <b>{size.selectedSize.date !== "00:00:00" && cities.selectedCity ? size.selectedSize.date.slice(0, 2) * cities.cities
+                                        .find(city => city.id === cities.selectedCity).price + " грн" : null} </b></Box>
+
                             </Box>
 
                             <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>

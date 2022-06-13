@@ -55,6 +55,8 @@ const OrderListMaster = observer(({alertMessage}) => {
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Тип услуги"/>
+                    <ListItemText sx={{width: 10}}
+                                  primary="Цена"/>
 
                     <ListItemText sx={{width: 10}}
                                   primary="Статус"
@@ -64,8 +66,8 @@ const OrderListMaster = observer(({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
-                    const endTime = new Date(order.endTime).toLocaleTimeString("uk-UA").slice(0, 5)
+                    const time = new Date(order.time).toLocaleString("uk-UA")
+                    const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem
                         key={order.id}
                         divider
@@ -80,14 +82,17 @@ const OrderListMaster = observer(({alertMessage}) => {
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${time}`}
+                                      primary={time}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${endTime}`}
+                                      primary={endTime}
                         />
 
                         <ListItemText sx={{width: 10}}
                                       primary={order.sizeClock.name}
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.price}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={
@@ -95,7 +100,7 @@ const OrderListMaster = observer(({alertMessage}) => {
                                                   size="small"
                                                   variant="outlined"
                                                   onClick={() => order.status === "ACCEPTED" ? changeStatus(order, "DONE") : changeStatus(order, "ACCEPTED")}>
-                                              {order.status === "DONE" ? "Закончен" : "Не закончен"}
+                                              {order.status === "DONE" ? "Выполнен" : "Подтвержден"}
                                           </Button>
                                       }
                         />

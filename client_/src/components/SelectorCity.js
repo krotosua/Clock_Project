@@ -23,8 +23,7 @@ export default function SelectorCity({
                                          error,
                                          closeList,
                                          editOpen,
-                                         setCityChosen,
-                                         getSize
+                                         setCityChosen
                                      }) {
     let {cities} = useContext(Context)
     const [city, setCity] = useState(Edit || cityChosen || "");
@@ -35,15 +34,12 @@ export default function SelectorCity({
         closeList()
         cleanMaster()
         cityToEdit()
-        getSize()
     };
-    const handleChange = async (event) => {
+    const handleChange = (event) => {
         setCity(event.target.value);
         cities.setSelectedCity(event.target.value)
         setCityChosen()
         cleanMaster()
-        getSize()
-
     };
 
     return (

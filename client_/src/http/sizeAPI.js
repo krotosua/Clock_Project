@@ -12,11 +12,6 @@ export const fetchSize = async (page, limit = 10) => {
 
 }
 
-export const getSizeForCity = async (cityId, page, limit = 10) => {
-    return await $host.get('api/sizes/' + cityId, {params: {page, limit}})
-
-}
-
 export const deleteSize = async (id) => {
     await $authHost.delete(`api/sizes/` + id,)
 

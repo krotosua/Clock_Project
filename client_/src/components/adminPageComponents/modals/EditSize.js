@@ -1,19 +1,8 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {
-    Modal,
-    Button,
-    Box,
-    Typography,
-    FormControl,
-    InputAdornment,
-    InputLabel,
-    MenuItem,
-    Select,
-    TextField
-} from "@mui/material";
-import {Context} from "../../../index";
+import React, {useState} from 'react';
+import {FormControl, Modal, Button, Box, Typography, TextField} from "@mui/material";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
-import {TimePicker, LocalizationProvider} from "@mui/lab";
+import {TimePicker} from "@mui/lab";
 import {updateSize} from "../../../http/sizeAPI";
 
 
@@ -28,67 +17,31 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditCity = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit, getSize}) => {
-    let {size, cities} = useContext(Context)
+const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit,}) => {
+
     const [sizeName, setSizeName] = useState(sizeToEdit.name)
     const [sizeTime, setSizeTime] = useState(dateToEdit)
     const [errSize, setErrSize] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [blurSizeName, setBlurSizeName] = useState(false)
-    const [priceList, setPriceList] = useState([])
 
-    useEffect(() => {
-        setPriceList(sizeToEdit.prices.map((item, obj) => obj = {
-            id: item.id,
-            price: item.price,
-            cityId: item.cityId,
-            number: item.id
-        }))
-    }, [])
-    const changeSize = async () => {
-        if (priceList.findIndex(price => !price.price || !price.cityId) >= 0) {
-            alertMessage('Заполните все поля', true)
-            return
-        }
+
+    const changeSize = () => {
         const changeInfo = {
             id: idToEdit,
-            priceList,
             date: sizeTime.toLocaleTimeString(),
             name: sizeName.trim()
         }
-        try {
-            await updateSize(changeInfo)
-            getSize()
+        updateSize(changeInfo).then(res => {
+
             close()
             alertMessage('Название изменено успешно', false)
-        } catch (e) {
+        }, err => {
             setErrSize(true)
             alertMessage('Не удалось изменить название', true)
-        }
-
-    }
-    const addPrice = () => {
-        setPriceList([...priceList, {price: "", cityId: "", number: Date.now()}])
-    }
-    const deleteCity = (event) => {
-        cities.setCities(cities.cities.filter(city => city.id !== event.target.value));
-    }
-    const changePrice = (key, value, number) => {
-        if (key === "cityId" && priceList.findIndex(city => city.cityId === value) >= 0) {
-            alertMessage("Город уже выбран", true)
-            return
-        }
-        setPriceList(priceList.map(price => price.number === number ? {...price, [key]: value} : price))
-    }
-    const removePrice = (number) => {
-        setPriceList(priceList.filter(price => price.number !== number))
+        })
     }
 
-    const change = (prop, value) => { // изменение input поля
-        size.setSize(size.size.map(size =>
-            size.id === idToEdit ? {...size, [prop]: value} : size
-        ));
-    }
 
     const close = () => {
         setErrSize(false)
@@ -154,61 +107,6 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit
                                     />
                                 </LocalizationProvider>
                             </div>
-                            {priceList.map((i, index) =>
-
-                                <Box key={index + 1} sx={{display: 'flex', my: 1,}}>
-                                    <FormControl fullWidth>
-                                        <InputLabel id="city">Город</InputLabel>
-                                        <Select
-                                            id="city"
-                                            value={i.cityId}
-                                            label="Город"
-                                            onChange={(e) =>
-                                                changePrice('cityId', e.target.value, i.number)}
-                                        >
-                                            {cities.cities.map(city => {
-                                                return (
-                                                    <MenuItem
-                                                        key={city.id}
-                                                        onClick={deleteCity}
-                                                        value={city.id}>{city.name}</MenuItem>
-                                                )
-                                            })}
-                                        </Select>
-
-                                    </FormControl>
-                                    <TextField
-                                        sx={{mx: 4}}
-                                        fullWidth
-                                        error={errSize || validName}
-                                        id="price"
-                                        type="number"
-                                        label="Цена"
-                                        variant="outlined"
-                                        value={i.price}
-                                        onChange={(e) =>
-                                            changePrice('price', e.target.value, i.number)}
-                                        InputProps={{
-                                            endAdornment: <InputAdornment position="end">Грн</InputAdornment>,
-                                        }}
-                                    />
-                                    <Button
-                                        sx={{width: 200}}
-                                        variant="outlined"
-                                        color="error"
-                                        onClick={() => removePrice(i.number)}
-                                    >Удалить</Button>
-                                </Box>
-                            )}
-
-
-                            <Button color="warning"
-                                    sx={{my: 1}}
-                                    variant="outlined"
-                                    disabled={priceList.length === cities.cities.length}
-                                    onClick={addPrice}>
-                                Добавить цену в городе
-                            </Button>
 
                         </FormControl>
                         <Box
@@ -228,4 +126,4 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit
     );
 };
 
-export default EditCity;
+export default EditSize;

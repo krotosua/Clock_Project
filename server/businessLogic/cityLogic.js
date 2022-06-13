@@ -10,13 +10,9 @@ class CityLogic {
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()});
             }
-
-            const result = await sequelize.transaction(async () => {
-                const {name} = req.body
-                const city = await City.create({name})
-                return city
-            });
-            return res.status(201).json(result)
+            const {name, price} = req.body
+            const city = await City.create({name, price})
+            return res.status(200).json({city})
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -29,7 +25,10 @@ class CityLogic {
             limit = limit || 9
             let offset = page * limit - limit
             let cities
-            cities = await City.findAndCountAll({limit, offset})
+            cities = await City.findAndCountAll({
+                order: [['id', 'DESC']],
+                limit, offset
+            })
             if (!cities.count) {
                 return res.status(204).json({message: "List is empty"})
             }
@@ -41,8 +40,7 @@ class CityLogic {
 
     async checkMasterCityId(id) {
         const city = await City.findAll({where: {id}})
-
-        if (city.length !== id.length || city.length == 0) {
+        if (city.length !== id.length || city.length === 0) {
             throw new ApiError.badRequest({message: "WRONG CityId"})
         }
     }
@@ -57,14 +55,10 @@ class CityLogic {
 
     async update(req, res, next) {
         try {
-            const result = await sequelize.transaction(async () => {
-                const {cityId} = req.params
-                const {name} = req.body
-                const city = await City.findOne({where: {id: cityId}})
-                await city.update({name: name})
-                return city
-            });
-            return res.status(201).json(result)
+            const {cityId} = req.params
+            const {name, price} = req.body
+            const city = await City.update({name, price}, {where: {id: cityId}})
+            return res.status(201).json(city)
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -78,7 +72,7 @@ class CityLogic {
                 const city = await City.findOne({
                     where: {id: cityId}, include: Master, attributes: ["id"]
                 })
-                if (city.masters.length == 0) {
+                if (city.masters.length === 0) {
                     await city.destroy()
                     return res.status(204).json({message: "success"})
                 } else {

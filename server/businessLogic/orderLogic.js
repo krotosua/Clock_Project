@@ -13,9 +13,9 @@ const statusList = {
 class OrderLogic {
     async create(req, res, next, userId, time, endTime) {
         try {
-            const {name, sizeClockId, date, masterId, cityId, price} = req.body
+            const {name, sizeClockId, masterId, cityId, price} = req.body
             const order = await Order.create(
-                {name, sizeClockId, date, userId, time, endTime, masterId, cityId, price})
+                {name, sizeClockId, userId, time, endTime, masterId, cityId, price})
             return order
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -31,6 +31,7 @@ class OrderLogic {
             let offset = page * limit - limit
             let orders
             orders = await Order.findAndCountAll({
+                order:[['id', 'DESC']],
                 where: {userId: userId},
                 include: [{
                     model: Master,
@@ -72,6 +73,7 @@ class OrderLogic {
                 return next(ApiError.forbidden("Doesn`t activated"))
             }
             orders = await Order.findAndCountAll({
+                order:[['id', 'DESC']],
                 where: {
                     masterId: master.id,
                     status: {
@@ -104,6 +106,7 @@ class OrderLogic {
             let offset = page * limit - limit
             let orders
             orders = await Order.findAndCountAll({
+                order:[['id', 'DESC']],
                 include: [{
                     model: Master,
                 }, {
@@ -129,7 +132,7 @@ class OrderLogic {
     async update(req, res, next, userId, time, endTime) {
         try {
             const {orderId} = req.params
-            const {name, sizeClockId, date, masterId, cityId, price} = req.body
+            const {name, sizeClockId, masterId, cityId, price} = req.body
             if (orderId <= 0) {
                 next(ApiError.badRequest({message: "cityId is wrong"}))
             }
@@ -137,7 +140,6 @@ class OrderLogic {
             await order.update({
                 name,
                 sizeClockId,
-                date,
                 time,
                 endTime,
                 masterId,

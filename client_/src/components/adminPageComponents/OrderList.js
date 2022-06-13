@@ -30,20 +30,22 @@ const OrderList = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
-    const [dateToEdit, setDateToEdit] = useState(new Date());
     const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [orderToEdit, setOrderToEdit] = useState(null)
 
+    const changeStatus = (key, value, number) => {
+        orders.setOrders(orders.orders.map(order => order.id === number ? {...order, [key]: value} : order))
+    }
 
     const handleChange = async (statusOrder, order) => {
         try {
             const changeInfo = {
-                id: order.id, status: statusOrder
+                id: order.id,
+                status: statusOrder
             }
             await statusChangeOrder(changeInfo)
-            getOrders()
             alertMessage("Статус заказа успешно смененн", false)
-            return
+            return order.status = statusOrder
         } catch (e) {
             alertMessage("Не удалось сменить статус заказа", true)
         }
@@ -58,9 +60,6 @@ const OrderList = observer(({alertMessage}) => {
                 orders.setIsEmpty(true)
                 return
             }
-            res.data.rows.map(item => {
-                item.date = new Date(item.date).toLocaleDateString("uk-UA")
-            })
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
@@ -87,9 +86,6 @@ const OrderList = observer(({alertMessage}) => {
     const editOrder = (order, time) => {
         setOrderToEdit(order)
         setIdToEdit(order.id)
-        let pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
-        let date = new Date(order.date.replace(pattern, '$3-$2-$1'));
-        setDateToEdit(date)
         setTimeToEdit(new Date(new Date(0, 0, 0).setHours(time.slice(0, 2), 0, 0)))
         setEditVisible(true)
     }
@@ -150,7 +146,7 @@ const OrderList = observer(({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
+                    const time = new Date(order.time).toLocaleString("uk-UA")
                     return (<ListItem
                         key={order.id}
                         divider
@@ -173,7 +169,7 @@ const OrderList = observer(({alertMessage}) => {
                                       primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${time}`}
+                                      primary={time}
                         /> <ListItemText sx={{width: 10}}
                                          primary={order.sizeClock.name}/>
                         <ListItemText sx={{width: 10}}
@@ -194,7 +190,7 @@ const OrderList = observer(({alertMessage}) => {
                                               label="Статус"
                                           >
                                               <MenuItem value={"WAITING"}>
-                                                  <em>Ожидание</em>
+                                                  Ожидание
                                               </MenuItem>
                                               <MenuItem value={"REJECTED"}>Отказ</MenuItem>
                                               <MenuItem value={"ACCEPTED"}>Подтвержден</MenuItem>
@@ -202,7 +198,7 @@ const OrderList = observer(({alertMessage}) => {
                                           </Select>
                                       </FormControl>}
                         />
-                        {new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") === order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
+                        {Date.now() > Date.parse(order.time) ? null :
 
                             <Tooltip title={'Изменить заказ'}
                                      placement="left"
@@ -229,7 +225,6 @@ const OrderList = observer(({alertMessage}) => {
                 orderToEdit={orderToEdit}
                 alertMessage={alertMessage}
                 idToEdit={idToEdit}
-                dateToEdit={dateToEdit}
                 timeToEdit={timeToEdit}
             /> : null}
 

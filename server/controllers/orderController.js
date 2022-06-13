@@ -26,13 +26,12 @@ class OrderController {
                 await masterLogic.checkOrders(res, next, masterId, date, time, endTime, clock)
                 const user = await userLogic.GetOrCreateUser(req, res, next,)
                 if (!user) {
-                    throw new ApiError.badRequest({message: "Customer is wrong"})
+                    throw new ApiError.badRequest("Customer is wrong")
                 }
                 const userId = user.dataValues.id
-
                 const order = await orderLogic.create(req, res, next, userId, time, endTime)
                 if (!order) {
-                    throw new ApiError.badRequest({message: "Customer is wrong"})
+                    throw new ApiError.badRequest("Customer is wrong")
                 }
                 let data = {
                     order,
