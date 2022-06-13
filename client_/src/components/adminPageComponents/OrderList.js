@@ -20,7 +20,7 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
-import {deleteOrder, fetchAlLOrders} from "../../http/orderAPI";
+import {deleteOrder, fetchAlLOrders, statusChangeOrder} from "../../http/orderAPI";
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
@@ -33,7 +33,23 @@ const OrderList = observer(({alertMessage}) => {
     const [dateToEdit, setDateToEdit] = useState(new Date());
     const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [orderToEdit, setOrderToEdit] = useState(null)
-    const [status,setStatus] = useState("Preparing")
+
+
+    const handleChange = async (statusOrder, order) => {
+        try {
+            const changeInfo = {
+                id: order.id, status: statusOrder
+            }
+            await statusChangeOrder(changeInfo)
+            getOrders()
+            alertMessage("Статус заказа успешно смененн", false)
+            return
+        } catch (e) {
+            alertMessage("Не удалось сменить статус заказа", true)
+        }
+
+    };
+
 
     const navigate = useNavigate()
     const getOrders = () => {
@@ -125,6 +141,12 @@ const OrderList = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Город"
                     />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Цена"
+                    />
+                    <ListItemText sx={{width: 10, mr: 4}}
+                                  primary="Статус"
+                    />
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
@@ -159,20 +181,40 @@ const OrderList = observer(({alertMessage}) => {
                         <ListItemText sx={{width: 10}}
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.price + " грн"}
+                        />
+                        <ListItemText sx={{width: 10, mr: 4}}
+                                      primary={<FormControl sx={{maxWidth: 100}} size="small">
+                                          <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
+                                          <Select
+                                              labelId="status"
+                                              defaultValue={`${order.status}`}
+                                              onChange={(event) => handleChange(event.target.value, order)}
+                                              label="Статус"
+                                          >
+                                              <MenuItem value={"WAITING"}>
+                                                  <em>Ожидание</em>
+                                              </MenuItem>
+                                              <MenuItem value={"REJECTED"}>Отказ</MenuItem>
+                                              <MenuItem value={"ACCEPTED"}>Подтвержден</MenuItem>
+                                              <MenuItem value={"DONE"}>Выполнен</MenuItem>
+                                          </Select>
+                                      </FormControl>}
+                        />
+                        {new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") === order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
 
-                        {new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
-
-                        <Tooltip title={'Изменить заказ'}
-                                 placement="left"
-                                 arrow>
-                            <IconButton sx={{width: 5}}
-                                        edge="end"
-                                        aria-label="Edit"
-                                        onClick={() => editOrder(order, time)}
-                            >
-                                <EditIcon/>
-                            </IconButton>
-                        </Tooltip>}
+                            <Tooltip title={'Изменить заказ'}
+                                     placement="left"
+                                     arrow>
+                                <IconButton sx={{width: 5}}
+                                            edge="end"
+                                            aria-label="Edit"
+                                            onClick={() => editOrder(order, time)}
+                                >
+                                    <EditIcon/>
+                                </IconButton>
+                            </Tooltip>}
 
                     </ListItem>)
                 })}

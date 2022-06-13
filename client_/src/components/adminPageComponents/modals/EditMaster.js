@@ -4,8 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import {createMaster, fetchMasters, updateMaster} from "../../../http/masterAPI";
-import SelectorCity from "../../SelectorCity"
+import { fetchMasters, updateMaster} from "../../../http/masterAPI";
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
 

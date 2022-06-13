@@ -95,8 +95,8 @@ class UserLogic {
             let {email, name, regCustomer, changeName} = req.body
             const candidate = await User.findOne({where: {email}})
 
-            if (candidate.password !== null) {
-                if (changeName) {
+            if (candidate) {
+                if (changeName && candidate.password !== null) {
                     const customer = await Customer.findOne({where: {userId: candidate.id}})
                     await customer.update({name: name})
                 }

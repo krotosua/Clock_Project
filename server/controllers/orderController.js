@@ -81,18 +81,15 @@ class OrderController {
         }
     }
 
-    async finished(req, res, next) {
+    async statusChange(req, res, next) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const result = await sequelize.transaction(async () => {
+            const orders = await orderLogic.statusChange(req, res, next)
 
-                const orders = await orderLogic.finished(req, res, next)
-                return orders
-            })
-            return res.status(201).json(result)
+            return res.status(201).json(orders)
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }

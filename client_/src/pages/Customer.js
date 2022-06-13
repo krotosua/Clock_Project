@@ -11,7 +11,6 @@ import Pages from "../components/Pages";
 
 const Customer = observer(() => {
     const navigate = useNavigate()
-
     let {orders} = useContext(Context)
     const {id} = useParams()
     const getOrders = () => {

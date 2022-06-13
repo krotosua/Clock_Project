@@ -20,6 +20,7 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
 import Login from "../authPageComponents/Login";
+import {getSizeForCity} from "../../http/sizeAPI";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -54,7 +55,24 @@ const OrderStepper = observer(({alertMessage}) => {
     };
     const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
+    const getSize = async () => {
+        setLoading(true)
+        try {
+            size.setSize([])
+            size.setSelectedSize({date: "00:00:00"})
+            const sizes = await getSizeForCity(cities.selectedCity)
+            if (sizes.status === 204) {
+                return size.setIsEmpty(true)
+            }
+            size.setSize(sizes.data.rows)
+            setLoading(false)
+            return
+        } catch (e) {
+            size.setIsEmpty(true)
+            setLoading(false)
+        }
 
+    }
     const getMasters = () => {
         setLoading(true)
         fetchMastersForOrder(cities.selectedCity, date, time, size.selectedSize.id, masters.page, 3).then(
@@ -66,7 +84,6 @@ const OrderStepper = observer(({alertMessage}) => {
                 setFreeMasters(res.data.rows)
                 masters.setMasters(res.data.rows);
                 masters.setTotalCount(res.data.count);
-
             },
             (err) => {
                 masters.setIsEmpty(true);
@@ -98,6 +115,7 @@ const OrderStepper = observer(({alertMessage}) => {
                     cityId: cityChosen,
                     masterId: chosenMaster,
                     sizeClockId: size.selectedSize.id,
+                    price:size.selectedSize.prices[0].price,
                     regCustomer
                 }
                 createOrder(body).then(res => {
@@ -141,7 +159,6 @@ const OrderStepper = observer(({alertMessage}) => {
         || !date || !time || !cities.selectedCity
         || !size.selectedSize.id || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket
-
 
     useEffect(() => {
         if (user.isAuth) {
@@ -189,8 +206,8 @@ const OrderStepper = observer(({alertMessage}) => {
                 <Stepper activeStep={activeStep}>
                     {steps.map((label) => {
                         return (
-                            <Step key={label} >
-                                <StepLabel >{label}</StepLabel>
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
                             </Step>
                         );
                     })}
@@ -233,13 +250,19 @@ const OrderStepper = observer(({alertMessage}) => {
                         <Box
                             sx={{display: "grid", gridTemplateColumns: "repeat(2, 1fr)", my: 2}}
                         >
-                            <SelectorSize sizeClock={sizeClock}
-                                          cleanMaster={() => setChosenMaster(null)}
-                                          setSizeClock={() => setSizeClock(size.selectedSize.id)}/>
                             <SelectorCity cityChosen={cityChosen}
                                           cleanMaster={() => setChosenMaster(null)}
+                                          getSize={() => getSize()}
                                           setCityChosen={() => setCityChosen(cities.selectedCity)}
                             />
+                            <SelectorSize sizeClock={sizeClock}
+                                          cleanMaster={() => setChosenMaster(null)}
+                                          disaledSelector={!cities.selectedCity}
+                                          loading={loading}
+                                          setSizeClock={() => setSizeClock(size.selectedSize.id)}/>
+                        </Box>
+                        <Box sx={{my: 2}}>Стоимость
+                            услуги: {size.selectedSize.date !== "00:00:00" ? size.selectedSize.prices[0].price + " грн" : null}
                         </Box>
                         <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                             <DatePicker
@@ -297,6 +320,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                                onClick={() => setOpenTime(true)}
                                                {...params} />}
                             />
+
                         </LocalizationProvider>
                         <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>
                             {activeStep === 0 ?
@@ -423,6 +447,9 @@ const OrderStepper = observer(({alertMessage}) => {
                                     заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
                                 <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
                                 <Box> Имя мастера: <b>{freeMasters.find(item => item.id == chosenMaster).name}</b></Box>
+                                <Box sx={{my:1}}>Стоимость
+                                    услуги: <b>{size.selectedSize.date !== "00:00:00" ? size.selectedSize.prices[0].price + " грн" : null}</b>
+                                </Box>
                             </Box>
 
                             <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", pt: 2}}>

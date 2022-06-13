@@ -1,4 +1,4 @@
-const {SizeClock, Order} = require('../models/models')
+const {SizeClock, Order, Price, City} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const sequelize = require("../db");
 
@@ -6,8 +6,14 @@ class SizeLogic {
     async create(req, res, next) {
         try {
             const result = await sequelize.transaction(async () => {
-                const {name, date} = req.body
+                const {name, date, priceList} = req.body
                 const size = await SizeClock.create({name, date})
+                const list = priceList.map((item, obj) => obj = {
+                    cityId: item.cityId,
+                    price: item.price,
+                    sizeClockId: size.id
+                })
+                await Price.bulkCreate(list)
                 return size
             });
             return res.status(201).json(result)
@@ -16,6 +22,33 @@ class SizeLogic {
         }
     }
 
+    async update(req, res, next) {
+        try {
+            const result = await sequelize.transaction(async () => {
+                const {sizeId} = req.params
+                const {name, date, priceList} = req.body
+                const size = await SizeClock.findOne({where: {id: sizeId}})
+                await size.update({
+                    name: name,
+                    date: date
+                })
+                await Price.destroy({where: {sizeClockId: sizeId}})
+                const list = priceList.map((item, obj) => obj = {
+                    cityId: item.cityId,
+                    price: item.price,
+                    sizeClockId: size.id
+                })
+                await Price.bulkCreate(list)
+                return size
+            });
+            return res.status(201).json(result)
+
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+
     async getAll(req, res, next) {
         try {
             let {limit, page} = req.query
@@ -23,7 +56,34 @@ class SizeLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let sizes
-            sizes = await SizeClock.findAndCountAll({limit, offset})
+            sizes = await SizeClock.findAndCountAll({
+                include: Price,
+                limit, offset
+            })
+            if (!sizes.count) {
+                return res.status(204).json({message: "List is empty"})
+            }
+            return res.status(200).json(sizes)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async getForCity(req, res, next) {
+        try {
+            const {cityId} = req.params
+            let {limit, page} = req.query
+            page = page || 1
+            limit = limit || 12
+            let offset = page * limit - limit
+            let sizes
+            sizes = await SizeClock.findAndCountAll({
+                include: [{
+                    model: Price,
+                    where: {cityId}
+                }],
+                limit, offset
+            })
             if (!sizes.count) {
                 return res.status(204).json({message: "List is empty"})
             }
@@ -39,25 +99,6 @@ class SizeLogic {
             return next(ApiError.badRequest('WRONG sizeClockId'))
         }
         return sizeClock
-    }
-
-    async update(req, res, next) {
-        try {
-            const result = await sequelize.transaction(async () => {
-                const {sizeId} = req.params
-                const {name, date} = req.body
-                const size = await SizeClock.findOne({where: {id: sizeId}})
-                await size.update({
-                    name: name,
-                    date: date
-                })
-                return size
-            });
-            return res.status(201).json(result)
-
-        } catch (e) {
-            return next(ApiError.badRequest(e.message))
-        }
     }
 
     async deleteOne(req, res, next) {

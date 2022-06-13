@@ -7,9 +7,8 @@ const sequelize = require("../db");
 class MasterLogic {
     async create(req, res, next) {
         try {
+
             const {name, rating, email, password, cityId, userId, isActivated} = req.body
-
-
             const master = await Master.create({name, rating, email, password, userId, isActivated})
             await master.addCity(cityId)
             return master
@@ -64,7 +63,9 @@ class MasterLogic {
                     where: {
                         isActivated: {[Op.is]: true}
                     }, include: [{
-                        model: City, where: {id: cityId}, through: {
+                        model: City,
+                        where: {id: cityId},
+                        through: {
                             attributes: []
                         }
                     }, {

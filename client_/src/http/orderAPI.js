@@ -17,13 +17,13 @@ export const fetchMasterOrders = async (id, page, limit = 8) => {
 
 
 export const deleteOrder = async (id) => {
-    await $authHost.delete('api/orders/' + id,)
+    return  await $authHost.delete('api/orders/' + id,)
 
 }
 export const updateOrder = async (order) => {
-    await $authHost.put('api/orders/' + order.id, order)
+    return  await $authHost.put('api/orders/' + order.id, order)
 }
-export const finishedOrder = async (order) => {
-    await $authHost.put('api/orders/finished/' + order.id, order)
+export const statusChangeOrder = async (order) => {
+    return  await $authHost.put('api/orders/statusChange/' + order.id, order)
 }
 

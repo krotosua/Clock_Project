@@ -1,14 +1,21 @@
 const {Order, Master, SizeClock, Rating, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const MailService = require("../service/mailService")
+const {Op} = require("sequelize");
 
+const statusList = {
+    WAITING: "WAITING",
+    REJECTED: "REJECTED",
+    ACCEPTED: "ACCEPTED",
+    DONE: "DONE",
+}
 
 class OrderLogic {
     async create(req, res, next, userId, time, endTime) {
         try {
-            const {name, sizeClockId, date, masterId, cityId} = req.body
+            const {name, sizeClockId, date, masterId, cityId, price} = req.body
             const order = await Order.create(
-                {name, sizeClockId, date, userId, time, endTime, masterId, cityId})
+                {name, sizeClockId, date, userId, time, endTime, masterId, cityId, price})
             return order
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -50,12 +57,11 @@ class OrderLogic {
 
     async getMasterOrders(req, res, next) {
         try {
-            let {userId} = req.params
-
+            const {userId} = req.params
             let {limit, page} = req.query
             page = page || 1
             limit = limit || 12
-            let offset = page * limit - limit
+            const offset = page * limit - limit
             let orders
             let master = await Master.findOne({
                 where: {userId: userId},
@@ -66,7 +72,12 @@ class OrderLogic {
                 return next(ApiError.forbidden("Doesn`t activated"))
             }
             orders = await Order.findAndCountAll({
-                where: {masterId: master.id},
+                where: {
+                    masterId: master.id,
+                    status: {
+                        [Op.or]: ["ACCEPTED", "DONE"]
+                    }
+                },
                 include: [{
                     model: Master,
                     attributes: ['name'],
@@ -118,20 +129,21 @@ class OrderLogic {
     async update(req, res, next, userId, time, endTime) {
         try {
             const {orderId} = req.params
-            const {name, sizeClockId, date, masterId, cityId,} = req.body
+            const {name, sizeClockId, date, masterId, cityId, price} = req.body
             if (orderId <= 0) {
                 next(ApiError.badRequest({message: "cityId is wrong"}))
             }
             const order = await Order.findOne({where: {id: orderId}})
             await order.update({
-                name: name,
-                sizeClockId: sizeClockId,
-                date: date,
-                time: time,
-                endTime: endTime,
-                masterId: masterId,
-                cityId: cityId,
-                userId: userId
+                name,
+                sizeClockId,
+                date,
+                time,
+                endTime,
+                masterId,
+                cityId,
+                userId,
+                price
             })
 
             return order
@@ -140,16 +152,19 @@ class OrderLogic {
         }
     }
 
-    async finished(req, res, next) {
+    async statusChange(req, res, next) {
         try {
             const {orderId} = req.params
-            const {finished} = req.body
+            const {status} = req.body
+            if (!statusList[status]) {
+                next(ApiError.badRequest("INVALID STATUS"))
+            }
             if (orderId <= 0) {
-                next(ApiError.badRequest({message: "cityId is wrong"}))
+                next(ApiError.badRequest("cityId is wrong"))
             }
             const order = await Order.findOne({where: {id: orderId}})
             await order.update({
-                finished: finished,
+                status: status,
             })
 
             return order

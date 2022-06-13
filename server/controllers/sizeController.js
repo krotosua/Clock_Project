@@ -8,11 +8,14 @@ class sizeController {
             return res.status(400).json({errors: errors.array()});
         }
         await sizeLogic.create(req, res, next)
-
     }
 
     async getAll(req, res, next) {
         await sizeLogic.getAll(req, res, next)
+    }
+
+    async getForCity(req, res, next) {
+        await sizeLogic.getForCity(req, res, next)
     }
 
     async update(req, res, next) {

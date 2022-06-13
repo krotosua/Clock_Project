@@ -1,9 +1,20 @@
 import React, {useContext, useEffect, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import {CircularProgress, FormControlLabel, Radio, RadioGroup, Rating, TextField, Tooltip} from "@mui/material";
+import {
+    Modal,
+    Button,
+    Box,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    CircularProgress,
+    Divider,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Rating,
+    TextField,
+    Tooltip} from "@mui/material";
 import {Context} from "../../../index";
 import {fetchAlLOrders, updateOrder} from "../../../http/orderAPI";
 import SelectorSize from "../../orderPageComponents/SelectorSize";
@@ -13,12 +24,9 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
 import {DatePicker, TimePicker} from "@mui/lab";
 import {fetchMastersForOrder} from "../../../http/masterAPI";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import PagesOrder from "../../orderPageComponents/Pages";
+import {getSizeForCity} from "../../../http/sizeAPI";
 
 
 const style = {
@@ -76,8 +84,28 @@ const EditOrder = observer(({
         ).finally(() => setLoading(false));
 
     }
+
+    const getSize = async () => {
+        setLoading(true)
+        try {
+            size.setSize([])
+            size.setSelectedSize({date: "00:00:00"})
+            const sizes = await getSizeForCity(cities.selectedCity)
+            if (sizes.status === 204) {
+                return size.setIsEmpty(true)
+            }
+            size.setSize(sizes.data.rows)
+            setLoading(false)
+            return
+        } catch (e) {
+            size.setIsEmpty(true)
+            setLoading(false)
+        }
+
+    }
+
     useEffect(() => {
-        size.setSelectedSize(size.size.find(clock => clock.id == orderToEdit.sizeClockId))
+        size.setSelectedSize(size.size.find(clock => clock.id === orderToEdit.sizeClockId))
     }, [])
     useEffect(() => {
 
@@ -107,7 +135,8 @@ const EditOrder = observer(({
             cityId: cityChosen,
             masterId: chosenMaster,
             sizeClockId: Number(sizeClock),
-            changedMaster: changedMaster
+            changedMaster: changedMaster,
+            price:size.selectedSize.prices[0].price,
         }).then(res => {
             close()
             alertMessage('Заказ успешно изменен', false)
@@ -213,6 +242,16 @@ const EditOrder = observer(({
                         <Box
                             sx={{display: "grid", gridTemplateColumns: "repeat(2, 1fr)", my: 2}}
                         >
+                            <SelectorCity cityChosen={cityChosen}
+                                          editOpen={open}
+                                          closeList={() => {
+                                              setOpenList(false)
+                                              setFreeMasters([])
+                                              setChangedMaster(true)
+                                          }}
+                                          getSize={() => getSize()}
+                                          cleanMaster={() => setChosenMaster(null)}
+                                          cityToEdit={() => setCityChosen(cities.selectedCity)}/>
                             <SelectorSize sizeClock={sizeClock}
                                           editOpen={open}
                                           cleanMaster={() => setChosenMaster(null)}
@@ -222,15 +261,9 @@ const EditOrder = observer(({
                                               setChangedMaster(true)
                                           }}
                                           sizeToEdit={() => setSizeClock(size.selectedSize.id)}/>
-                            <SelectorCity cityChosen={cityChosen}
-                                          editOpen={open}
-                                          closeList={() => {
-                                              setOpenList(false)
-                                              setFreeMasters([])
-                                              setChangedMaster(true)
-                                          }}
-                                          cleanMaster={() => setChosenMaster(null)}
-                                          cityToEdit={() => setCityChosen(cities.selectedCity)}/>
+                        </Box>
+                        <Box sx={{my: 2}}>Стоимость
+                            услуги: {size.selectedSize.date !== "00:00:00" ? size.selectedSize.prices[0].price + " грн" : null}
                         </Box>
                         <LocalizationProvider sx={{cursor: "pointer"}} dateAdapter={AdapterDateFns}
                                               locale={ruLocale}>

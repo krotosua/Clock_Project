@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Box, InputLabel, MenuItem, FormControl, Select, FormHelperText} from '@mui/material/';
+import {Box, InputLabel, MenuItem, FormControl, Select, FormHelperText} from '@mui/material';
 import {useContext, useState} from "react";
 import {Context} from "../index";
 
@@ -23,7 +23,8 @@ export default function SelectorCity({
                                          error,
                                          closeList,
                                          editOpen,
-                                         setCityChosen
+                                         setCityChosen,
+                                         getSize
                                      }) {
     let {cities} = useContext(Context)
     const [city, setCity] = useState(Edit || cityChosen || "");
@@ -34,12 +35,15 @@ export default function SelectorCity({
         closeList()
         cleanMaster()
         cityToEdit()
+        getSize()
     };
-    const handleChange = (event) => {
+    const handleChange = async (event) => {
         setCity(event.target.value);
         cities.setSelectedCity(event.target.value)
         setCityChosen()
         cleanMaster()
+        getSize()
+
     };
 
     return (

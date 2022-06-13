@@ -19,7 +19,7 @@ const SizeList = observer(({alertMessage, getValue}) => {
     const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
-    const [nameToEdit, setNameToEdit] = useState(null);
+    const [sizeToEdit, setSizeToEdit] = useState(null);
     const [dateToEdit, setDateToEdit] = useState(null);
     const getSize = () => {
         fetchSize(size.page, 10).then(res => {
@@ -119,7 +119,7 @@ const SizeList = observer(({alertMessage, getValue}) => {
                                         onClick={() => {
                                             setEditVisible(true)
                                             setIdToEdit(size.id)
-                                            setNameToEdit(size.name)
+                                            setSizeToEdit(size)
                                             setDateToEdit(new Date(new Date().setHours(size.date.slice(0, 2), 0, 0)))
                                         }}
                             >
@@ -129,17 +129,18 @@ const SizeList = observer(({alertMessage, getValue}) => {
                     </ListItem>)
                 })}
             </List>
-            <CreateSize open={createVisible}
-                        alertMessage={alertMessage}
-                        onClose={() => {
-                            setCreateVisible(false)
-                        }}/>
+            {createVisible ? <CreateSize open={createVisible}
+                                         alertMessage={alertMessage}
+                                         onClose={() => {
+                                             setCreateVisible(false)
+                                         }}/>:null}
             {editVisible ? <EditSize
+                getSize={()=>getSize()}
                 open={editVisible}
                 onClose={() => setEditVisible(false)}
                 idToEdit={idToEdit}
                 alertMessage={alertMessage}
-                nameToEdit={nameToEdit}
+                sizeToEdit={sizeToEdit}
                 dateToEdit={dateToEdit}
             /> : null}
         </Box>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Box, List, ListItem, ListItemText, Typography, Divider, Button, Tooltip, Rating} from '@mui/material';
+import {Box, List, ListItem, ListItemText, Divider, Button, Tooltip, Rating} from '@mui/material';
 import {useContext, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
@@ -53,6 +53,9 @@ const OrderListCustomer = observer(() => {
                                   primary="Город"
                     />
                     <ListItemText sx={{width: 10}}
+                                  primary="Цена"
+                    />
+                    <ListItemText sx={{width: 10}}
                                   primary="Оценка"
                     />
 
@@ -89,6 +92,9 @@ const OrderListCustomer = observer(() => {
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
                         <ListItemText sx={{width: 10}}
+                                      primary={order.price}
+                        />
+                        <ListItemText sx={{width: 10}}
 
                                       primary={order.rating !== null ? <Box>
                                               <Rating
@@ -96,7 +102,7 @@ const OrderListCustomer = observer(() => {
                                                   precision={0.5}
                                                   value={order.rating.rating}
                                               /></Box>
-                                          : <Tooltip title={!order.finished ?
+                                          : <Tooltip title={order.status !== "DONE" ?
                                               'Станет доступна после выполнения заказа'
                                               : "Оценить работу мастера"}
                                                      placement="right"
@@ -105,11 +111,9 @@ const OrderListCustomer = observer(() => {
                                               <Button color="success"
                                                       size="small"
                                                       variant="outlined"
-                                                      disabled={!order.finished}
+                                                      disabled={order.status !== "DONE"}
                                                       onClick={() => {
                                                           createData(order)
-
-
                                                       }}>
                                                   Оценить
                                               </Button>

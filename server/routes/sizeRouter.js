@@ -9,6 +9,7 @@ router.post("/",
     body("date").not().isEmpty().isString(),
     checkRole("ADMIN"), sizeController.create)
 router.get('/', sizeController.getAll)
+router.get('/:cityId', sizeController.getForCity)
 router.put('/:sizeId',
     param("sizeId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),

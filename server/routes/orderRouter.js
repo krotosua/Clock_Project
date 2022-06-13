@@ -10,7 +10,7 @@ router.post("/",
     body("email").isEmail().isString().trim().escape(),
     body("date").not().isEmpty(),
     body("time").not().isEmpty(),
-
+    body("price").not().isEmpty(),
     body("cityId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("masterId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
@@ -22,25 +22,25 @@ router.get('/:userId', checkRole("CUSTOMER"),
 router.get('/master/:userId', checkRole("MASTER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getMasterOrders)
+
+
 router.get('/', checkRole("ADMIN"), orderController.getAllOrders)
 
 router.put("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
-
     body("name").not().isEmpty().isString().trim().escape(),
     body("email").isEmail().isString().trim().escape(),
     body("date").not().isEmpty(),
     body("time").not().isEmpty(),
+    body("price").not().isEmpty(),
     body("cityId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("masterId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
     checkRole("ADMIN"), orderController.update)
 
-router.put("/finished/:orderId",
+router.put("/statusChange/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
-
-
-    checkRole("MASTER"), orderController.finished)
+   orderController.statusChange)
 
 
 router.delete("/:orderId",
