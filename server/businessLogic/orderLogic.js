@@ -190,12 +190,11 @@ class OrderLogic {
         try {
             const cityName = result.city.name
             const size = result.clock.name
-            let {name, date, time, email, masterId, password} = req.body
+            let {name,  time, email, masterId, password} = req.body
 
             const master = await Master.findByPk(masterId)
-            date = new Date(Date.parse(date)).toLocaleDateString('uk-UA')
-            time = new Date(Date.parse(time)).toLocaleTimeString('uk-UA')
-            MailService.sendMail(name, date, time, email, size, master.name, cityName, password, next)
+            time = new Date(time).toLocaleString("uk-UA")
+            MailService.sendMail(name,  time, email, size, master.name, cityName, password, next)
 
         } catch (e) {
             return next(ApiError.badRequest(e.message))

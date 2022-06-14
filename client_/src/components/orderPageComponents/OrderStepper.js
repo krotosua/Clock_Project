@@ -171,7 +171,7 @@ const OrderStepper = observer(({alertMessage}) => {
     useEffect(() => {
         if (activeStep === 1) {
             setLoading(true)
-            fetchMastersForOrder(cities.selectedCity, date, time.toLocaleTimeString(), size.selectedSize.id, masters.page, 3).then(
+            fetchMastersForOrder(cities.selectedCity,  new Date(new Date(date).setHours(time.getHours())), size.selectedSize.id, masters.page, 3).then(
                 (res) => {
                     if (res.status === 204) {
                         setFreeMasters([])
