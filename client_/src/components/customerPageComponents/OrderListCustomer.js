@@ -56,6 +56,9 @@ const OrderListCustomer = observer(() => {
                                   primary="Цена"
                     />
                     <ListItemText sx={{width: 10}}
+                                  primary="Статус"
+                    />
+                    <ListItemText sx={{width: 10}}
                                   primary="Оценка"
                     />
 
@@ -93,6 +96,11 @@ const OrderListCustomer = observer(() => {
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={order.price}
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.status ==="DONE"?"Выполнен":
+                                          order.status ==="ACCEPTED"?"Подтвержден":
+                                              order.status ==="REJECTED"?"Отказ":"Ожидание"}
                         />
                         <ListItemText sx={{width: 10}}
 

@@ -39,7 +39,7 @@ const MasterList = observer(({alertMessage}) => {
 
 
     const getMasters = () => {
-        fetchMasters(null, null, masters.page, 10).then(res => {
+        fetchMasters(null, masters.page, 10).then(res => {
             if (res.status === 204) {
                 return masters.setIsEmpty(true)
             }

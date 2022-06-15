@@ -29,6 +29,7 @@ class CityLogic {
                 order: [['id', 'DESC']],
                 limit, offset
             })
+
             if (!cities.count) {
                 return res.status(204).json({message: "List is empty"})
             }

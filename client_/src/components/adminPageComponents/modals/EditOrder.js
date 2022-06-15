@@ -90,7 +90,7 @@ const EditOrder = observer(({
     }, [])
     useEffect(() => {
 
-        if (openList === true) {
+        if (openList) {
             getMasters()
         }
     }, [masters.page, openList])
@@ -170,7 +170,7 @@ const EditOrder = observer(({
     }
     //--------------------Validation
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    const checkInfo = openList === false || !idToEdit || !name || !email
+    const checkInfo = !openList || !idToEdit || !name || !email
         || !date || !time || !cityChosen
         || !chosenMaster || !sizeClock || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket

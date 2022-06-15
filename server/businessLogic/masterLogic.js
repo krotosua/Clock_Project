@@ -31,7 +31,8 @@ class MasterLogic {
                         attributes: []
                     },
 
-                }, {model: User,}], exclude: [{
+                }, {model: User,}],
+                exclude: [{
                     model: CitiesMasters
                 }]
             })
