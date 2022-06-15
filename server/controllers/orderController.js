@@ -26,13 +26,12 @@ class OrderController {
                 await masterLogic.checkOrders(res, next, masterId, date, time, endTime, clock)
                 const user = await userLogic.GetOrCreateUser(req, res, next,)
                 if (!user) {
-                    throw new ApiError.badRequest({message: "Customer is wrong"})
+                    throw new ApiError.badRequest("Customer is wrong")
                 }
                 const userId = user.dataValues.id
-
                 const order = await orderLogic.create(req, res, next, userId, time, endTime)
                 if (!order) {
-                    throw new ApiError.badRequest({message: "Customer is wrong"})
+                    throw new ApiError.badRequest("Customer is wrong")
                 }
                 let data = {
                     order,
@@ -81,18 +80,15 @@ class OrderController {
         }
     }
 
-    async finished(req, res, next) {
+    async statusChange(req, res, next) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const result = await sequelize.transaction(async () => {
+            const orders = await orderLogic.statusChange(req, res, next)
 
-                const orders = await orderLogic.finished(req, res, next)
-                return orders
-            })
-            return res.status(201).json(result)
+            return res.status(201).json(orders)
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }

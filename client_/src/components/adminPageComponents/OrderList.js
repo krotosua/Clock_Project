@@ -20,7 +20,7 @@ import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
-import {deleteOrder, fetchAlLOrders} from "../../http/orderAPI";
+import {deleteOrder, fetchAlLOrders, statusChangeOrder} from "../../http/orderAPI";
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
@@ -30,10 +30,28 @@ const OrderList = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
-    const [dateToEdit, setDateToEdit] = useState(new Date());
     const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [orderToEdit, setOrderToEdit] = useState(null)
-    const [status,setStatus] = useState("Preparing")
+
+    const changeStatus = (key, value, number) => {
+        orders.setOrders(orders.orders.map(order => order.id === number ? {...order, [key]: value} : order))
+    }
+
+    const handleChange = async (statusOrder, order) => {
+        try {
+            const changeInfo = {
+                id: order.id,
+                status: statusOrder
+            }
+            await statusChangeOrder(changeInfo)
+            alertMessage("Статус заказа успешно смененн", false)
+            return order.status = statusOrder
+        } catch (e) {
+            alertMessage("Не удалось сменить статус заказа", true)
+        }
+
+    };
+
 
     const navigate = useNavigate()
     const getOrders = () => {
@@ -42,9 +60,6 @@ const OrderList = observer(({alertMessage}) => {
                 orders.setIsEmpty(true)
                 return
             }
-            res.data.rows.map(item => {
-                item.date = new Date(item.date).toLocaleDateString("uk-UA")
-            })
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
@@ -71,9 +86,6 @@ const OrderList = observer(({alertMessage}) => {
     const editOrder = (order, time) => {
         setOrderToEdit(order)
         setIdToEdit(order.id)
-        let pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
-        let date = new Date(order.date.replace(pattern, '$3-$2-$1'));
-        setDateToEdit(date)
         setTimeToEdit(new Date(new Date(0, 0, 0).setHours(time.slice(0, 2), 0, 0)))
         setEditVisible(true)
     }
@@ -125,10 +137,16 @@ const OrderList = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Город"
                     />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Цена"
+                    />
+                    <ListItemText sx={{width: 10, mr: 4}}
+                                  primary="Статус"
+                    />
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
+                    const time = new Date(order.time).toLocaleString("uk-UA")
                     return (<ListItem
                         key={order.id}
                         divider
@@ -151,7 +169,7 @@ const OrderList = observer(({alertMessage}) => {
                                       primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${time}`}
+                                      primary={time}
                         /> <ListItemText sx={{width: 10}}
                                          primary={order.sizeClock.name}/>
                         <ListItemText sx={{width: 10}}
@@ -159,20 +177,40 @@ const OrderList = observer(({alertMessage}) => {
                         <ListItemText sx={{width: 10}}
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.price + " грн"}
+                        />
+                        <ListItemText sx={{width: 10, mr: 4}}
+                                      primary={<FormControl sx={{maxWidth: 100}} size="small">
+                                          <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
+                                          <Select
+                                              labelId="status"
+                                              defaultValue={`${order.status}`}
+                                              onChange={(event) => handleChange(event.target.value, order)}
+                                              label="Статус"
+                                          >
+                                              <MenuItem value={"WAITING"}>
+                                                  Ожидание
+                                              </MenuItem>
+                                              <MenuItem value={"REJECTED"}>Отказ</MenuItem>
+                                              <MenuItem value={"ACCEPTED"}>Подтвержден</MenuItem>
+                                              <MenuItem value={"DONE"}>Выполнен</MenuItem>
+                                          </Select>
+                                      </FormControl>}
+                        />
+                        {Date.now() > Date.parse(order.time) ? null :
 
-                        {new Date().toLocaleDateString("uk-UA") > order.date || new Date().toLocaleDateString("uk-UA") == order.date && new Date().toLocaleTimeString("uk-UA") > time ? null :
-
-                        <Tooltip title={'Изменить заказ'}
-                                 placement="left"
-                                 arrow>
-                            <IconButton sx={{width: 5}}
-                                        edge="end"
-                                        aria-label="Edit"
-                                        onClick={() => editOrder(order, time)}
-                            >
-                                <EditIcon/>
-                            </IconButton>
-                        </Tooltip>}
+                            <Tooltip title={'Изменить заказ'}
+                                     placement="left"
+                                     arrow>
+                                <IconButton sx={{width: 5}}
+                                            edge="end"
+                                            aria-label="Edit"
+                                            onClick={() => editOrder(order, time)}
+                                >
+                                    <EditIcon/>
+                                </IconButton>
+                            </Tooltip>}
 
                     </ListItem>)
                 })}
@@ -187,7 +225,6 @@ const OrderList = observer(({alertMessage}) => {
                 orderToEdit={orderToEdit}
                 alertMessage={alertMessage}
                 idToEdit={idToEdit}
-                dateToEdit={dateToEdit}
                 timeToEdit={timeToEdit}
             /> : null}
 

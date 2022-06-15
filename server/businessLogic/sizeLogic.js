@@ -1,20 +1,34 @@
-const {SizeClock, Order} = require('../models/models')
+const {SizeClock, Order,} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const sequelize = require("../db");
 
 class SizeLogic {
     async create(req, res, next) {
         try {
-            const result = await sequelize.transaction(async () => {
-                const {name, date} = req.body
-                const size = await SizeClock.create({name, date})
-                return size
-            });
-            return res.status(201).json(result)
+            const {name, date} = req.body
+            const size = await SizeClock.create({name, date})
+            return res.status(201).json(size)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
+
+    async update(req, res, next) {
+        try {
+            const {sizeId} = req.params
+            const {name, date,} = req.body
+            const size = await SizeClock.findOne({where: {id: sizeId}})
+            await size.update({
+                name: name,
+                date: date
+            })
+            return res.status(201).json(size)
+
+        } catch (e) {
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
 
     async getAll(req, res, next) {
         try {
@@ -23,7 +37,9 @@ class SizeLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let sizes
-            sizes = await SizeClock.findAndCountAll({limit, offset})
+            sizes = await SizeClock.findAndCountAll({
+                limit, offset
+            })
             if (!sizes.count) {
                 return res.status(204).json({message: "List is empty"})
             }
@@ -39,25 +55,6 @@ class SizeLogic {
             return next(ApiError.badRequest('WRONG sizeClockId'))
         }
         return sizeClock
-    }
-
-    async update(req, res, next) {
-        try {
-            const result = await sequelize.transaction(async () => {
-                const {sizeId} = req.params
-                const {name, date} = req.body
-                const size = await SizeClock.findOne({where: {id: sizeId}})
-                await size.update({
-                    name: name,
-                    date: date
-                })
-                return size
-            });
-            return res.status(201).json(result)
-
-        } catch (e) {
-            return next(ApiError.badRequest(e.message))
-        }
     }
 
     async deleteOne(req, res, next) {

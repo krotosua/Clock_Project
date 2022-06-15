@@ -16,7 +16,6 @@ router.get('/', masterController.getAll)
 router.get('/:cityId',
 
     param("cityId").not().isEmpty().isInt({gt: 0}),
-    query("date").not().isEmpty().isString(),
     query("time").not().isEmpty().isString(),
 
     masterController.getMastersForOrder)

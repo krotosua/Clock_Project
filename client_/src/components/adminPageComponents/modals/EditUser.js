@@ -1,8 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import React, {useContext, useState} from 'react';
 import {
     Checkbox,
     FormControl,
@@ -10,12 +6,13 @@ import {
     FormHelperText,
     InputAdornment,
     OutlinedInput,
-    TextField
+    TextField,
+    Box,
+    Button,
+    Modal,
+    Typography
 } from "@mui/material";
-import {createMaster, fetchMasters, updateMaster} from "../../../http/masterAPI";
-import SelectorCity from "../../SelectorCity"
 import {Context} from "../../../index";
-import SelectorMasterCity from "./SelectorMasterCity";
 import {fetchUsers, updateUser} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";

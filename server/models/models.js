@@ -38,7 +38,8 @@ const City = sequelize.define('city', {
     name: {
         type: DataTypes.STRING, unique: true, allowNull: false,
         validate: {notEmpty: true}
-    }
+    },
+    price: {type: DataTypes.INTEGER}
 }, {timestamps: false})
 const SizeClock = sequelize.define('sizeClock', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -65,10 +66,10 @@ const Order = sequelize.define('order', {
 
         }
     },
-    date: {type: DataTypes.DATEONLY,},
     time: {type: DataTypes.DATE,},
     endTime: {type: DataTypes.DATE},
-    finished:{type: DataTypes.BOOLEAN, defaultValue: false},
+    status: {type: DataTypes.STRING, defaultValue: "WAITING"},
+    price: {type: DataTypes.INTEGER}
 }, {timestamps: false})
 const CitiesMasters = sequelize.define('cities_masters', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -83,24 +84,26 @@ const Customer = sequelize.define('customer', {
 const Rating = sequelize.define('rating', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     rating: {
-        type: DataTypes.INTEGER, allowNull: false,
+        type: DataTypes.DOUBLE, allowNull: false,
         validate: {
             min: 0,
             max: 5
-        }, defaultValue: 0}})
+        }, defaultValue: 0
+    }
+}, {timestamps: false})
 
-Master.hasMany(Rating,{onDelete: 'CASCADE'})
+
+Master.hasMany(Order)
+Order.belongsTo(Master)
+
+Master.hasMany(Rating, {onDelete: 'CASCADE'})
 Rating.belongsTo(Master)
 
 User.hasOne(Rating,)
 Rating.belongsTo(User)
 
-Order.hasOne(Rating,{onDelete: 'CASCADE'})
-Rating.belongsTo(Order)
-
 User.hasMany(Order)
 Order.belongsTo(User)
-
 
 User.hasOne(Customer)
 Customer.belongsTo(User)
@@ -108,8 +111,8 @@ Customer.belongsTo(User)
 User.hasOne(Master, {onDelete: 'CASCADE'})
 Master.belongsTo(User, {onDelete: 'CASCADE'})
 
-Master.hasMany(Order)
-Order.belongsTo(Master)
+Order.hasOne(Rating, {onDelete: 'CASCADE'})
+Rating.belongsTo(Order)
 
 
 City.belongsToMany(Master, {through: CitiesMasters})
@@ -117,6 +120,7 @@ Master.belongsToMany(City, {through: CitiesMasters})
 
 SizeClock.hasMany(Order)
 Order.belongsTo(SizeClock)
+
 module.exports = {
     User,
     Order,
@@ -125,5 +129,5 @@ module.exports = {
     SizeClock,
     CitiesMasters,
     Customer,
-    Rating
+    Rating,
 }

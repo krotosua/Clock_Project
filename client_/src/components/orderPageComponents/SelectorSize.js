@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Select, FormControl, MenuItem, InputLabel, Box} from '@mui/material';
+import {Select, FormControl, MenuItem, InputLabel, Box, FormHelperText} from '@mui/material';
 import {Context} from "../../index";
 import {useContext, useState} from "react";
 
@@ -13,7 +13,14 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize({sizeClock, sizeToEdit, closeList, editOpen, cleanMaster, setSizeClock}) {
+export default function SelectorSize({
+                                         sizeClock,
+                                         sizeToEdit,
+                                         closeList,
+                                         editOpen,
+                                         cleanMaster,
+                                         setSizeClock
+                                     }) {
     const {size} = useContext(Context)
     const [clock, setClock] = useState(sizeClock || '');
 
@@ -31,24 +38,26 @@ export default function SelectorSize({sizeClock, sizeToEdit, closeList, editOpen
 
 
     return (<Box sx={{minWidth: 120}}>
-        <FormControl fullWidth>
-            <InputLabel id="size"> Выберите размер часов</InputLabel>
-            <Select
-                labelId="size"
-                value={clock}
-                label={"Выберите размер часов"}
-                onChange={editOpen ? handleEditChange : handleChange}
-                MenuProps={MenuProps}
-            >
-                {size.size.map((clock, index) => <MenuItem
-                    key={index}
-                    value={clock.id}
-                    onClick={() => size.setSelectedSize(clock)}
-                >
-                    {clock.name}
-                </MenuItem>)}
+            <FormControl fullWidth>
 
-            </Select>
-        </FormControl>
-    </Box>);
+                <InputLabel id="size"> Выберите размер часов</InputLabel>
+                <Select
+                    labelId="size"
+                    value={clock}
+                    label={"Выберите размер часов"}
+                    onChange={editOpen ? handleEditChange : handleChange}
+                    MenuProps={MenuProps}
+                >
+                    {size.size.map((clock, index) => <MenuItem
+                        key={index}
+                        value={clock.id}
+                        onClick={() => size.setSelectedSize(clock)}
+                    >
+                        {clock.name}
+                    </MenuItem>)}
+
+                </Select>
+            </FormControl>
+        </Box>
+    );
 }

@@ -1,6 +1,5 @@
 import React, {useContext, useState} from 'react';
-import Typography from "@mui/material/Typography";
-import {FormControl, TextField, Box, Button, Modal} from "@mui/material";
+import {FormControl, TextField, Box, Button, Modal, InputAdornment, Typography} from "@mui/material";
 import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
@@ -20,10 +19,15 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
     const [cityName, setCityName] = useState("")
     const [errCity, setErrCity] = useState(false)
     const [blurCityName, setBlurCityName] = useState(false)
+    const [blurPrice, setBlurPrice] = useState(false)
+    const [price, setPrice] = useState("")
     let {cities} = useContext(Context)
     const addCity = () => {
-
-        createCity({name: cityName.trim()}).then(res => {
+        const cityInfo = {
+            name: cityName.trim(),
+            price: price
+        }
+        createCity(cityInfo).then(res => {
                 cities.setIsEmpty(false)
                 alertMessage("Город успешно создан", false)
                 close()
@@ -79,11 +83,29 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
                                     setErrCity(false)
                                 }}
                             />
+                            <TextField
+                                error={errCity || blurPrice && price <= 0}
+                                type="number"
+                                sx={{mt: 1}}
+                                id="city"
+                                label="Цена за час работы мастера"
+                                variant="outlined"
+                                value={price}
+                                onFocus={() => setBlurPrice(false)}
+                                onBlur={() => setBlurPrice(true)}
+                                onChange={e => {
+                                    setPrice(Number(e.target.value))
+                                }}
+                                InputProps={{
+                                    endAdornment: <InputAdornment position="end">Грн</InputAdornment>,
+                                }}
+                            />
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
-                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined" disabled={!cityName}
+                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                                    disabled={!cityName || !price}
                                     onClick={addCity}> Добавить</Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>

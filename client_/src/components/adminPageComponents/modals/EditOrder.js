@@ -1,9 +1,21 @@
 import React, {useContext, useEffect, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import {CircularProgress, FormControlLabel, Radio, RadioGroup, Rating, TextField, Tooltip} from "@mui/material";
+import {
+    CircularProgress,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Rating,
+    TextField,
+    Tooltip,
+    Modal,
+    Button,
+    Box,
+    Typography,
+    List,
+    ListItem,
+    Divider,
+    ListItemText
+} from "@mui/material";
 import {Context} from "../../../index";
 import {fetchAlLOrders, updateOrder} from "../../../http/orderAPI";
 import SelectorSize from "../../orderPageComponents/SelectorSize";
@@ -13,10 +25,6 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
 import {DatePicker, TimePicker} from "@mui/lab";
 import {fetchMastersForOrder} from "../../../http/masterAPI";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import PagesOrder from "../../orderPageComponents/Pages";
 
@@ -45,8 +53,8 @@ const EditOrder = observer(({
     const [errorDatePicket, setErrorDatePicker] = useState(false)
     const [name, setName] = useState(orderToEdit.name);
     const [email, setEmail] = useState(orderToEdit.user.email);
-    const [date, setDate] = useState(dateToEdit);
-    const [time, setTime] = useState(timeToEdit);
+    const [date, setDate] = useState(new Date(orderToEdit.time));
+    const [time, setTime] = useState(new Date(new Date().setUTCHours(new Date(orderToEdit.time).getUTCHours(), 0, 0)));
     const [chosenMaster, setChosenMaster] = useState(orderToEdit.masterId);
     const [freeMasters, setFreeMasters] = useState([]);
     const [sizeClock, setSizeClock] = useState(orderToEdit.sizeClockId);
@@ -58,9 +66,10 @@ const EditOrder = observer(({
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [changedMaster, setChangedMaster] = useState(false)
+    const [price, setPrice] = useState(orderToEdit.price)
     const getMasters = () => {
         setLoading(true)
-        fetchMastersForOrder(cityChosen, date, time, sizeClock, masters.page, 3).then(
+        fetchMastersForOrder(cityChosen, new Date(new Date(date).setHours(time.getHours(), 0, 0)), sizeClock, masters.page, 3).then(
             (res) => {
                 if (res.status === 204) {
                     setFreeMasters([])
@@ -77,11 +86,11 @@ const EditOrder = observer(({
 
     }
     useEffect(() => {
-        size.setSelectedSize(size.size.find(clock => clock.id == orderToEdit.sizeClockId))
+        size.setSelectedSize(size.size.find(clock => clock.id === orderToEdit.sizeClockId))
     }, [])
     useEffect(() => {
 
-        if (openList == true) {
+        if (openList) {
             getMasters()
         }
     }, [masters.page, openList])
@@ -92,8 +101,8 @@ const EditOrder = observer(({
             alertMessage('Не удалось изменить заказ', true)
             return
         }
-        if (time.toLocaleTimeString("en-GB") !== timeToEdit.toLocaleTimeString("en-GB") ||
-            dateToEdit.toLocaleDateString("ko-KR") !== date.toLocaleDateString()
+        if (time.toLocaleTimeString("uk-UA") !== timeToEdit.toLocaleTimeString("uk-UA") ||
+            dateToEdit.toLocaleDateString("uk-UA") !== date.toLocaleDateString()
             || orderToEdit.masterId !== changedMaster
             || orderToEdit.cityId !== cityChosen || orderToEdit.sizeClockId !== sizeClock) {
             setChangedMaster(true)
@@ -102,12 +111,12 @@ const EditOrder = observer(({
             id: idToEdit,
             name: name.trim(),
             email: email.trim(),
-            date: date,
-            time: time,
+            time: new Date(new Date(date).setHours(time.getHours(), 0, 0)),
             cityId: cityChosen,
             masterId: chosenMaster,
             sizeClockId: Number(sizeClock),
-            changedMaster: changedMaster
+            changedMaster: changedMaster,
+            price
         }).then(res => {
             close()
             alertMessage('Заказ успешно изменен', false)
@@ -130,7 +139,6 @@ const EditOrder = observer(({
         })
     }
     const choseMaster = (event, master) => {
-
         event ? setChosenMaster(event.target.value) : setChosenMaster(master);
     };
 
@@ -162,13 +170,13 @@ const EditOrder = observer(({
     }
     //--------------------Validation
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    const checkInfo = openList == false || !idToEdit || !name || !email
+    const checkInfo = !openList || !idToEdit || !name || !email
         || !date || !time || !cityChosen
         || !chosenMaster || !sizeClock || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket
     const validName = blurName && name.length < 3
     const validEmail = blurEmail && reg.test(email) === false
-    const checkOpenList = freeMasters.length == 0 && openList === true
+    const checkOpenList = freeMasters.length === 0 && openList === true
     const checkButtonList = errorTimePicker || errorDatePicket
     return (
         <div>
@@ -220,6 +228,8 @@ const EditOrder = observer(({
                                               setOpenList(false)
                                               setFreeMasters([])
                                               setChangedMaster(true)
+                                              setPrice(size.selectedSize.date.slice(0, 2) * cities.cities
+                                                  .find(city => city.id === cities.selectedCity).price)
                                           }}
                                           sizeToEdit={() => setSizeClock(size.selectedSize.id)}/>
                             <SelectorCity cityChosen={cityChosen}
@@ -228,10 +238,13 @@ const EditOrder = observer(({
                                               setOpenList(false)
                                               setFreeMasters([])
                                               setChangedMaster(true)
+                                              setPrice(size.selectedSize.date.slice(0, 2) * cities.cities
+                                                  .find(city => city.id === cities.selectedCity).price)
                                           }}
                                           cleanMaster={() => setChosenMaster(null)}
                                           cityToEdit={() => setCityChosen(cities.selectedCity)}/>
                         </Box>
+                        <Box> Стоимость услуги: <b>{price}</b></Box>
                         <LocalizationProvider sx={{cursor: "pointer"}} dateAdapter={AdapterDateFns}
                                               locale={ruLocale}>
                             <DatePicker
@@ -266,7 +279,7 @@ const EditOrder = observer(({
                                     e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
                                 ampm={false}
                                 views={["hours"]}
-                                minTime={date.toLocaleDateString("ko-KR") == new Date().toLocaleDateString("ko-KR") ?
+                                minTime={date.toLocaleDateString("uk-UA") == new Date().toLocaleDateString("uk-UA") ?
                                     new Date(0, 0, 0, new Date().getHours() + 1) :
                                     new Date(0, 0, 0, 8)}
                                 maxTime={new Date(0, 0, 0, 22)}

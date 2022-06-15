@@ -3,34 +3,30 @@ import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
 import {useContext} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import Button from "@mui/material/Button";
-import {activateMaster} from "../../http/masterAPI";
-import {finishedOrder} from "../../http/orderAPI";
+import {statusChangeOrder} from "../../http/orderAPI";
 
 
 const OrderListMaster = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
 
-    const changeFinished = (order)=> {
+    const changeStatus = async (order, status) => {
         const changeInfo = {
             id: order.id,
-            finished: !order.finished
+            status: status
         }
-
-        finishedOrder(changeInfo)
-            .then(res => {
-                alertMessage('Статус заказа успешно изменен', false)
-                return order.finished = !order.finished
-            }, err => {
-                alertMessage('Не удалось изменить статус заказа', true)
-            })
+        try {
+            await statusChangeOrder(changeInfo)
+            alertMessage('Статус заказа успешно изменен', false)
+            return order.status = status
+        } catch (e) {
+            alertMessage('Не удалось изменить статус заказа', true)
+        }
     }
-
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
@@ -59,6 +55,8 @@ const OrderListMaster = observer(({alertMessage}) => {
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Тип услуги"/>
+                    <ListItemText sx={{width: 10}}
+                                  primary="Цена"/>
 
                     <ListItemText sx={{width: 10}}
                                   primary="Статус"
@@ -68,8 +66,8 @@ const OrderListMaster = observer(({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
-                    const endTime = new Date(order.endTime).toLocaleTimeString("uk-UA").slice(0, 5)
+                    const time = new Date(order.time).toLocaleString("uk-UA")
+                    const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem
                         key={order.id}
                         divider
@@ -84,22 +82,25 @@ const OrderListMaster = observer(({alertMessage}) => {
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${time}`}
+                                      primary={time}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${endTime}`}
+                                      primary={endTime}
                         />
 
                         <ListItemText sx={{width: 10}}
                                       primary={order.sizeClock.name}
                         />
                         <ListItemText sx={{width: 10}}
+                                      primary={order.price}
+                        />
+                        <ListItemText sx={{width: 10}}
                                       primary={
-                                          <Button color={order.finished ? "success" : "error"}
+                                          <Button color={order.status === "DONE" ? "success" : "error"}
                                                   size="small"
                                                   variant="outlined"
-                                                  onClick={() => changeFinished(order)}>
-                                              {order.finished ? "Закончен" : "Не закончен"}
+                                                  onClick={() => order.status === "ACCEPTED" ? changeStatus(order, "DONE") : changeStatus(order, "ACCEPTED")}>
+                                              {order.status === "DONE" ? "Выполнен" : "Подтвержден"}
                                           </Button>
                                       }
                         />

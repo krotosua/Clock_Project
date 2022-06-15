@@ -7,9 +7,8 @@ const sequelize = require("../db");
 class MasterLogic {
     async create(req, res, next) {
         try {
+
             const {name, rating, email, password, cityId, userId, isActivated} = req.body
-
-
             const master = await Master.create({name, rating, email, password, userId, isActivated})
             await master.addCity(cityId)
             return master
@@ -25,12 +24,15 @@ class MasterLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let masters = await Master.findAndCountAll({
-                attributes: ['name', "rating", "id", "isActivated"], include: [{
+                order:[['id', 'DESC']],
+                attributes: ['name', "rating", "id", "isActivated"],
+                include: [{
                     model: City, through: {
                         attributes: []
                     },
 
-                }, {model: User,}], exclude: [{
+                }, {model: User,}],
+                exclude: [{
                     model: CitiesMasters
                 }]
             })
@@ -49,27 +51,28 @@ class MasterLogic {
     async getMastersForOrder(req, res, next) {
         try {
             let {cityId} = req.params
-            let {date, time, sizeClock, limit, page} = req.query
+            let { time, sizeClock, limit, page} = req.query
             const clock = await sizeLogic.CheckClock(next, sizeClock)
-
             let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
             let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
-            time = new Date(time)
             page = page || 1
             limit = limit || 12
             let offset = page * limit - limit
             let masters
             if (cityId) {
                 masters = await Master.findAndCountAll({
+                    order:[['id', 'DESC']],
                     where: {
                         isActivated: {[Op.is]: true}
                     }, include: [{
-                        model: City, where: {id: cityId}, through: {
+                        model: City,
+                        where: {id: cityId},
+                        through: {
                             attributes: []
                         }
                     }, {
                         model: Order, where: {
-                            date: {[Op.eq]: date}, [Op.not]: [{
+                             [Op.not]: [{
                                 [Op.or]: [{
                                     [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
                                 }, {
@@ -95,7 +98,7 @@ class MasterLogic {
     }
 
 
-    async checkOrders(res, next, masterId, date, time, endTime) {
+    async checkOrders(res, next, masterId, time, endTime) {
         let master
         master = await Master.findByPk(masterId)
         if (!master) {
@@ -104,7 +107,7 @@ class MasterLogic {
         master = await Master.findOne({
             where: {id: masterId}, include: [{
                 model: Order, where: {
-                    date: {[Op.eq]: date}, [Op.not]: [{
+                     [Op.not]: [{
                         [Op.or]: [{
                             [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
                         }, {
@@ -190,7 +193,7 @@ class MasterLogic {
                     }
                 }
             })
-            if (master.master.orders.length == 0) {
+            if (master.master.orders.length === 0) {
                 await master.destroy()
                 return res.status(204).json({message: "success"})
             } else {

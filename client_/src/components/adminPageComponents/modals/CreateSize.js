@@ -1,9 +1,5 @@
 import React, {useContext, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import {FormControl, TextField} from "@mui/material";
+import {FormControl, TextField,Box,Modal,Button,Typography} from "@mui/material";
 import {Context} from "../../../index";
 import {createSize, fetchSize} from "../../../http/sizeAPI";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
@@ -16,7 +12,7 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 800,
+    width: 900,
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
@@ -28,14 +24,20 @@ const CreateSize = ({open, onClose, alertMessage}) => {
     const [errSize, setErrSize] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [blurSizeName, setBlurSizeName] = useState(false)
-    let {size} = useContext(Context)
+    let {size,} = useContext(Context)
 
     const addSize = () => {
         if (!sizeName || !sizeTime) {
             setErrSize(true)
             return
         }
-        createSize({name: sizeName.trim(), date: sizeTime.toLocaleTimeString()}).then(res => {
+
+        const infoSize = {
+            name: sizeName.trim(),
+            date: sizeTime.toLocaleTimeString(),
+
+        }
+        createSize(infoSize).then(res => {
                 size.setIsEmpty(false)
                 fetchSize(size.page, 10).then(res => {
                     size.setIsEmpty(false)
@@ -60,6 +62,8 @@ const CreateSize = ({open, onClose, alertMessage}) => {
         setBlurSizeName(false)
         onClose()
     }
+
+
     //--------------------Validation
     const validName = blurSizeName && sizeName.length == 0
     const validButton = errSize || sizeName.length === 0 || !sizeTime
@@ -80,7 +84,7 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                                 error={errSize || validName}
                                 helperText={validName ? "Введите название часов" :
                                     errSize ? "Часы с таким именем уже существуют" : ""}
-                                sx={{my: 2}}
+                                sx={{mt: 2}}
                                 id="city"
                                 label="Введите название часов"
                                 variant="outlined"
@@ -94,9 +98,10 @@ const CreateSize = ({open, onClose, alertMessage}) => {
 
                             />
                             <div>
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                <LocalizationProvider sx={{my: 2}} dateAdapter={AdapterDateFns}>
                                     <TimePicker
                                         readOnly
+
                                         label="Кол-во часов на ремонт"
                                         open={openTime}
                                         value={sizeTime}
@@ -110,6 +115,7 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                                         renderInput={(params) =>
                                             <TextField onClick={() => setOpenTime(true)}
                                                        sx={{
+                                                           my: 2,
                                                            '& .MuiInputBase-input': {
                                                                cursor: "pointer"
                                                            }
@@ -118,7 +124,6 @@ const CreateSize = ({open, onClose, alertMessage}) => {
                                     />
                                 </LocalizationProvider>
                             </div>
-
                         </FormControl>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}

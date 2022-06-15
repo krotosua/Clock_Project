@@ -1,10 +1,5 @@
-import React, {useContext, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import {FormControl, TextField} from "@mui/material";
-import {Context} from "../../../index";
+import React, {useState} from 'react';
+import {FormControl, Modal, Button, Box, Typography, TextField} from "@mui/material";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import {TimePicker} from "@mui/lab";
@@ -22,27 +17,23 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit, dateToEdit}) => {
-    let {size} = useContext(Context)
-    const [sizeName, setSizeName] = useState(nameToEdit)
+const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit,}) => {
+
+    const [sizeName, setSizeName] = useState(sizeToEdit.name)
     const [sizeTime, setSizeTime] = useState(dateToEdit)
     const [errSize, setErrSize] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [blurSizeName, setBlurSizeName] = useState(false)
+
+
     const changeSize = () => {
         const changeInfo = {
-            id: idToEdit
+            id: idToEdit,
+            date: sizeTime.toLocaleTimeString(),
+            name: sizeName.trim()
         }
-        if (sizeName) {
-            changeInfo.name = sizeName.trim()
-            change("name", sizeName)
-        }
-        if (sizeTime) {
-            changeInfo.date = sizeTime.toLocaleTimeString()
-            change("date", sizeTime.toLocaleTimeString())
-        }
-
         updateSize(changeInfo).then(res => {
+
             close()
             alertMessage('Название изменено успешно', false)
         }, err => {
@@ -51,11 +42,6 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit, dateToEdit
         })
     }
 
-    const change = (prop, value) => { // изменение input поля
-        size.setSize(size.size.map(size =>
-            size.id == idToEdit ? {...size, [prop]: value} : size
-        ));
-    }
 
     const close = () => {
         setErrSize(false)
@@ -65,7 +51,7 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit, dateToEdit
         onClose()
     }
     //--------------------Validation
-    const validName = blurSizeName && sizeName.length == 0
+    const validName = blurSizeName && sizeName.length === 0
     const validButton = errSize || sizeName.length === 0 || !sizeTime
     return (
         <div>
@@ -140,4 +126,4 @@ const EditCity = ({open, onClose, idToEdit, alertMessage, nameToEdit, dateToEdit
     );
 };
 
-export default EditCity;
+export default EditSize;

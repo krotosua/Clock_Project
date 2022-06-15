@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Box, List, ListItem, ListItemText, Typography, Divider, Button, Tooltip, Rating} from '@mui/material';
+import {Box, List, ListItem, ListItemText, Divider, Button, Tooltip, Rating} from '@mui/material';
 import {useContext, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
@@ -53,6 +53,12 @@ const OrderListCustomer = observer(() => {
                                   primary="Город"
                     />
                     <ListItemText sx={{width: 10}}
+                                  primary="Цена"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Статус"
+                    />
+                    <ListItemText sx={{width: 10}}
                                   primary="Оценка"
                     />
 
@@ -60,8 +66,8 @@ const OrderListCustomer = observer(() => {
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
-                    const time = new Date(order.time).toLocaleTimeString("uk-UA").slice(0, 5)
-                    const endTime = new Date(order.endTime).toLocaleTimeString("uk-UA").slice(0, 5)
+                    const time = new Date(order.time).toLocaleString("uk-UA")
+                    const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem
                         key={order.id}
                         divider
@@ -69,15 +75,15 @@ const OrderListCustomer = observer(() => {
                         <ListItemText sx={{width: 10}}
                                       primary={index + 1}
                         />
-                        <Divider orientation="vertical" variant="middle" flexItem/>
+
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${time}`}
+                                      primary={time}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={`${order.date} ${endTime}`}
+                                      primary={endTime}
                         />
 
                         <ListItemText sx={{width: 10}}
@@ -89,6 +95,14 @@ const OrderListCustomer = observer(() => {
                                       primary={cities.cities.find(city => city.id === order.cityId).name}
                         />
                         <ListItemText sx={{width: 10}}
+                                      primary={order.price}
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.status ==="DONE"?"Выполнен":
+                                          order.status ==="ACCEPTED"?"Подтвержден":
+                                              order.status ==="REJECTED"?"Отказ":"Ожидание"}
+                        />
+                        <ListItemText sx={{width: 10}}
 
                                       primary={order.rating !== null ? <Box>
                                               <Rating
@@ -96,7 +110,7 @@ const OrderListCustomer = observer(() => {
                                                   precision={0.5}
                                                   value={order.rating.rating}
                                               /></Box>
-                                          : <Tooltip title={!order.finished ?
+                                          : <Tooltip title={order.status !== "DONE" ?
                                               'Станет доступна после выполнения заказа'
                                               : "Оценить работу мастера"}
                                                      placement="right"
@@ -105,11 +119,9 @@ const OrderListCustomer = observer(() => {
                                               <Button color="success"
                                                       size="small"
                                                       variant="outlined"
-                                                      disabled={!order.finished}
+                                                      disabled={order.status !== "DONE"}
                                                       onClick={() => {
                                                           createData(order)
-
-
                                                       }}>
                                                   Оценить
                                               </Button>

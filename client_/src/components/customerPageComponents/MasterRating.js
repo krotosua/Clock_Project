@@ -1,9 +1,5 @@
-import React, {useContext, useEffect, useState} from 'react';
-import Modal from '@mui/material/Modal';
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import {FormControl, Rating, TextField} from "@mui/material";
+import React, {useContext, useState} from 'react';
+import {Typography, Box, Button, Modal, Rating} from "@mui/material";
 import StarIcon from '@mui/icons-material/Star';
 import {ratingMaster} from "../../http/masterAPI";
 import {fetchCustomerOrders} from "../../http/orderAPI";

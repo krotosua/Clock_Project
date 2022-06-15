@@ -16,6 +16,6 @@ export const deleteCity = async (id) => {
 
 
 }
-export const updateCity = async ({id, name}) => {
-    await $authHost.put('api/cities/' + id, {name})
+export const updateCity = async (cityInfo) => {
+    await $authHost.put('api/cities/' + cityInfo.id, cityInfo)
 }

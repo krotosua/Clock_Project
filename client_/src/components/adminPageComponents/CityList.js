@@ -25,8 +25,7 @@ const CityList = observer(({alertMessage}) => {
     let {cities} = useContext(Context)
     const [cityVisible, setCityVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
-    const [idToEdit, setIdToEdit] = useState(null);
-    const [nameToEdit, setNameToEdit] = useState("")
+    const [cityToEdit, setCityToEdit] = useState(null);
 
     useEffect(() => {
         getCity()
@@ -81,6 +80,9 @@ const CityList = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Название города"
                     />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Цена за час"
+                    />
                 </ListItem>
                 <Divider orientation="vertical"/>
 
@@ -108,6 +110,9 @@ const CityList = observer(({alertMessage}) => {
                             <ListItemText sx={{width: 10}}
                                           primary={city.name}
                             />
+                            <ListItemText sx={{width: 10}}
+                                          primary={city.price + " грн"}
+                            />
                             <Tooltip title={'Изменить навзвание города'}
                                      placement="left"
                                      arrow>
@@ -115,9 +120,8 @@ const CityList = observer(({alertMessage}) => {
                                             edge="end"
                                             aria-label="Edit"
                                             onClick={() => {
-                                                setNameToEdit(city.name)
                                                 setEditVisible(true)
-                                                setIdToEdit(city.id)
+                                                setCityToEdit(city)
                                             }}
                                 >
                                     <EditIcon/>
@@ -135,10 +139,8 @@ const CityList = observer(({alertMessage}) => {
                 onClose={() => {
                     setEditVisible(false)
                 }}
-                idToEdit={idToEdit}
+                cityToEdit={cityToEdit}
                 alertMessage={alertMessage}
-
-                nameToEdit={nameToEdit}
             /> : null}
 
             <CreateCity open={cityVisible}

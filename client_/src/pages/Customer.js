@@ -11,7 +11,6 @@ import Pages from "../components/Pages";
 
 const Customer = observer(() => {
     const navigate = useNavigate()
-
     let {orders} = useContext(Context)
     const {id} = useParams()
     const getOrders = () => {
@@ -36,7 +35,7 @@ const Customer = observer(() => {
 
     return (
         <Box>
-            <Box sx={{height: "800px", pt: 5, position: "relative"}}>
+            <Box sx={{height: "750px", pt: 5, position: "relative"}}>
                 <h2>Список заказов</h2>
                 <Box sx={{height: "650px"}}>
                     <OrderListCustomer/>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Box, InputLabel, MenuItem, FormControl, Select, FormHelperText} from '@mui/material/';
+import {Box, InputLabel, MenuItem, FormControl, Select, FormHelperText} from '@mui/material';
 import {useContext, useState} from "react";
 import {Context} from "../index";
 
