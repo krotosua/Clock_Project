@@ -205,12 +205,13 @@ class UserLogic {
             await user.update({
                 email: email, password: hashPassword,
             })
-            await MailService.updateMail(email, password)
+            await MailService.updateMail(email, password,next)
             return res.status(201).json({user})
         } catch (e) {
             return next(ApiError.badRequest("Wrong request"))
         }
     }
+
 
     async getAll(req, res, next) {
         try {

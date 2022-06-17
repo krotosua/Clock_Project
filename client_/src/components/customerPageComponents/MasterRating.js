@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {Typography, Box, Button, Modal, Rating} from "@mui/material";
+import {Typography, Box, Button, Modal, Rating, TextField} from "@mui/material";
 import StarIcon from '@mui/icons-material/Star';
 import {ratingMaster} from "../../http/masterAPI";
 import {fetchCustomerOrders} from "../../http/orderAPI";
@@ -37,12 +37,14 @@ const getLabelText = (value) => {
 const MasterRating = ({open, onClose, dataForEdit}) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(-1);
+    const [review, setReview] = useState()
     let {orders} = useContext(Context)
     const {id} = useParams()
 
     const sendRating = () => {
         const post = {
             rating: rating,
+            review:review,
             orderId: dataForEdit.orderId,
             masterId: dataForEdit.masterId,
             userId: dataForEdit.userId,
@@ -110,7 +112,18 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
                             {rating !== null && (
                                 <Box sx={{ml: 2, fontSize: 25}}>{labels[hover !== -1 ? hover : rating]}</Box>
                             )}
+
                         </Box>
+                        <TextField
+                            fullWidth
+                            rows={4}
+                            id="review"
+                            label="Оставьте свой комментарий"
+                            multiline
+                            maxRows={4}
+                            value={review}
+                            onChange={(e) => setReview(e.target.value)}
+                        />
 
 
                     </Box>

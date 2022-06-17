@@ -97,10 +97,13 @@ const OrderListMaster = observer(({alertMessage}) => {
                         <ListItemText sx={{width: 10}}
                                       primary={
                                           <Button color={order.status === "DONE" ? "success" : "error"}
+                                                  disabled={order.status !== "DONE" || order.status !== "ACCEPTED"}
                                                   size="small"
                                                   variant="outlined"
                                                   onClick={() => order.status === "ACCEPTED" ? changeStatus(order, "DONE") : changeStatus(order, "ACCEPTED")}>
-                                              {order.status === "DONE" ? "Выполнен" : "Подтвержден"}
+                                              {order.status === "DONE" ? "Выполнен"
+                                                  : order.status === "ACCEPTED" ? "Подтвержден"
+                                                      : order.status === "REJECTED" ? "Отказ" : "Ожиднаие"}
                                           </Button>
                                       }
                         />

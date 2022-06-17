@@ -76,9 +76,6 @@ class OrderLogic {
                 order:[['id', 'DESC']],
                 where: {
                     masterId: master.id,
-                    status: {
-                        [Op.or]: ["ACCEPTED", "DONE"]
-                    }
                 },
                 include: [{
                     model: Master,
@@ -191,16 +188,13 @@ class OrderLogic {
             const cityName = result.city.name
             const size = result.clock.name
             let {name,  time, email, masterId, password} = req.body
-
             const master = await Master.findByPk(masterId)
             time = new Date(time).toLocaleString("uk-UA")
             MailService.sendMail(name,  time, email, size, master.name, cityName, password, next)
-
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
     }
-
 }
 
 

@@ -119,7 +119,7 @@ const OrderList = observer(({alertMessage}) => {
                     </Link>}
                 >
                     <ListItemText sx={{width: 10}}
-                                  primary="№"
+                                  primary="Id"
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Имя"
@@ -163,7 +163,7 @@ const OrderList = observer(({alertMessage}) => {
                         </Tooltip>}
                     >
                         <ListItemText sx={{width: 10}}
-                                      primary={index + 1}
+                                      primary={order.id}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}

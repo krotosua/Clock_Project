@@ -11,6 +11,7 @@ import {
     Rating,
     Button
 } from '@mui/material';
+import ReviewsIcon from '@mui/icons-material/Reviews';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -139,50 +140,67 @@ const MasterList = observer(({alertMessage}) => {
                 <Divider orientation="vertical"/>
                 {masters.IsEmpty ? <h1>Список пуст</h1> :
                     masters.masters.map((master, index) => {
-                        return (<ListItem
-                            key={master.id}
-                            divider
-                            secondaryAction={
-                                <IconButton sx={{width: 10}}
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => removeMaster(master.id)}
-                                >
-                                    <DeleteIcon/>
-                                </IconButton>}>
-                            <ListItemText sx={{width: 10}}
-                                          primary={index + 1}
-                            />
-                            <ListItemText sx={{width: 10}}
-                                          primary={master.user.id}/>
+                        return (
+                            <Box>
+                                <ListItem
+                                    key={master.id}
+                                    divider
+                                    secondaryAction={
+                                        <IconButton sx={{width: 10}}
+                                                    edge="end"
+                                                    aria-label="delete"
+                                                    onClick={() => removeMaster(master.id)}
+                                        >
+                                            <DeleteIcon/>
+                                        </IconButton>}>
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={index + 1}
+                                    />
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={master.user.id}/>
 
-                            <ListItemText sx={{width: 10}}
-                                          primary={master.name}/>
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={master.name}/>
 
-                            <ListItemText sx={{width: 10}}
-                                          primary={
-                                              <Rating name="read-only" size="small" value={master.rating}
-                                                      precision={0.2} readOnly/>}/>
-                            <ListItemText sx={{width: 10}}
-                                          primary={createCityList(master)}/>
-                            <ListItemText sx={{width: 10}}
-                                          primary={
-                                              <Button color={master.isActivated ? "success" : "error"}
-                                                      size="small"
-                                                      variant="outlined"
-                                                      onClick={() => changeActiveted(master)}>
-                                                  {master.isActivated ? "Активный" : "Не активный"}
-                                              </Button>
-                                          }
-                            />
-                            <IconButton sx={{width: 5}}
-                                        edge="end"
-                                        aria-label="Edit"
-                                        onClick={() => forEdit(master)}
-                            >
-                                <EditIcon/>
-                            </IconButton>
-                        </ListItem>)
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={
+                                                      <Rating name="read-only" size="small" value={master.rating}
+                                                              precision={0.2} readOnly/>}/>
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={createCityList(master)}/>
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={
+                                                      <Button color={master.isActivated ? "success" : "error"}
+                                                              size="small"
+                                                              variant="outlined"
+                                                              onClick={() => changeActiveted(master)}>
+                                                          {master.isActivated ? "Активный" : "Не активный"}
+                                                      </Button>
+                                                  }
+                                    />
+                                    <IconButton sx={{width: 5}}
+                                                edge="end"
+                                                aria-label="Edit"
+                                                onClick={() => forEdit(master)}
+                                    >
+                                        <EditIcon/>
+                                    </IconButton>
+
+                                    <ListItemText sx={{width: 10}}
+                                                  primary={
+                                                      <IconButton sx={{width: 5}}
+                                                                  edge="end"
+                                                                  aria-label="Edit"
+                                                                  onClick={() => forEdit(master)}
+                                                      >
+                                                          <ReviewsIcon/>
+                                                      </IconButton>
+                                                  }/>
+
+
+                                </ListItem>
+                                <ReviewsIcon/>
+                            </Box>)
                     })}
             </List>
             {editVisible ? <EditMaster open={editVisible}

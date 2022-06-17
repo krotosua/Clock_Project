@@ -34,7 +34,7 @@ const UserList = observer(({alertMessage}) => {
     useEffect(() => {
         getUsers()
 
-    }, [])
+    }, [user.page])
     const changeActiveted = async (user) => {
         const changeInfo = {
             id: user.id,
@@ -135,7 +135,7 @@ const UserList = observer(({alertMessage}) => {
                                                            variant="outlined"
                                                            onClick={() => changeActiveted(user)}
                                           >
-                                              {user.isActivated ? "Актив" : "Не актив"}
+                                              {user.isActivated ? "Активный" : "Не активный"}
                                           </Button>}
                             />
                             {user.role !== "ADMIN" ? <Tooltip title={'Изменить данные пользователя'}

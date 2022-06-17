@@ -144,12 +144,12 @@ class MasterLogic {
         try {
             const result = await sequelize.transaction(async () => {
                 const {masterId} = req.params
-                let {rating, orderId, userId} = req.body
+                let {rating, orderId, userId,review} = req.body
                 const existsRating = await Rating.findOne({where: {orderId: orderId}})
                 if (existsRating) {
                     throw new Error("Rating already exists")
                 }
-                await Rating.create({rating, userId, masterId, orderId})
+                await Rating.create({rating,review, userId, masterId, orderId})
                 let allRating = await Rating.findAndCountAll({
                     where: {masterId: masterId},
                     attributes: ["rating"]
@@ -161,7 +161,7 @@ class MasterLogic {
                 })
                 return master
             })
-            return res.status(201).json(result)
+            return res.status(201).json({result})
         } catch (e) {
             return next(ApiError.badRequest({message: "Wrong request"}))
         }

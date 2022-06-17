@@ -78,12 +78,15 @@ const OrderStepper = observer(({alertMessage}) => {
                 size.selectedSize.id, masters.page, 3)
             if (res.status === 204) {
                 setFreeMasters([])
+                setLoading(false)
                 return
             }
             setFreeMasters(res.data.rows)
             masters.setMasters(res.data.rows);
             masters.setTotalCount(res.data.count);
+            setLoading(false)
         } catch (e) {
+            setLoading(false)
             return masters.setIsEmpty(true);
         }
         setLoading(false)
@@ -626,6 +629,7 @@ const OrderStepper = observer(({alertMessage}) => {
                     ) : (
                         <Box sx={{display: 'flex', justifyContent: "center", mt: 2}}>
                             <Box><Typography variant="h4" sx={{my: 2}}>Заказ успешно создан</Typography>
+                                <Typography variant="h6" sx={{my: 2}}>Детали заказа отправлены на почту</Typography>
                                 {user.isAuth ?
                                     <Link to={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
                                           style={{textDecoration: 'none', color: 'white'}}>
