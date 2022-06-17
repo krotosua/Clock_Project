@@ -125,20 +125,24 @@ const OrderList = observer(({alertMessage}) => {
                                   primary="Имя"
                     />
 
-                    <ListItemText sx={{width: 10}}
+                    <ListItemText sx={{width: 10,mr: 3}}
                                   primary="Дата и время"
                     />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Размер часов"/>
 
-                    <ListItemText sx={{width: 10}}
+                    <ListItemText sx={{width: 10,}}
                                   primary="Мастер"
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Город"
                     />
                     <ListItemText sx={{width: 10}}
-                                  primary="Цена"
+                                  primary="Цена за час"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Время работы"
+                    />
+                    <ListItemText sx={{width: 10}}
+                                  primary="Итог"
                     />
                     <ListItemText sx={{width: 10, mr: 4}}
                                   primary="Статус"
@@ -147,6 +151,7 @@ const OrderList = observer(({alertMessage}) => {
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
+                    const city = cities.cities.find(city => city.id === order.cityId)
                     return (<ListItem
                         key={order.id}
                         divider
@@ -163,20 +168,24 @@ const OrderList = observer(({alertMessage}) => {
                         </Tooltip>}
                     >
                         <ListItemText sx={{width: 10}}
-                                      primary={index + 1}
+                                      primary={order.id}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}
                         />
-                        <ListItemText sx={{width: 10}}
+                        <ListItemText sx={{width: 10, mr: 3}}
                                       primary={time}
-                        /> <ListItemText sx={{width: 10}}
-                                         primary={order.sizeClock.name}/>
+                        />
                         <ListItemText sx={{width: 10}}
                                       primary={order.master.name}/>
                         <ListItemText sx={{width: 10}}
-                                      primary={cities.cities.find(city => city.id === order.cityId).name}
+                                      primary={city.name}
                         />
+                        <ListItemText sx={{width: 10}}
+                                      primary={city.price + " грн"}
+                        />
+                        <ListItemText sx={{width: 10}}
+                                      primary={order.sizeClock.date.slice(0, 2) + " ч."}/>
                         <ListItemText sx={{width: 10}}
                                       primary={order.price + " грн"}
                         />

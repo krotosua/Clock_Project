@@ -26,7 +26,7 @@ class CityLogic {
             let offset = page * limit - limit
             let cities
             cities = await City.findAndCountAll({
-                order: [['id', 'DESC']],
+                order: [['name', 'ASC']],
                 limit, offset
             })
 
