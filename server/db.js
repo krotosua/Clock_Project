@@ -1,35 +1,20 @@
-const cls = require('cls-hooked')
-const namespace = cls.createNamespace('my-namespace')
-const {Sequelize} = require('sequelize')
-Sequelize.useCLS(namespace)
-
-module.exports= new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
-    {
-        dialect:'postgres',
-        host: process.env.DB_HOST,
-        port:process.env.DB_PORT
-    }
-)
-// const sequelize =
-//     new Sequelize(process.env.DATABASE,
-//         {
-//             dialect: 'postgres',
-//             protocol: 'postgres',
-//             dialectOptions: {
-//                 ssl: {
-//                     require: true,
-//                     rejectUnauthorized: false
-//                 }
-//             }
-//
-//         })
-// try {
-//     sequelize.authenticate()
-//     console.log('Соединение с БД было успешно установлено')
-// } catch (e) {
-//     console.log('Невозможно выполнить подключение к БД: ', e)
-// }
-// module.exports = sequelize
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const cls_hooked_1 = __importDefault(require("cls-hooked"));
+const namespace = cls_hooked_1.default.createNamespace('my-namespace');
+const sequelize_1 = require("sequelize");
+sequelize_1.Sequelize.useCLS(namespace);
+const dbName = process.env.DB_NAME;
+const dbUser = process.env.DB_USER;
+const dbHost = process.env.DB_HOST;
+const dbDriver = 'postgres';
+const dbPassword = process.env.DB_PASSWORD;
+const sequelizeConnection = new sequelize_1.Sequelize(dbName, dbUser, dbPassword, {
+    host: dbHost,
+    port: 5432,
+    dialect: dbDriver,
+});
+exports.default = sequelizeConnection;

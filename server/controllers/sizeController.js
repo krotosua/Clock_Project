@@ -1,40 +1,51 @@
-const sizeLogic = require('../businessLogic/sizeLogic')
-const {validationResult} = require("express-validator");
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const sizeLogic_1 = __importDefault(require("../businessLogic/sizeLogic"));
+const express_validator_1 = require("express-validator");
 class sizeController {
-    async create(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        await sizeLogic.create(req, res, next)
+    create(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            yield sizeLogic_1.default.create(req, res, next);
+        });
     }
-
-    async getAll(req, res, next) {
-        await sizeLogic.getAll(req, res, next)
+    getAll(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield sizeLogic_1.default.getAll(req, res, next);
+        });
     }
-
-    async getForCity(req, res, next) {
-        await sizeLogic.getForCity(req, res, next)
+    update(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            yield sizeLogic_1.default.update(req, res, next);
+        });
     }
-
-    async update(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        await sizeLogic.update(req, res, next)
-    }
-
-    async deleteOne(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        await sizeLogic.deleteOne(req, res, next)
+    deleteOne(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            yield sizeLogic_1.default.deleteOne(req, res, next);
+        });
     }
 }
-
-
-module.exports = new sizeController()
-
+exports.default = new sizeController();

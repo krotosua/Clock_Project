@@ -1,129 +1,158 @@
-const userLogic = require('../businessLogic/userLogic')
-const orderLogic = require('../businessLogic/orderLogic')
-const masterLogic = require("../businessLogic/masterLogic");
-const sizeLogic = require("../businessLogic/sizeLogic")
-const ApiError = require("../error/ApiError");
-const sequelize = require("../db");
-const cityLogic = require("../businessLogic/cityLogic");
-const {validationResult} = require("express-validator");
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const userLogic_1 = __importDefault(require("../businessLogic/userLogic"));
+const orderLogic_1 = __importDefault(require("../businessLogic/orderLogic"));
+const masterLogic_1 = __importDefault(require("../businessLogic/masterLogic"));
+const sizeLogic_1 = __importDefault(require("../businessLogic/sizeLogic"));
+const ApiError_1 = __importDefault(require("../error/ApiError"));
+const db_1 = __importDefault(require("../db"));
+const cityLogic_1 = __importDefault(require("../businessLogic/cityLogic"));
+const express_validator_1 = require("express-validator");
 class OrderController {
-
-    async create(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        try {
-            const result = await sequelize.transaction(async () => {
-                const {sizeClockId, date, masterId, cityId} = req.body
-                let {time} = req.body
-                const clock = await sizeLogic.CheckClock(next, sizeClockId)
-                let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
-                let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
-                time = new Date(time)
-                const city = await cityLogic.checkCityId(cityId)
-                await masterLogic.checkOrders(res, next, masterId, date, time, endTime, clock)
-                const user = await userLogic.GetOrCreateUser(req, res, next,)
-                if (!user) {
-                    throw new ApiError.badRequest("Customer is wrong")
-                }
-                const userId = user.dataValues.id
-                const order = await orderLogic.create(req, res, next, userId, time, endTime)
-                if (!order) {
-                    throw new ApiError.badRequest("Customer is wrong")
-                }
-                let data = {
-                    order,
-                    city,
-                    clock,
-                    user
-                }
-                return data
-            })
-            await orderLogic.sendMessage(req, res, next, result)
-            return res.status(201).json(result.order)
-        } catch (e) {
-            return next(ApiError.badRequest("Wrong request"))
-        }
-
+    create(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            try {
+                const result = yield db_1.default.transaction(() => __awaiter(this, void 0, void 0, function* () {
+                    const { sizeClockId, masterId, cityId } = req.body;
+                    let { time } = req.body;
+                    const clock = yield sizeLogic_1.default.CheckClock(next, sizeClockId);
+                    if (!clock) {
+                        return next(ApiError_1.default.badRequest("Clock`s wrong"));
+                    }
+                    let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2));
+                    const endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0));
+                    time = new Date(time);
+                    const city = yield cityLogic_1.default.checkCityId(cityId, next);
+                    if (!city) {
+                        return next(ApiError_1.default.badRequest("city`s wrong"));
+                    }
+                    yield masterLogic_1.default.checkOrders(next, masterId, time, endTime);
+                    const user = yield userLogic_1.default.GetOrCreateUser(req);
+                    if (!user) {
+                        return next(ApiError_1.default.badRequest("customer is wrong"));
+                    }
+                    const userId = user.getDataValue("id");
+                    const order = yield orderLogic_1.default.create(req, next, userId, time, endTime);
+                    if (!order) {
+                        return next(ApiError_1.default.badRequest("customer is wrong"));
+                    }
+                    let data = {
+                        order,
+                        city,
+                        clock,
+                        user
+                    };
+                    return data;
+                }));
+                yield orderLogic_1.default.sendMessage(req, next, result);
+                return res.status(201).json(result.order);
+            }
+            catch (e) {
+                return next(ApiError_1.default.badRequest("Wrong request"));
+            }
+        });
     }
-
-    async update(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        try {
-            const result = await sequelize.transaction(async () => {
-                const {sizeClockId, date, masterId, cityId, changedMaster} = req.body
-                let {time} = req.body
-                const clock = await sizeLogic.CheckClock(next, sizeClockId)
-                let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
-                let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
-                time = new Date(time)
-                await cityLogic.checkCityId(cityId)
-                if (changedMaster) {
-                    await masterLogic.checkOrders(res, next, masterId, date, time, endTime, clock)
-                }
-                const user = await userLogic.GetOrCreateUser(req, res, next)
-                if (!user) {
-                    throw new ApiError.badRequest({message: "Customer is wrong"})
-                }
-                const userId = user.dataValues.id
-                const orders = await orderLogic.update(req, res, next, userId, time, endTime)
-                return orders
-            })
-            return res.status(201).json(result)
-        } catch (e) {
-            return next(ApiError.badRequest(e.message))
-        }
+    update(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            try {
+                const result = yield db_1.default.transaction(() => __awaiter(this, void 0, void 0, function* () {
+                    const { sizeClockId, date, masterId, cityId, changedMaster } = req.body;
+                    let { time } = req.body;
+                    const clock = yield sizeLogic_1.default.CheckClock(next, sizeClockId);
+                    if (!clock) {
+                        return next(ApiError_1.default.badRequest("Clock`s wrong"));
+                    }
+                    let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2));
+                    let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0));
+                    time = new Date(time);
+                    const city = yield cityLogic_1.default.checkCityId(cityId, next);
+                    if (!city) {
+                        return next(ApiError_1.default.badRequest("city`s wrong"));
+                    }
+                    if (changedMaster) {
+                        yield masterLogic_1.default.checkOrders(next, masterId, time, endTime);
+                    }
+                    const user = yield userLogic_1.default.GetOrCreateUser(req);
+                    if (!user) {
+                        return next(ApiError_1.default.badRequest("customer is wrong"));
+                    }
+                    const userId = user.getDataValue("id");
+                    const orders = yield orderLogic_1.default.update(req, res, next, userId, time, endTime);
+                    return orders;
+                }));
+                return res.status(201).json(result);
+            }
+            catch (e) {
+                return next(ApiError_1.default.badRequest(e.message));
+            }
+        });
     }
-
-    async statusChange(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        try {
-            const orders = await orderLogic.statusChange(req, res, next)
-
-            return res.status(201).json(orders)
-        } catch (e) {
-            return next(ApiError.badRequest(e.message))
-        }
+    statusChange(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            try {
+                const orders = yield orderLogic_1.default.statusChange(req, res, next);
+                return res.status(201).json(orders);
+            }
+            catch (e) {
+                return next(ApiError_1.default.badRequest(e.message));
+            }
+        });
     }
-
-    async getUserOrders(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        await orderLogic.getUserOrders(req, res, next)
+    getUserOrders(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            yield orderLogic_1.default.getUserOrders(req, res, next);
+        });
     }
-
-    async getMasterOrders(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        await orderLogic.getMasterOrders(req, res, next)
+    getMasterOrders(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            yield orderLogic_1.default.getMasterOrders(req, res, next);
+        });
     }
-
-    async getAllOrders(req, res, next) {
-        await orderLogic.getAllOrders(req, res, next)
-
+    getAllOrders(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield orderLogic_1.default.getAllOrders(req, res, next);
+        });
     }
-
-
-    async deleteOne(req, res, next) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        }
-        await orderLogic.deleteOne(req, res, next)
+    deleteOne(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = (0, express_validator_1.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            yield orderLogic_1.default.deleteOne(req, res, next);
+        });
     }
-
 }
-
-module.exports = new OrderController()
+exports.default = new OrderController();

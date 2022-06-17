@@ -1,22 +1,15 @@
-const express = require('express')
-const router = express.Router()
-const sizeController = require("../controllers/sizeController")
-const checkRole = require("../middleware/checkRoleMiddleware")
-const {body, query, param} = require("express-validator");
-
-router.post("/",
-    body("name").not().isEmpty().isString().trim().escape(),
-    body("date").not().isEmpty().isString(),
-    checkRole("ADMIN"), sizeController.create)
-router.get('/', sizeController.getAll)
-router.put('/:sizeId',
-    param("sizeId").not().isEmpty().isInt({gt: 0}),
-    body("name").not().isEmpty().isString().trim().escape(),
-    body("date").not().isEmpty().isString(),
-    checkRole("ADMIN"), sizeController.update)
-router.delete('/:sizeId',
-    param("sizeId").not().isEmpty().isInt({gt: 0}),
-    checkRole("ADMIN"), sizeController.deleteOne)
-
-
-module.exports = router
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const sizeRouter = express_1.default.Router();
+const sizeController_1 = __importDefault(require("../controllers/sizeController"));
+const checkRoleMiddleware_1 = __importDefault(require("../middleware/checkRoleMiddleware"));
+const express_validator_1 = require("express-validator");
+sizeRouter.post("/", (0, express_validator_1.body)("name").not().isEmpty().isString().trim().escape(), (0, express_validator_1.body)("date").not().isEmpty().isString(), (0, checkRoleMiddleware_1.default)("ADMIN"), sizeController_1.default.create);
+sizeRouter.get('/', sizeController_1.default.getAll);
+sizeRouter.put('/:sizeId', (0, express_validator_1.param)("sizeId").not().isEmpty().isInt({ gt: 0 }), (0, express_validator_1.body)("name").not().isEmpty().isString().trim().escape(), (0, express_validator_1.body)("date").not().isEmpty().isString(), (0, checkRoleMiddleware_1.default)("ADMIN"), sizeController_1.default.update);
+sizeRouter.delete('/:sizeId', (0, express_validator_1.param)("sizeId").not().isEmpty().isInt({ gt: 0 }), (0, checkRoleMiddleware_1.default)("ADMIN"), sizeController_1.default.deleteOne);
+exports.default = sizeRouter;
