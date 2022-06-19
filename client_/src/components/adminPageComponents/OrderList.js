@@ -1,22 +1,22 @@
 import * as React from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {
     Box,
+    Divider,
+    FormControl,
+    IconButton,
+    InputLabel,
     List,
     ListItem,
     ListItemText,
-    IconButton,
-    Typography,
-    Divider,
-    Tooltip,
-    InputLabel,
-    FormControl,
-    Select,
     MenuItem,
+    Select,
+    Tooltip,
+    Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
@@ -33,10 +33,6 @@ const OrderList = observer(({alertMessage}) => {
     const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
     const [orderToEdit, setOrderToEdit] = useState(null)
 
-    const changeStatus = (key, value, number) => {
-        orders.setOrders(orders.orders.map(order => order.id === number ? {...order, [key]: value} : order))
-    }
-
     const handleChange = async (statusOrder, order) => {
         try {
             const changeInfo = {
@@ -52,7 +48,6 @@ const OrderList = observer(({alertMessage}) => {
 
     };
 
-
     const navigate = useNavigate()
     const getOrders = () => {
         fetchAlLOrders(orders.page, 8).then(res => {
@@ -63,34 +58,30 @@ const OrderList = observer(({alertMessage}) => {
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
-        }, error => orders.setIsEmpty(true))
+        }, () => orders.setIsEmpty(true))
     }
+
     useEffect(() => {
         getOrders()
     }, [orders.page])
 
-
     const removeOrder = (id) => {
-        deleteOrder(id).then((res) => {
+        deleteOrder(id).then(() => {
             orders.setOrders(orders.orders.filter(obj => obj.id !== id));
             alertMessage('Успешно удаленно', false)
             orders.setIsEmpty(false)
             getOrders()
-        }, (err) => {
+        }, () => {
             alertMessage('Не удалось удалить', true)
             orders.setIsEmpty(false)
         })
-
     }
-
     const editOrder = (order, time) => {
         setOrderToEdit(order)
         setIdToEdit(order.id)
         setTimeToEdit(new Date(new Date(0, 0, 0).setHours(time.slice(0, 2), 0, 0)))
         setEditVisible(true)
     }
-
-
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
             <Typography sx={{mt: 4, mb: 2}}
@@ -125,11 +116,11 @@ const OrderList = observer(({alertMessage}) => {
                                   primary="Имя"
                     />
 
-                    <ListItemText sx={{width: 10,mr: 3}}
+                    <ListItemText sx={{width: 10, mr: 3}}
                                   primary="Дата и время"
                     />
 
-                    <ListItemText sx={{width: 10,}}
+                    <ListItemText sx={{width: 10}}
                                   primary="Мастер"
                     />
                     <ListItemText sx={{width: 10}}
@@ -149,7 +140,7 @@ const OrderList = observer(({alertMessage}) => {
                     />
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
+                {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
                     const city = cities.cities.find(city => city.id === order.cityId)
                     return (<ListItem
@@ -194,7 +185,7 @@ const OrderList = observer(({alertMessage}) => {
                                           <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
                                           <Select
                                               labelId="status"
-                                              defaultValue={`${order.status}`}
+                                              value={order.status}
                                               onChange={(event) => handleChange(event.target.value, order)}
                                               label="Статус"
                                           >
