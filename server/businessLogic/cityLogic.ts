@@ -14,8 +14,8 @@ class CityLogic {
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()});
             }
-            const payload: CreateCityDTO = req.body;
-            const newCity: City = await City.create(payload);
+            const cityInfo: CreateCityDTO = req.body;
+            const newCity: City = await City.create(cityInfo);
             return res.status(200).json({newCity});
         } catch (e) {
             next(ApiError.badRequest((e as Error).message));
@@ -59,8 +59,8 @@ class CityLogic {
     async update(req: Request, res: Response, next: NextFunction): Promise<Response | Promise<any>> {
         try {
             const cityId: string = req.params.cityId;
-            const payload: UpdateCityDTO = req.body;
-            const cityUpdate = await City.update(payload, {where: {id: cityId}});
+            const cityInfo: UpdateCityDTO = req.body;
+            const cityUpdate = await City.update(cityInfo, {where: {id: cityId}});
             return res.status(201).json(cityUpdate);
         } catch (e) {
             return next(ApiError.badRequest((e as Error).message));
