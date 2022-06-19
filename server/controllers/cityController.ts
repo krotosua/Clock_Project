@@ -1,6 +1,6 @@
 import cityLogic from '../businessLogic/cityLogic'
 import {validationResult} from "express-validator"
-import {Request, Response, NextFunction} from "express";
+import {NextFunction, Request, Response} from "express";
 
 
 class CityController {
@@ -12,12 +12,12 @@ class CityController {
         await cityLogic.create(req, res, next)
     }
 
-    async getAll(req: Request, res: Response, next: NextFunction): Promise<void>{
-       const cities = await cityLogic.getAll(req, res, next)
+    async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+        await cityLogic.getAll(req, res, next)
 
     }
 
-    async update(req: Request, res: Response, next: NextFunction): Promise<Response | undefined>{
+    async update(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});

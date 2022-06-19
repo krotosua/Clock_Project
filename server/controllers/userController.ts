@@ -1,6 +1,6 @@
 import userLogic from '../businessLogic/userLogic';
 import {validationResult} from "express-validator";
-import {Request, Response, NextFunction} from "express";
+import {NextFunction, Request, Response} from "express";
 
 
 class UserController {
@@ -49,10 +49,8 @@ class UserController {
     async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         await userLogic.updateUser(req, res, next)
     }
-
-
+    
 }
-
 
 
 export default new UserController()

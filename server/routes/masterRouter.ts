@@ -1,8 +1,9 @@
-import { Router } from 'express'
-const masterRouter = Router()
+import {Router} from 'express'
 import masterController from "../controllers/masterController"
 import checkRole from "../middleware/checkRoleMiddleware"
 import {body, param, query} from 'express-validator';
+
+const masterRouter = Router()
 
 
 masterRouter.post("/",
@@ -13,6 +14,7 @@ masterRouter.post("/",
     masterController.create)
 
 masterRouter.get('/', masterController.getAll)
+
 masterRouter.get('/:cityId',
     param("cityId").not().isEmpty().isInt({gt: 0}),
     query("time").not().isEmpty().isString(),
@@ -31,7 +33,7 @@ masterRouter.put('/activate/:masterId',
     body("isActivated").not().isEmpty().isBoolean(),
     checkRole("ADMIN"), masterController.activate)
 
-masterRouter.put('/rating/:masterId',
+masterRouter.put('/Rating/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     checkRole("CUSTOMER"), masterController.ratingUpdate)
 

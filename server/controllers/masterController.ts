@@ -2,8 +2,9 @@ import masterLogic from '../businessLogic/masterLogic'
 import cityLogic from '../businessLogic/cityLogic'
 import ApiError from "../error/ApiError";
 import sequelize from "../db";
-import {validationResult} from"express-validator";
-import {Request, Response, NextFunction} from "express";
+import {validationResult} from "express-validator";
+import {NextFunction, Request, Response} from "express";
+
 
 class MasterController {
     async create(req: Request, res: Response, next: NextFunction): Promise<any> {
@@ -12,10 +13,9 @@ class MasterController {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const {cityId} = req.body
+            const cityId: number[] = req.body.cityId
             await cityLogic.checkMasterCityId(cityId)
-            const master = await masterLogic.create(req, res, next)
-            return master
+            return await masterLogic.create(req, res, next)
         } catch (e) {
             next(ApiError.badRequest("WRONG request"))
         }
@@ -26,7 +26,7 @@ class MasterController {
         await masterLogic.getAll(req, res, next)
     }
 
-    async getMastersForOrder(req: Request, res: Response, next: NextFunction): Promise<Response | undefined>  {
+    async getMastersForOrder(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -35,25 +35,25 @@ class MasterController {
     }
 
 
-    async update(req: Request, res: Response, next: NextFunction): Promise<Response | undefined>  {
+    async update(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
             const result = await sequelize.transaction(async () => {
-                const {cityId} = req.body
+                const cityId: (number)[] = req.body.cityId
                 await cityLogic.checkMasterCityId(cityId)
-                const master = await masterLogic.update(req, res, next)
-                return master
+                await masterLogic.update(req, res, next)
+                return
             })
             return res.status(201).json(result)
         } catch (e) {
-            next(ApiError.badRequest(( e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
         }
     }
 
-    async activate(req: Request, res: Response, next: NextFunction): Promise<Response | undefined>  {
+    async activate(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -66,15 +66,14 @@ class MasterController {
         }
     }
 
-    async ratingUpdate(req: Request, res: Response, next: NextFunction): Promise<Response | undefined>  {
+    async ratingUpdate(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
             const result = await sequelize.transaction(async () => {
-                const master = await masterLogic.ratingUpdate(req, res, next)
-                return master
+                return await masterLogic.ratingUpdate(req, res, next)
             })
             return res.status(201).json(result)
         } catch (e) {

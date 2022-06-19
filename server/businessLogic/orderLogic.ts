@@ -1,8 +1,10 @@
-import {order, master, sizeClock, rating, user, city} from '../models/models'
+import {Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {Op} from "sequelize";
 import {NextFunction, Request, Response} from "express";
+import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, UpdateMasterDTO} from "../dto/order.dto";
+import {GetRowsDB, Pagination, UpdateDB} from "../dto/global";
 
 const statusList: { WAITING: string, REJECTED: string, ACCEPTED: string, DONE: string } = {
     WAITING: "WAITING",
@@ -14,46 +16,39 @@ const statusList: { WAITING: string, REJECTED: string, ACCEPTED: string, DONE: s
 class OrderLogic {
 
 
-    async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<order | void> {
-        try {
-            const {
-                name,
-                sizeClockId,
-                masterId,
-                cityId,
-                price
-            }: { name: string, masterId: number, sizeClockId: number, cityId: number, price: number } = req.body
-            const newOrder = await order.create(
-                {name, sizeClockId, userId, time, endTime, masterId, cityId, price})
-            return newOrder
-        } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
-        }
+    async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {
+        const {
+            name,
+            sizeClockId,
+            masterId,
+            cityId,
+            price
+        }: CreateOrderDTO = req.body
+        return await Order.create({name, sizeClockId, userId, time, endTime, masterId, cityId, price})
     }
 
-    async getUserOrders(req: any, res: Response, next: NextFunction): Promise<Response | undefined> {
+    async getUserOrders(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
         try {
             const userId: string = req.params.userId
-            let {limit, page}: { limit: number, page: number } = req.query
-            page = page || 1
-            limit = limit || 12
-            let offset: number = page * limit - limit
-            let orders: { rows: order[], count: number }
-            orders = await order.findAndCountAll({
+            const pagination: Pagination = req.query as any
+            pagination.page = pagination.page || 1
+            pagination.limit = pagination.limit || 12
+            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 order: [['id', 'DESC']],
                 where: {userId: userId},
                 include: [{
-                    model: master,
+                    model: Master,
                     attributes: ['name'],
                 }, {
-                    model: sizeClock,
+                    model: SizeClock,
                     attributes: ['name'],
                 },
                     {
-                        model: rating,
+                        model: Rating,
                         attributes: ["rating"],
 
-                    }], limit, offset
+                    }], limit: pagination.limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -67,20 +62,19 @@ class OrderLogic {
     async getMasterOrders(req: any, res: Response, next: NextFunction): Promise<void | Response> {
         try {
             const userId: string = req.params.userId
-            let {limit, page}: { limit: number, page: number } = req.query
-            page = page || 1
-            limit = limit || 12
-            const offset: number = page * limit - limit
-            let orders: { rows: order[], count: number }
-            let masterFind: master | null = await master.findOne({
+            const pagination: Pagination = req.query as any
+            pagination.page = pagination.page || 1
+            pagination.limit = pagination.limit || 12
+            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const masterFind: Master | null = await Master.findOne({
                 where: {userId: userId},
                 attributes: ['id', "isActivated"]
             })
 
             if (masterFind === null || !masterFind.isActivated) {
-                return next(ApiError.forbidden("Doesn`t activated"))
+                return next(ApiError.forbidden("Not activated"))
             }
-            orders = await order.findAndCountAll({
+            const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 order: [['id', 'DESC']],
                 where: {
                     masterId: masterFind.id,
@@ -89,13 +83,13 @@ class OrderLogic {
                     }
                 },
                 include: [{
-                    model: master,
+                    model: Master,
                     attributes: ['name'],
                 }, {
-                    model: sizeClock,
+                    model: SizeClock,
                     attributes: ['name'],
 
-                }], limit, offset
+                }], limit: pagination.limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -108,24 +102,23 @@ class OrderLogic {
 
     async getAllOrders(req: any, res: Response, next: NextFunction): Promise<void | Response> {
         try {
-            let {limit, page}: { limit: number, page: number } = req.query
-            page = page || 1
-            limit = limit || 12
-            let offset = page * limit - limit
-            let orders: { rows: order[], count: number }
-            orders = await order.findAndCountAll({
+            const pagination: Pagination = req.query as any
+            pagination.page = pagination.page || 1
+            pagination.limit = pagination.limit || 12
+            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 order: [['id', 'DESC']],
                 include: [{
-                    model: master,
+                    model: Master,
                 }, {
-                    model: sizeClock,
+                    model: SizeClock,
                     attributes: ['name'],
 
                 }, {
-                    model: user,
+                    model: User,
                     attributes: ['email'],
 
-                }], limit, offset
+                }], limit: pagination.limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -137,7 +130,7 @@ class OrderLogic {
 
     }
 
-    async update(req: any, res: Response, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<[number, order[]] | void> {
+    async update(req: any, res: Response, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<UpdateDB<Order> | void> {
         try {
             const orderId: number = req.params.orderId
             const {
@@ -146,11 +139,11 @@ class OrderLogic {
                 masterId,
                 cityId,
                 price
-            }: { name: string, sizeClockId: number, masterId: number, cityId: number, price: number } = req.body
+            }: UpdateMasterDTO = req.body
             if (orderId <= 0) {
                 next(ApiError.badRequest("cityId is wrong"))
             }
-            const orderUpdate: [number, order[]] = await order.update({
+            const orderUpdate: UpdateDB<Order> = await Order.update({
                 name,
                 sizeClockId,
                 time,
@@ -167,17 +160,14 @@ class OrderLogic {
         }
     }
 
-    async statusChange(req: Request, res: Response, next: NextFunction) {
+    async statusChange(req: Request, res: Response, next: NextFunction): Promise<void | UpdateDB<Order>> {
         try {
             const orderId: string = req.params.orderId
             const status: string = req.body.status
             if (!(status in statusList)) {
                 return next(ApiError.badRequest("INVALID STATUS"))
             }
-            if (orderId <= "0") {
-                return next(ApiError.badRequest("cityId is wrong"))
-            }
-            const orderUpdate: [number, order[]] = await order.update({
+            const orderUpdate: UpdateDB<Order> = await Order.update({
                 status: status,
             }, {where: {id: orderId}})
 
@@ -187,28 +177,28 @@ class OrderLogic {
         }
     }
 
-    async deleteOne(req: any, res: Response, next: NextFunction) {
+    async deleteOne(req: any, res: Response, next: NextFunction): Promise<void | Response> {
         try {
             const orderId: string = req.params.orderId
-            await order.destroy({where: {id: orderId}})
+            await Order.destroy({where: {id: orderId}})
             return res.status(204).json({message: "success"})
         } catch (e) {
             return next(ApiError.badRequest((e as Error).message))
         }
     }
 
-    async sendMessage(req: any, next: NextFunction, result: void | { order: order, city: city, clock: sizeClock, user: user }) {
+    async sendMessage(req: any, next: NextFunction, result: void | ResultOrderDTO): Promise<void> {
         try {
-            const cityName = result!.city.name
-            const size = result!.clock.name
-            let {
+            const cityName: string = result!.city.name
+            const size: string = result!.clock.name
+            const {
                 name,
                 email,
                 masterId,
                 password
-            }: { name: string, email: string, masterId: number, password: string } = req.body
+            }: SendMassageDTO = req.body
             let {time}: { time: Date | string } = req.body
-            const masterMail: master | null = await master.findByPk(masterId)
+            const masterMail: Master | null = await Master.findByPk(masterId)
             if (!masterMail) {
                 return next(ApiError.badRequest("masterId is wrong"))
             }

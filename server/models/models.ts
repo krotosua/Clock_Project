@@ -1,9 +1,11 @@
 import {
-    Association, DataTypes, HasManyAddAssociationMixin, HasManyCountAssociationsMixin,
-    HasManyCreateAssociationMixin, HasManyGetAssociationsMixin, HasManyHasAssociationMixin,
-    HasManySetAssociationsMixin, HasManyAddAssociationsMixin, HasManyHasAssociationsMixin,
-    HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, Model, ModelDefined, Optional,
-    Sequelize, InferAttributes, InferCreationAttributes, CreationOptional, NonAttribute,
+    DataTypes,
+    HasManyAddAssociationMixin,
+    HasManyAddAssociationsMixin,
+    HasManyGetAssociationsMixin,
+    HasManySetAssociationsMixin,
+    Model,
+    Optional,
 } from "sequelize";
 import sequelizeConnection from "../db";
 
@@ -11,7 +13,7 @@ interface CityAttributes {
     id: number;
     name: string;
     price: number;
-    masters?: Array<master>
+    masters?: Array<Master>;
 }
 
 interface UserAttributes {
@@ -21,17 +23,17 @@ interface UserAttributes {
     role: string;
     isActivated?: boolean;
     activationLink?: string;
-    master?: { name: string, orders?: Array<order>, id?: number };
+    master?: { name: string, orders?: Array<Order>, id?: number };
     customer?: { name: string };
-    customerId?:number
-    masterId?:number
-    orders?: Array<order>
+    customerId?: number;
+    masterId?: number;
+    orders?: Array<Order>;
 }
 
 interface CitiesMastersAttributes {
     id: number;
-    cityId?: number
-    masterId?: number
+    cityId?: number;
+    masterId?: number;
 }
 
 interface CustomerAttributes {
@@ -46,16 +48,16 @@ interface MasterAttributes {
     name: string;
     rating: number;
     isActivated: boolean;
-    orders?: Array<order>
-    userId?: number
+    orders?: Array<Order>;
+    userId?: number;
 }
 
 interface RatingAttributes {
     id: number;
     rating: number;
-    orderId?: number
-    masterId?: number
-    userId?: number
+    orderId?: number;
+    masterId?: number;
+    userId?: number;
 
 }
 
@@ -63,7 +65,7 @@ interface SizeClockAttributes {
     id: number;
     name: string;
     date: string;
-    orders?: Array<order>
+    orders?: Array<Order>;
 }
 
 
@@ -74,10 +76,10 @@ interface OrderAttributes {
     endTime: Date;
     status?: string | undefined;
     price: number;
-    sizeClockId?: number
-    masterId?: number
-    cityId: number
-    userId?: number
+    sizeClockId?: number;
+    masterId?: number;
+    cityId: number;
+    userId?: number;
 }
 
 export interface CityInput extends Optional<CityAttributes, 'id'> {
@@ -86,12 +88,12 @@ export interface CityInput extends Optional<CityAttributes, 'id'> {
 export interface CityOutput extends Required<CityAttributes> {
 }
 
-class city extends Model<CityAttributes, CityInput>
+class City extends Model<CityAttributes, CityInput>
     implements CityAttributes {
-    public id!: number
-    public name!: string
+    public id!: number;
+    public name!: string;
     public price!: number;
-    public masters?: Array<master>
+    public masters?: Array<Master>;
 }
 
 export interface CitiesMastersInput extends Optional<CitiesMastersAttributes, 'id'> {
@@ -102,9 +104,9 @@ export interface CitiesMastersOutput extends Required<CitiesMastersAttributes> {
 
 class CitiesMasters extends Model<CitiesMastersAttributes, CitiesMastersInput>
     implements CitiesMastersAttributes {
-    public id!: number
-    declare cityId: number
-    declare masterId: number
+    public id!: number;
+    declare cityId: number;
+    declare masterId: number;
 }
 
 export interface CustomerInput extends Optional<CustomerAttributes, 'id'> {
@@ -113,11 +115,12 @@ export interface CustomerInput extends Optional<CustomerAttributes, 'id'> {
 export interface CustomerOutput extends Required<CustomerAttributes> {
 }
 
-class customer extends Model<CustomerAttributes, CustomerInput>
+class Customer extends Model<CustomerAttributes, CustomerInput>
     implements CustomerAttributes {
-    public id!: number
+    public id!: number;
     public name!: string;
-    declare userId?:number
+    declare userId?: number;
+
 }
 
 export interface MasterInput extends Optional<MasterAttributes, 'id'> {
@@ -126,16 +129,15 @@ export interface MasterInput extends Optional<MasterAttributes, 'id'> {
 export interface MasterOutput extends Required<MasterAttributes> {
 }
 
-class master extends Model<MasterAttributes, MasterInput>
+class Master extends Model<MasterAttributes, MasterInput>
     implements MasterAttributes {
-    public id!: number
-    public name!: string
+    public id!: number;
+    public name!: string;
     public rating!: number;
     public isActivated!: boolean;
-    public orders?: Array<order>
-    declare addUser: HasManyAddAssociationMixin<user, number>;
-    declare addCities: HasManyAddAssociationsMixin<city, number>
-    declare setCities: HasManySetAssociationsMixin<city, number>
+    public orders?: Array<Order>;
+    declare addCities: HasManyAddAssociationsMixin<City, number>;
+    declare setCities: HasManySetAssociationsMixin<City, number>;
 }
 
 export interface OrderInput extends Optional<OrderAttributes, 'id'> {
@@ -144,7 +146,7 @@ export interface OrderInput extends Optional<OrderAttributes, 'id'> {
 export interface OrderOutput extends Required<OrderAttributes> {
 }
 
-class order extends Model<OrderAttributes, OrderInput>
+class Order extends Model<OrderAttributes, OrderInput>
     implements OrderAttributes {
     public id!: number;
     public name!: string;
@@ -152,10 +154,10 @@ class order extends Model<OrderAttributes, OrderInput>
     public endTime!: Date;
     public status?: string | undefined;
     public price!: number;
-    declare sizeClockId?: number
-    declare masterId?: number
-    declare cityId: number
-    declare userId?: number
+    declare sizeClockId?: number;
+    declare masterId?: number;
+    declare cityId: number;
+    declare userId?: number;
 }
 
 export interface RatingInput extends Optional<RatingAttributes, 'id'> {
@@ -164,16 +166,14 @@ export interface RatingInput extends Optional<RatingAttributes, 'id'> {
 export interface RatingOutput extends Required<RatingAttributes> {
 }
 
-class rating extends Model<RatingAttributes, RatingInput>
+class Rating extends Model<RatingAttributes, RatingInput>
     implements RatingAttributes {
     public id!: number;
     public rating!: number;
-    declare orderId: number
-    declare masterId: number
-    declare userId: number
-    declare addOrder: HasManyAddAssociationMixin<order, number>;
-    declare addMaster: HasManyAddAssociationMixin<master, number>;
-    declare addUser: HasManyAddAssociationMixin<user, number>;
+    declare orderId: number;
+    declare masterId: number;
+    declare userId: number;
+    declare addMaster: HasManyAddAssociationMixin<Master, number>;
 }
 
 export interface SizeClockInput extends Optional<SizeClockAttributes, 'id'> {
@@ -182,12 +182,12 @@ export interface SizeClockInput extends Optional<SizeClockAttributes, 'id'> {
 export interface SizeClockOutput extends Required<SizeClockAttributes> {
 }
 
-class sizeClock extends Model<SizeClockAttributes, SizeClockInput>
+class SizeClock extends Model<SizeClockAttributes, SizeClockInput>
     implements SizeClockAttributes {
-    public id!: number
-    public name!: string
+    public id!: number;
+    public name!: string;
     public date!: string;
-    public orders?: Array<order>
+    public orders?: Array<Order>;
 }
 
 export interface UserInput extends Optional<UserAttributes, 'id' | "password" | "role"> {
@@ -196,21 +196,21 @@ export interface UserInput extends Optional<UserAttributes, 'id' | "password" | 
 export interface UserOutput extends Required<UserAttributes> {
 }
 
-class user extends Model<UserAttributes, UserInput>
+class User extends Model<UserAttributes, UserInput>
     implements UserAttributes {
-    public id!: number
-    public email!: string
+    public id!: number;
+    public email!: string;
     public password!: string;
     public role!: string;
     public isActivated?: boolean;
-    public master?: { name: string, orders?: Array<order>, id?: number };
+    public master?: { name: string, orders?: Array<Order>, id?: number };
     public customer?: { name: string };
     public readonly activationLink?: string;
-    public orders?: Array<order>
-    declare customerId?:number
-    declare masterId?:number
-    declare getCustomer: HasManyGetAssociationsMixin<customer>;
-    declare getMaster: HasManyGetAssociationsMixin<master>;
+    public orders?: Array<Order>;
+    declare customerId?: number;
+    declare masterId?: number;
+    declare getCustomer: HasManyGetAssociationsMixin<Customer>;
+    declare getMaster: HasManyGetAssociationsMixin<Master>;
 }
 
 CitiesMasters.init({
@@ -218,14 +218,14 @@ CitiesMasters.init({
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        },
+        }
     },
     {
         tableName: 'cities_masters',
         sequelize: sequelizeConnection,
         timestamps: false
     })
-city.init({
+City.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -243,7 +243,7 @@ city.init({
         timestamps: false
     })
 
-user.init({
+User.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -268,7 +268,7 @@ user.init({
         timestamps: false
     })
 
-customer.init({
+Customer.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -285,7 +285,7 @@ customer.init({
         timestamps: false
     })
 
-master.init({
+Master.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -309,7 +309,7 @@ master.init({
         sequelize: sequelizeConnection,
         timestamps: false
     })
-sizeClock.init({
+SizeClock.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -327,7 +327,7 @@ sizeClock.init({
         timestamps: false
     })
 
-order.init({
+Order.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -340,12 +340,13 @@ order.init({
                 len: [3, 30]
             }
         },
-    cityId: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: city,
-            key: 'id'
-        }},
+        cityId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: City,
+                key: 'id'
+            }
+        },
         time: {type: DataTypes.DATE,},
         endTime: {type: DataTypes.DATE},
         status: {type: DataTypes.STRING, defaultValue: "WAITING"},
@@ -358,7 +359,7 @@ order.init({
         timestamps: false
     })
 
-rating.init({
+Rating.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -373,46 +374,71 @@ rating.init({
         }
     },
     {
-        tableName: 'ratings',
+        tableName: 'rating',
         sequelize: sequelizeConnection,
         timestamps: false
     })
-master.hasMany(order)
-order.belongsTo(master)
+Master.hasMany(Order, {
+    foreignKey: 'masterId'
+})
+Order.belongsTo(Master, {
+    foreignKey: 'masterId'
+})
 
-master.hasMany(rating, {onDelete: 'CASCADE'})
-rating.belongsTo(master)
+Master.hasMany(Rating, {onDelete: 'CASCADE', foreignKey: 'masterId'})
+Rating.belongsTo(Master, {
+    foreignKey: 'masterId'
 
-master.belongsToMany(city, {through: CitiesMasters})
-city.belongsToMany(master, {through: CitiesMasters})
+})
+
+Master.belongsToMany(City, {through: CitiesMasters, foreignKey: 'cityId'})
+City.belongsToMany(Master, {through: CitiesMasters, foreignKey: 'masterId'})
+User.hasOne(Rating, {
+    foreignKey: 'userId'
+})
+Rating.belongsTo(User, {
+    foreignKey: 'userId'
+})
+
+User.hasMany(Order, {
+    foreignKey: 'userId'
+})
+Order.belongsTo(User, {
+    foreignKey: 'userId'
+})
 
 
-user.hasOne(rating,)
-rating.belongsTo(user)
+User.hasOne(Customer, {
+    foreignKey: 'userId'
+})
+Customer.belongsTo(User, {
+    foreignKey: 'userId'
+})
 
-user.hasMany(order)
-order.belongsTo(user)
+User.hasOne(Master, {
+    onDelete: 'CASCADE', foreignKey: 'userId'
 
-user.hasOne(customer)
-customer.belongsTo(user)
+},)
+Master.belongsTo(User, {onDelete: 'CASCADE', foreignKey: 'userId'})
+Order.hasOne(Rating, {onDelete: 'CASCADE', foreignKey: 'orderId'})
+Rating.belongsTo(Order, {
+    foreignKey: 'orderId'
+})
+SizeClock.hasMany(Order, {
+    foreignKey: 'sizeClockId'
+})
+Order.belongsTo(SizeClock, {
+    foreignKey: 'sizeClockId'
+})
 
-user.hasOne(master, {onDelete: 'CASCADE'})
-master.belongsTo(user, {onDelete: 'CASCADE'})
-
-order.hasOne(rating, {onDelete: 'CASCADE'})
-rating.belongsTo(order)
-
-
-sizeClock.hasMany(order)
-order.belongsTo(sizeClock)
 
 export {
-    user,
-    order,
-    master,
-    customer,
-    rating,
-    sizeClock,
-    city,
-    CitiesMasters
+    CitiesMasters,
+    City,
+    Order,
+    Master,
+    Customer,
+    Rating,
+    SizeClock,
+    User
 }

@@ -1,9 +1,9 @@
-
-import { Router } from 'express'
-const orderRouter = Router()
+import {Router} from 'express'
 import orderController from "../controllers/orderController"
 import checkRole from "../middleware/checkRoleMiddleware"
 import {body, param} from 'express-validator';
+
+const orderRouter = Router()
 
 
 orderRouter.post("/",
@@ -19,10 +19,10 @@ orderRouter.post("/",
 orderRouter.get('/:userId', checkRole("CUSTOMER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getUserOrders)
-orderRouter.get('/master/:userId', checkRole("MASTER"),
+
+orderRouter.get('/Master/:userId', checkRole("MASTER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getMasterOrders)
-
 
 orderRouter.get('/', checkRole("ADMIN"), orderController.getAllOrders)
 

@@ -1,10 +1,10 @@
-
 import express from 'express'
-const userRouter = express.Router()
-import userController from'../controllers/userController'
-import authMiddleware from'../middleware/authMiddleware'
+import userController from '../controllers/userController'
+import authMiddleware from '../middleware/authMiddleware'
 import checkRole from "../middleware/checkRoleMiddleware"
 import {body, param} from 'express-validator';
+
+const userRouter = express.Router()
 
 userRouter.post("/registration/",
     body('email').isEmail(),
@@ -17,10 +17,12 @@ userRouter.post("/registrationAdmin/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
     userController.registrationFromAdmin)
+
 userRouter.post('/login/',
     body('email').isEmail(),
     body('password').isLength({min: 6}),
     userController.login)
+
 userRouter.get('/auth/', authMiddleware, userController.check)
 
 userRouter.get('/checkEmail/',
@@ -43,4 +45,5 @@ userRouter.put('/:userId',
 userRouter.delete('/:userId', checkRole("ADMIN"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     userController.deleteOne)
+
 export default userRouter

@@ -1,13 +1,15 @@
 import jwt from "jsonwebtoken"
 import ApiError from "../error/ApiError"
-import {user, order, master, customer, UserInput} from "../models/models"
+import {Customer, Master, Order, User} from "../models/models"
 import * as bcrypt from "bcrypt"
 import {validationResult} from "express-validator"
 import MailService from "../service/mailService"
 import {v4 as uuidv4} from "uuid"
 import masterController from "../controllers/masterController"
 import sequelize from "../db"
-import {Request, Response, NextFunction} from "express";
+import {NextFunction, Request, Response} from "express";
+import {CreateUserDTO, GetOrCreateUserDTO, LoginDTO, UpdateUserDTO} from "../dto/user.dto";
+import {GetRowsDB, Pagination, UpdateDB} from "../dto/global";
 
 
 const generateJwt = (id: number, email: string, role: string, isActivated?: boolean, name?: string): string => {
@@ -15,40 +17,40 @@ const generateJwt = (id: number, email: string, role: string, isActivated?: bool
 }
 
 class UserLogic {
-    async registration(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async registration(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const result: void | Response<any, Record<string, any>> = await sequelize.transaction(async () => {
+            const result: void | Response = await sequelize.transaction(async () => {
                 const {
                     email,
                     password,
                     isMaster,
                     name
-                }: { email: string, password: string, isMaster: boolean, name: string } = req.body
+                }: CreateUserDTO = req.body
                 const role: string = isMaster ? "MASTER" : "CUSTOMER"
-                const candidate: user | null = await user.findOne({where: {email}})
+                const candidate: User | null = await User.findOne({where: {email}})
                 if (candidate) {
                     if (candidate.password !== null) {
-                        return next(ApiError.badRequest('user with this email already exists'))
+                        return next(ApiError.badRequest('User with this email already exists'))
                     }
-                    await customer.create({userId: candidate.id, name: name})
+                    await Customer.create({userId: candidate.id, name: name})
                     const hashPassword: string = await bcrypt.hash(password, 5)
-                    const activationLink = uuidv4()
+                    const activationLink: string = uuidv4()
                     await candidate.update({password: hashPassword, activationLink, role})
                     await MailService.sendActivationMail(email, `${process.env.API_URL}api/users/activate/${activationLink}`, next)
                     return res.status(201).json(candidate)
                 }
-                const hashPassword = await bcrypt.hash(password, 5)
-                const activationLink = uuidv4()
-                const newUser: user | null = await user.create({email, role, password: hashPassword, activationLink})
+                const hashPassword: string = await bcrypt.hash(password, 5)
+                const activationLink: string = uuidv4()
+                const newUser: User | null = await User.create({email, role, password: hashPassword, activationLink})
                 if (isMaster) {
                     req.body.userId = newUser.id
                     await masterController.create(req, res, next)
                 } else {
-                    await customer.create({userId: newUser.id, name})
+                    await Customer.create({userId: newUser.id, name})
                 }
                 await MailService.sendActivationMail(email, `${process.env.API_URL}api/users/activate/${activationLink}`, next)
                 return res.status(201).json({newUser})
@@ -60,7 +62,7 @@ class UserLogic {
     }
 
 
-    async registrationFromAdmin(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async registrationFromAdmin(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
 
         try {
             req.body.isActivated = true
@@ -68,28 +70,27 @@ class UserLogic {
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()});
             }
-            const result: void | Response<any, Record<string, any>> = await sequelize.transaction(async () => {
-                const {email, password, isMaster, name, isActivated} = req.body
-                let role = isMaster ? "MASTER" : "CUSTOMER"
-                const candidate = await user.findOne({where: {email}})
+            const result: void | Response = await sequelize.transaction(async () => {
+                const {email, password, isMaster, name, isActivated}: CreateUserDTO = req.body;
+                const role: string = isMaster ? "MASTER" : "CUSTOMER";
+                const candidate: User | null = await User.findOne({where: {email}})
                 if (candidate) {
                     if (candidate.password !== null) {
-                        return next(ApiError.badRequest('user with this email already exists'))
+                        return next(ApiError.badRequest('User with this email already exists'));
                     } else {
-                        await customer.create({userId: candidate.id, name: name})
-                        const hashPassword: string = await bcrypt.hash(password, 5)
-                        await candidate.update(candidate, password)
-                        const token = generateJwt(candidate.id, candidate.email, candidate.role)
-                        return res.json({token})
+                        await Customer.create({userId: candidate.id, name: name});
+                        const hashPassword: string = await bcrypt.hash(password, 5);
+                        const token: string = generateJwt(candidate.id, candidate.email, candidate.role);
+                        return res.json({token});
                     }
                 }
-                const hashPassword = await bcrypt.hash(password, 5)
-                const newUser = await user.create({email, role, password: hashPassword, isActivated})
+                const hashPassword: string = await bcrypt.hash(password, 5)
+                const newUser: User = await User.create({email, role, password: hashPassword, isActivated})
                 if (isMaster) {
                     req.body.userId = newUser.id
                     await masterController.create(req, res, next)
                 } else {
-                    await customer.create({userId: newUser.id, name})
+                    await Customer.create({userId: newUser.id, name})
                 }
                 return res.status(201).json({newUser})
             })
@@ -99,36 +100,36 @@ class UserLogic {
         }
     }
 
-    async GetOrCreateUser(req: Request): Promise<user> {
+    async GetOrCreateUser(req: Request): Promise<User> {
         try {
             const {
                 email,
                 name,
                 regCustomer,
                 changeName
-            }: { email: string, name: string, regCustomer: boolean, changeName: boolean } = req.body
-            const candidate: user | null = await user.findOne({where: {email}})
+            }: GetOrCreateUserDTO = req.body
+            const candidate: User | null = await User.findOne({where: {email}})
             if (candidate) {
                 if (changeName && candidate.password !== null) {
-                    await customer.update({name: name}, {where: {userId: candidate.id}})
+                    await Customer.update({name: name}, {where: {userId: candidate.id}})
                 }
                 return candidate
             }
-            let newUser: user | null
+            let newUser: User | null
             if (regCustomer) {
-                const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                const passwordLength = 8;
-                let password = "";
+                const chars: string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                const passwordLength: number = 8;
+                let password: string = "";
                 for (let i = 0; i <= passwordLength; i++) {
-                    const randomNumber = Math.floor(Math.random() * chars.length);
+                    const randomNumber: number = Math.floor(Math.random() * chars.length);
                     password += chars.substring(randomNumber, randomNumber + 1);
                 }
-                const hashPassword = await bcrypt.hash(password, 5)
+                const hashPassword: string = await bcrypt.hash(password, 5)
                 req.body.password = password
-                newUser = await user.create({email, password: hashPassword, isActivated: true})
-                await customer.create({userId: newUser.id, name})
+                newUser = await User.create({email, password: hashPassword, isActivated: true})
+                await Customer.create({userId: newUser.id, name})
             } else {
-                newUser = await user.create({email})
+                newUser = await User.create({email})
             }
             return newUser
         } catch (e) {
@@ -137,25 +138,25 @@ class UserLogic {
     }
 
 
-    async login(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async login(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()});
             }
-            const {email, password}: { email: string, password: string } = req.body
-            const userLogin: user | null = await user.findOne({
+            const {email, password}: LoginDTO = req.body
+            const userLogin: User | null = await User.findOne({
                 where: {email},
             })
             if (!userLogin) {
-                return next(ApiError.NotFound('customer with this name not found'))
+                return next(ApiError.NotFound('Customer with this name not found'))
             }
             const comparePassword: boolean = bcrypt.compareSync(password, userLogin.password)
             if (!comparePassword) {
                 return next(ApiError.Unauthorized('Wrong password'))
             }
-            userLogin.role == "MASTER" ? await userLogin!.getMaster() : await userLogin!.getCustomer()
-            let token
+            userLogin.role === "MASTER" ? await userLogin!.getMaster() : await userLogin!.getCustomer()
+            let token: string
             if (userLogin.master !== undefined) {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.master.name)
             } else if (userLogin.customer !== undefined) {
@@ -163,37 +164,35 @@ class UserLogic {
             } else {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated)
             }
-
-
             return res.status(201).json({token})
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
         }
     }
 
-    async check(req: any, res: Response, next: NextFunction): Promise<Response<any, Record<string, any>>> {
-        const token = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated, req.user.name)
+    async check(req: any, res: Response, next: NextFunction): Promise<Response> {
+        const token: string = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated, req.user.name)
         return res.status(200).json({token})
     }
 
-    async checkEmail(req: Request, res: Response, next: NextFunction) {
-        const {email} = req.query
-        const userCheck = await user.findOne({where: {email: email}})
-        if (!userCheck || userCheck.password == null) {
+    async checkEmail(req: Request, res: Response, next: NextFunction): Promise<Response> {
+        const email: string = req.query.email as any
+        const userCheck: User | null = await User.findOne({where: {email: email}})
+        if (!userCheck || userCheck.password === null) {
             return res.status(204).send({message: "204"})
         }
         return res.status(200).json({userCheck})
     }
 
-    async updateUser(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async updateUser(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         try {
             const userId: string = req.params.userId
-            const {email, password}: UserInput = req.body
-            let hashPassword
+            const {email, password}: UpdateUserDTO = req.body
+            let hashPassword: string | undefined
             if (password) {
                 hashPassword = await bcrypt.hash(password, 5)
             }
-            const userUpdate = await user.update({
+            const userUpdate: UpdateDB<User> = await User.update({
                 email: email, password: hashPassword,
             }, {where: {id: userId}})
             await MailService.updateMail(email, password ?? undefined, next)
@@ -203,63 +202,63 @@ class UserLogic {
         }
     }
 
-    async getAll(req: any, res: Response, next: NextFunction) {
+    async getAll(req: Request, res: Response, next: NextFunction) {
         try {
-            let {limit, page}: { limit: number, page: number } = req.query
-            page = page || 1
-            limit = limit || 12
-            let offset = page * limit - limit
-            let users
-            users = await user.findAndCountAll({
+            let pagination: Pagination = req.query as any;
+            pagination.page = pagination.page || 1;
+            pagination.limit = pagination.limit || 9;
+            const offset: number = pagination.page * pagination.limit - pagination.limit;
+            const users: GetRowsDB<User> = await User.findAndCountAll({
                 attributes: ["email", "id", "role", "isActivated"], include: [{
-                    model: master
-                },], limit, offset
+                    model: Master
+                },], limit: pagination.limit, offset
             })
             if (!users.count) {
-                return res.status(204).json({message: "List is empty"})
+                return res.status(204).json({message: "List is empty"});
             }
             return res.status(200).json(users)
         } catch (e) {
-            next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message));
         }
     }
 
-    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const userId: string = req.params.userId
-            const userDelete: user | null = await user.findOne({
+            const userId: number = Number(req.params.userId);
+            const userDelete: User | null = await User.findOne({
                 where: {id: userId},
                 include: [
-                    {model: order},
+                    {model: Order},
                     {
-                        model: master, attributes: ["id"],
+                        model: Master, attributes: ["id"],
                     }],
                 attributes: ["id", "role"]
             })
-            if (userDelete == null) return
+            if (userDelete === null) return next(ApiError.Conflict("Customer has orders"));
 
-            if (userDelete.role === "CUSTOMER" && userDelete.orders!.length === 0 || userDelete.role === "MASTER" && userDelete.master!.orders!.length === 0) {
-                await userDelete.destroy()
-                return res.status(204).json({message: "success"})
+            if (userDelete.role === "CUSTOMER" && userDelete.orders!.length === 0
+                || userDelete.role === "MASTER" && userDelete.master!.orders!.length === 0) {
+                await userDelete.destroy();
+                return res.status(204).json({message: "success"});
             } else {
-                return next(ApiError.Conflict("customer has orders"))
+                return next(ApiError.Conflict("Customer has orders"));
             }
-            return res.status(204).json("success")
+            return res.status(204).json("success");
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            return next(ApiError.badRequest((e as Error).message));
         }
     }
 
     async activate(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const activationLink: string = req.params.link
-            const userActivate: user | null = await user.findOne({where: {activationLink}})
+            const userActivate: User | null = await User.findOne({where: {activationLink}})
             if (!userActivate) {
-                throw new Error('Wrong link')
+                return next(ApiError.badRequest("Not activated"));
             }
             userActivate.isActivated = true
             await userActivate.save()
@@ -273,7 +272,7 @@ class UserLogic {
         try {
             const userId: string = req.params.userId
             const isActivated: boolean = req.body.isActivated
-            const userActivate: [number, user[]] = await user.update({
+            const userActivate: UpdateDB<User> = await User.update({
                 isActivated: isActivated,
             }, {where: {id: userId}})
             return res.status(201).json(userActivate)

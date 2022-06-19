@@ -1,13 +1,15 @@
 import {NextFunction, Request, Response} from "express";
-import {SizeClockInput, sizeClock, order} from '../models/models'
+import {Order, SizeClock, SizeClockInput} from '../models/models'
 import ApiError from '../error/ApiError'
+import {CreateSizeClockDTO} from "../dto/sizeClock.dto";
+import {GetRowsDB, Pagination, UpdateDB} from "../dto/global";
 
 
 class SizeLogic {
     async create(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
         try {
-            const {name, date}: SizeClockInput = req.body
-            const size = await sizeClock.create({name, date})
+            const sizeInfo: CreateSizeClockDTO = req.body
+            const size = await SizeClock.create(sizeInfo)
             return res.status(201).json(size)
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
@@ -16,12 +18,9 @@ class SizeLogic {
 
     async update(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
         try {
-            const sizeId: string = req.params.sizeId
-            const {name, date}: SizeClockInput = req.body
-            const size: [number, sizeClock[]] = await sizeClock.update({
-                name: name,
-                date: date
-            }, {where: {id: sizeId}})
+            const sizeId: number = Number(req.params.sizeId)
+            const updateSize: SizeClockInput = req.body
+            const size: UpdateDB<SizeClock> = await SizeClock.update(updateSize, {where: {id: sizeId}})
             return res.status(201).json(size)
         } catch (e) {
             return next(ApiError.badRequest((e as Error).message))
@@ -29,15 +28,14 @@ class SizeLogic {
     }
 
 
-    async getAll(req: any, res: Response, next: NextFunction): Promise<Response | void> {
+    async getAll(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
         try {
-            let {limit, page}: { limit: number, page: number } = req.query;
-            page = page || 1
-            limit = limit || 12
-            let offset = page * limit - limit
-            let sizes: { rows: sizeClock[], count: number }
-            sizes = await sizeClock.findAndCountAll({
-                limit, offset
+            const pagination: Pagination = req.query as any
+            pagination.page = pagination.page || 1
+            pagination.limit = pagination.limit || 12
+            const offset = pagination.page * pagination.limit - pagination.limit
+            const sizes: GetRowsDB<SizeClock> = await SizeClock.findAndCountAll({
+                limit: pagination.limit, offset
             })
             if (!sizes.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -48,8 +46,8 @@ class SizeLogic {
         }
     }
 
-    async CheckClock(next: NextFunction, sizeClockId: number): Promise<void | sizeClock> {
-        const clock: sizeClock | null = await sizeClock.findOne({where: {id: sizeClockId}})
+    async CheckClock(next: NextFunction, sizeClockId: number): Promise<void | SizeClock> {
+        const clock: SizeClock | null = await SizeClock.findOne({where: {id: sizeClockId}})
         if (!clock) {
             return next(ApiError.badRequest('WRONG sizeClockId'))
         }
@@ -60,15 +58,15 @@ class SizeLogic {
         try {
             const sizeId: string = req.params.sizeId
             if (sizeId) {
-                const size: sizeClock | null = await sizeClock.findOne({
+                const size: SizeClock | null = await SizeClock.findOne({
                     where: {id: sizeId},
-                    include: order,
+                    include: Order,
                     attributes: ["id"]
                 })
-                if (size == null || size.orders == undefined) {
+                if (size === null || size.orders === undefined) {
                     return next(ApiError.badRequest("Id is empty"))
                 }
-                if (size.orders.length == 0) {
+                if (size.orders.length === 0) {
                     await size.destroy()
                     return res.status(204).json("success")
                 } else {

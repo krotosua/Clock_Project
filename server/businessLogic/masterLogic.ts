@@ -1,84 +1,85 @@
-import {city, master, MasterInput, order, rating, sizeClock, user} from '../models/models'
+import {City, Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import {Op} from "sequelize";
 import sizeLogic from "./sizeLogic"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
+import {CreateMasterDTO, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
+import {CreateRatingDTO} from "../dto/rating.dto";
+import {GetRowsDB, Pagination, UpdateDB} from "../dto/global";
+
 const {and, lt, lte, not, is, or, gt, gte} = Op;
 
 class MasterLogic {
     async create(req: Request, res: Response, next: NextFunction): Promise<Response | Promise<any>> {
         try {
-            const {name, rating, isActivated}: MasterInput = req.body
-            const {userId,cityId}: {userId: number,cityId:number[] } = req.body
-            const newMaster = await master.create({name, rating,userId, isActivated})
-            await newMaster.addCities(cityId)
-            return newMaster
+            const masterInfo: CreateMasterDTO = req.body;
+            const newMaster: Master = await Master.create(masterInfo);
+            await newMaster.addCities(masterInfo.cityId);
+            return newMaster;
         } catch (e) {
-            next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message));
         }
     }
 
-    async getAll(req: any, res: Response, next: NextFunction): Promise<Response | Promise<any>> {
+    async getAll(req: Request, res: Response, next: NextFunction): Promise<Response | Promise<any>> {
         try {
-            let {limit, page}: { limit: number, page: number } = req.query;
-            page = page || 1
-            limit = limit || 12
-            let offset = page * limit - limit
-            let masters: { rows: master[], count: number } = await master.findAndCountAll({
+            const pagination: Pagination = req.query as any;
+            pagination.page = pagination.page || 1;
+            pagination.limit = pagination.limit || 12;
+            const offset = pagination.page * pagination.limit - pagination.limit;
+            let masters: GetRowsDB<Master> = await Master.findAndCountAll({
                 order: [['id', 'DESC']],
                 attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
-                    model: city, through: {
+                    model: City, through: {
                         attributes: []
                     },
 
-                }, {model: user,}],
+                }, {model: User,}],
             })
-
             if (!masters.count) {
-                return res.status(204).json("List is empty")
+                return res.status(204).json("List is empty");
             }
-            masters.count = masters.rows.length
-            masters.rows = masters.rows.slice(offset, page * limit)
-            return res.json(masters)
+            masters.count = masters.rows.length;
+            masters.rows = masters.rows.slice(offset, pagination.page * pagination.limit);
+            return res.json(masters);
         } catch (e) {
-            return next(ApiError.NotFound((e as Error).message))
+            return next(ApiError.NotFound((e as Error).message));
         }
     }
 
-    async getMastersForOrder(req: any, res: Response, next: NextFunction) {
+    async getMastersForOrder(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         try {
-            const cityId: string = req.params.cityId
+            const cityId: string = req.params.cityId;
             let {
                 time,
-                sizeClock,
                 limit,
                 page
-            }: { time: string, sizeClock: number, limit: number, page: number } = req.query
-            const clock: void | sizeClock = await sizeLogic.CheckClock(next, sizeClock)
+            }: GetMasterDTO = req.query as any;
+            const {sizeClock} = req.query as any
+            const clock: void | SizeClock = await sizeLogic.CheckClock(next, sizeClock);
             if (clock === undefined) {
-                return next(ApiError.NotFound("clock not found"))
+                return next(ApiError.NotFound("clock not found"));
             }
-            let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
-            let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
-            page = page || 1
-            limit = limit || 12
-            let offset = page * limit - limit
-            let masters: { rows: master[]; count: number };
-
-            masters = await master.findAndCountAll({
-                order:[['id', 'DESC']],
+            const endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2));
+            const endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0));
+            page = page || 1;
+            limit = limit || 12;
+            const offset = page * limit - limit;
+            let masters: { rows: Master[]; count: number };
+            masters = await Master.findAndCountAll({
+                order: [['id', 'DESC']],
                 where: {
                     isActivated: {[is]: true}
                 }, include: [{
-                    model: city,
+                    model: City,
                     where: {id: cityId},
                     through: {
                         attributes: []
                     }
                 }, {
-                    model: order, where: {
+                    model: Order, where: {
                         [not]: [{
                             [or]: [{
                                 [and]: [{time: {[lt]: time}}, {endTime: {[lte]: time}}]
@@ -89,29 +90,22 @@ class MasterLogic {
                     }, required: false
                 }]
             });
-
-            masters.rows = masters.rows.filter(master => master.orders!.length == 0)
-            masters.count = masters.rows.length
-            masters.rows = masters.rows.slice(offset, page * limit)
+            masters.rows = masters.rows.filter(master => master.orders!.length === 0);
+            masters.count = masters.rows.length;
+            masters.rows = masters.rows.slice(offset, page * limit);
             if (!masters.count) {
-                return res.status(204).json({message: "List is empty"})
+                return res.status(204).json({message: "List is empty"});
             }
-            return res.status(200).json(masters)
+            return res.status(200).json(masters);
         } catch (e) {
-            next(ApiError.NotFound((e as Error).message))
+            next(ApiError.NotFound((e as Error).message));
         }
     }
 
-
-    async checkOrders(next: NextFunction, masterId: number, time: Date, endTime: Date): Promise<master | null>{
-        let masterCheck: master | null;
-        masterCheck = await master.findByPk(masterId)
-        if (!masterCheck) {
-            next(ApiError.NotFound('master not found'))
-        }
-        masterCheck = await master.findOne({
+    async checkOrders(next: NextFunction, masterId: number, time: Date, endTime: Date): Promise<Master | null> {
+        const masterCheck: Master | null = await Master.findOne({
             where: {id: masterId}, include: [{
-                model: order, where: {
+                model: Order, where: {
                     [not]: [{
                         [or]: [{
                             [and]: [{time: {[lt]: time}}, {endTime: {[lte]: time}}]
@@ -120,99 +114,98 @@ class MasterLogic {
                         }]
                     }]
                 },
-
             }],
         })
         if (masterCheck) {
-            next(ApiError.NotFound('master not found'))
+            next(ApiError.NotFound('Master not found'));
         }
-        return masterCheck
+        return masterCheck;
     }
 
-    async update(req: Request, res: Response, next: NextFunction) {
+    async update(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const {masterId} = req.params
-            const {name, rating, cityId,} = req.body
-            const masterUpdate = await master.findOne({where: {id: masterId}})
-            if (masterUpdate == null) {
-                return next(ApiError.badRequest("Wrong request"))
+            const masterId: number = Number(req.params.masterId);
+            const updateInfo: UpdateMasterDTO = req.body;
+            const masterUpdate = await Master.findOne({where: {id: masterId}});
+            if (masterUpdate === null) {
+                return next(ApiError.badRequest("Wrong request"));
             }
-            await master.update({
-                name: name, rating: rating,
-            }, {where: {id: masterId}})
-            await masterUpdate.setCities(cityId)
-            return master
+            await Master.update(updateInfo, {where: {id: masterId}})
+            await masterUpdate.setCities(updateInfo.cityId);
+            return
         } catch (e) {
-            return next(ApiError.badRequest("Wrong request"))
+            return next(ApiError.badRequest("Wrong request"));
         }
     }
 
-    async ratingUpdate(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async ratingUpdate(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         try {
-            const result: [number, master[]] = await sequelize.transaction(async () => {
-                const masterId: number = Number(req.params.masterId)
-                let {orderId, userId}: { orderId: number, userId: number } = req.body
-                let newRating: number = req.body.rating
-                const existsRating: rating | null = await rating.findOne({where: {orderId: orderId}})
+            const result: UpdateDB<Master> = await sequelize.transaction(async () => {
+                const masterId: number = Number(req.params.masterId);
+                const {orderId, userId}: CreateRatingDTO = req.body;
+                let newRating: number = req.body.rating;
+                const existsRating: Rating | null = await Rating.findOne({where: {orderId: orderId}});
                 if (existsRating) {
-                    throw new Error("rating already exists")
+                    throw new Error("Rating already exists")
                 }
-                await rating.create({rating: newRating, userId, masterId, orderId})
-                let allRating: { rows: rating[], count: number } = await rating.findAndCountAll({
+                await Rating.create({rating: newRating, userId, masterId, orderId});
+                let allRating: GetRowsDB<Rating> = await Rating.findAndCountAll({
                     where: {masterId: masterId},
                     attributes: ["rating"]
                 })
-                newRating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count
-
-                const masterUpdate: [number, master[]] = await master.update({
+                newRating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count;
+                const masterUpdate: UpdateDB<Master> = await Master.update({
                     rating: newRating,
                 }, {where: {id: masterId}})
-                return masterUpdate
+                return masterUpdate;
             })
-            return res.status(201).json(result)
+            return res.status(201).json(result);
         } catch (e) {
-            return next(ApiError.badRequest("Wrong request"))
+            return next(ApiError.badRequest("Wrong request"));
         }
     }
 
 
-    async activate(req: Request, res: Response, next: NextFunction): Promise<void | [number, master[]] | null> {
+    async activate(req: Request, res: Response, next: NextFunction): Promise<void | UpdateDB<Master> | null> {
         try {
-            const {masterId} = req.params
-            const {isActivated} = req.body
-            const masterUpdate: [number, master[]] = await master.update({
-                isActivated: isActivated,
+            const masterId: number = Number(req.params.masterId);
+            const {isActivated}: UpdateMasterDTO = req.body;
+            const masterUpdate: UpdateDB<Master> = await Master.update({
+                isActivated,
             }, {where: {id: masterId}})
-            return masterUpdate
+            return masterUpdate;
         } catch (e) {
-            return next(ApiError.badRequest("Wrong request"))
+            return next(ApiError.badRequest("Wrong request"));
         }
     }
 
-    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void | Response<any, Record<string, any>>> {
+    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
         try {
-            const masterId: string = req.params.masterId
-            const masterDelete = await user.findOne({
-
+            const masterId: number = Number(req.params.masterId);
+            const masterDelete: User | null = await User.findOne({
                 include: {
-                    model: master, where: {id: masterId}, attributes: ['id'],
-                    include: [master.associations.orders]
+                    model: Master, where: {id: masterId}, attributes: ['id'],
+                    include: [Master.associations.orders]
                 }
             })
-            if (masterDelete == null) {
-                return next(ApiError.Conflict("city isn`t empty"))
+            if (masterDelete === null) {
+                return next(ApiError.Conflict("City isn`t empty"))
             }
-            if (masterDelete!.master!.orders!.length === 0) {
-                await masterDelete.destroy()
-                return res.status(204).json({message: "success"})
+            if (masterDelete === undefined || masterDelete.master === undefined
+                || masterDelete.master.orders === undefined) {
+                return next(ApiError.Conflict("City isn`t empty"));
+            }
+            if (masterDelete.master.orders.length === 0) {
+                await masterDelete.destroy();
+                return res.status(204).json({message: "success"});
             } else {
-                return next(ApiError.Conflict("city isn`t empty"))
+                return next(ApiError.Conflict("Master isn`t empty"));
             }
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            return next(ApiError.badRequest((e as Error).message));
         }
     }
 
 }
 
-export default new MasterLogic()
+export default new MasterLogic();
