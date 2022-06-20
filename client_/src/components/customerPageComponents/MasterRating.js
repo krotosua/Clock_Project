@@ -40,7 +40,6 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
     const [review, setReview] = useState()
     let {orders} = useContext(Context)
     const {id} = useParams()
-
     const sendRating = () => {
         const post = {
             rating: rating,
@@ -49,7 +48,6 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
             masterId: dataForEdit.masterId,
             userId: dataForEdit.userId,
         }
-
         ratingMaster(post).then(res => {
                 fetchCustomerOrders(id, orders.page, 8).then(res => {
                     if (res.status === 204) {
