@@ -1,5 +1,7 @@
 node_modules
 .idea
+./server/adminreg.js
+./server/dist
 idea/Clock_Project.iml
 .idea/modules.xml
 .idea/vcs.xml
@@ -4771,3 +4773,4 @@ server/node_modules/yallist/LICENSE
 server/node_modules/yallist/package.json
 server/node_modules/yallist/README.md
 server/node_modules/yallist/yallist.js
+/server/dist/

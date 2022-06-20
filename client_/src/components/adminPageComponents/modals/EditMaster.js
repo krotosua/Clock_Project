@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import { fetchMasters, updateMaster} from "../../../http/masterAPI";
+import {fetchMasters, updateMaster} from "../../../http/masterAPI";
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
 
@@ -48,9 +48,8 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
             })
     }
 
-
     const close = () => {
-        fetchMasters(null, null, masters.page, 10).then(res => {
+        fetchMasters(null, masters.page, 10).then(res => {
             masters.setMasters(res.data.rows)
             masters.setTotalCount(res.data.rows.length)
         }, (err) => {
@@ -58,10 +57,9 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
         setErrMaster(false)
         onClose()
     }
-
     //--------------------Validation
     const validButton = masterRating > 5 || masterRating < 0 || !masterName
-    const validName = errMaster || blurMasterName && masterName.length == 0
+    const validName = errMaster || blurMasterName && masterName.length === 0
     const validRating = masterRating > 5 || masterRating < 0
     return (
         <div>
@@ -70,7 +68,6 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                 onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                         ИЗМЕНИТЬ ДАННЫЕ МАСТЕРА
                     </Typography>
@@ -88,7 +85,6 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                 onFocus={() => setBlurMasterName(false)}
                                 onBlur={() => setBlurMasterName(true)}
                                 onChange={e => setMasterName(e.target.value)}
-
                             />
                             <TextField
                                 sx={{my: 2}}
@@ -121,7 +117,6 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                     onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
-
                 </Box>
             </Modal>
         </div>

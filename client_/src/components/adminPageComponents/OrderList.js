@@ -110,7 +110,7 @@ const OrderList = observer(({alertMessage}) => {
                     </Link>}
                 >
                     <ListItemText sx={{width: 10}}
-                                  primary="№"
+                                  primary="Id"
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Имя"

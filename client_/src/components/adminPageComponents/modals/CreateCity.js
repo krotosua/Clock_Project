@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {FormControl, TextField, Box, Button, Modal, InputAdornment, Typography} from "@mui/material";
+import {Box, Button, FormControl, InputAdornment, Modal, TextField, Typography} from "@mui/material";
 import {createCity, fetchCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
@@ -47,6 +47,7 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
         setErrCity(false)
         setBlurCityName(false)
         setCityName("")
+        setPrice("")
         onClose()
     }
     //--------------------Validation
@@ -57,7 +58,6 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
             <Modal
                 open={open}
                 onClose={close}
-
             >
                 <Box sx={style}>
 

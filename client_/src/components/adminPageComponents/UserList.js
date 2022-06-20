@@ -32,7 +32,7 @@ const UserList = observer(({alertMessage}) => {
     useEffect(() => {
         getUsers()
 
-    }, [])
+    }, [user.page])
     const changeActiveted = async (user) => {
         const changeInfo = {
             id: user.id,

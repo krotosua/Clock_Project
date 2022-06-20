@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {OutlinedInput,InputLabel,MenuItem,FormControl,ListItemText,Select,Checkbox} from '@mui/material';
-import {useContext, useState} from "react";
+import {useContext, useState} from 'react';
+import {Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select} from '@mui/material';
 import {Context} from "../../../index";
 
 const ITEM_HEIGHT = 48;
@@ -35,14 +35,14 @@ export default function SelectorMasterCity({cityChosen, error, open}) {
     return (
         <div>
             <FormControl sx={{width: 300}}>
-                <InputLabel error={error && cityName.length == 0}
+                <InputLabel error={error && cityName.length === 0}
                             id="multiple-checkbox-label">
                     Города где работает мастер
                 </InputLabel>
                 <Select
                     labelId="multiple-checkbox-label"
                     id="multiple-checkbox"
-                    error={error && cityName.length == 0 || open ? cityName.length == 0 && blur : false}
+                    error={error && cityName.length == 0 || open ? cityName.length === 0 && blur : false}
                     multiple
                     value={cityName}
                     onChange={handleChange}

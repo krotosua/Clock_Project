@@ -89,7 +89,8 @@ const Rating = sequelize.define('rating', {
             min: 0,
             max: 5
         }, defaultValue: 0
-    }
+    },
+    review:{type: DataTypes.STRING, allowNull: true}
 }, {timestamps: false})
 
 

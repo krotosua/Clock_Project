@@ -1,4 +1,4 @@
-const {Master, City, Order, CitiesMasters, User, Rating} = require('../models/models')
+const {Master, City, Order, CitiesMasters, User, Rating, Customer} = require('../models/models')
 const ApiError = require('../error/ApiError')
 const {Op} = require("sequelize");
 const sizeLogic = require("./sizeLogic");
@@ -24,7 +24,7 @@ class MasterLogic {
             limit = limit || 12
             let offset = page * limit - limit
             let masters = await Master.findAndCountAll({
-                order:[['id', 'DESC']],
+                order: [['id', 'DESC']],
                 attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
                     model: City, through: {
@@ -51,7 +51,7 @@ class MasterLogic {
     async getMastersForOrder(req, res, next) {
         try {
             let {cityId} = req.params
-            let { time, sizeClock, limit, page} = req.query
+            let {time, sizeClock, limit, page} = req.query
             const clock = await sizeLogic.CheckClock(next, sizeClock)
             let endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
             let endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0))
@@ -61,7 +61,7 @@ class MasterLogic {
             let masters
             if (cityId) {
                 masters = await Master.findAndCountAll({
-                    order:[['id', 'DESC']],
+                    order: [['id', 'DESC']],
                     where: {
                         isActivated: {[Op.is]: true}
                     }, include: [{
@@ -72,7 +72,7 @@ class MasterLogic {
                         }
                     }, {
                         model: Order, where: {
-                             [Op.not]: [{
+                            [Op.not]: [{
                                 [Op.or]: [{
                                     [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
                                 }, {
@@ -107,7 +107,7 @@ class MasterLogic {
         master = await Master.findOne({
             where: {id: masterId}, include: [{
                 model: Order, where: {
-                     [Op.not]: [{
+                    [Op.not]: [{
                         [Op.or]: [{
                             [Op.and]: [{time: {[Op.lt]: time}}, {endTime: {[Op.lte]: time}}]
                         }, {
@@ -121,7 +121,7 @@ class MasterLogic {
         if (master) {
             throw new ApiError.badRequest({message: 'Master has orders'})
         }
-        return
+
 
     }
 
@@ -144,12 +144,12 @@ class MasterLogic {
         try {
             const result = await sequelize.transaction(async () => {
                 const {masterId} = req.params
-                let {rating, orderId, userId} = req.body
+                let {rating, orderId, userId, review} = req.body
                 const existsRating = await Rating.findOne({where: {orderId: orderId}})
                 if (existsRating) {
                     throw new Error("Rating already exists")
                 }
-                await Rating.create({rating, userId, masterId, orderId})
+                await Rating.create({rating, review, userId, masterId, orderId})
                 let allRating = await Rating.findAndCountAll({
                     where: {masterId: masterId},
                     attributes: ["rating"]
@@ -161,12 +161,37 @@ class MasterLogic {
                 })
                 return master
             })
-            return res.status(201).json(result)
+            return res.status(201).json({result})
         } catch (e) {
-            return next(ApiError.badRequest({message: "Wrong request"}))
+            return next(ApiError.badRequest("Wrong request"))
         }
     }
 
+    async getRatingReviews(req, res, next) {
+        try {
+            const {masterId} = req.params
+            let {limit, page} = req.query
+            page = page || 1
+            limit = limit || 5
+            const offset = page * limit - limit
+            const ratingReviews = await Rating.findAndCountAll({
+                where: {masterId: masterId},
+                order: [['id', 'DESC']],
+                include: [{
+                    model: User,
+                    attributes: ["id"],
+
+                    include: {
+                        model: Customer,
+                        attributes: ["name"]
+                    }
+                }]
+            }, limit, offset)
+            return res.status(200).json(ratingReviews)
+        } catch (e) {
+            return next(ApiError.badRequest("Wrong request"))
+        }
+    }
 
     async activate(req, res, next) {
         try {

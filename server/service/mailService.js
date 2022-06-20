@@ -40,6 +40,7 @@ class MailService {
 
     }
 
+
     userInfo(mailInfo, next) {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
@@ -78,6 +79,7 @@ class MailService {
         })
 
     }
+
 
     updateMail(email, password, next) {
         this.transporter.sendMail({

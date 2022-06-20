@@ -58,16 +58,14 @@ const App = observer(() => {
         )
     }
     return (
-
         <BrowserRouter>
-
             <NavBar/>
             <Box sx={{bgcolor: '#eceaea'}}>
 
                 <CssBaseline/>
                 <Container sx={{
                     bgcolor: '#fff', mt: 6,
-                    height: document.documentElement.clientHeight - 48
+                    height: document.documentElement.clientHeight - 30
                 }}>
                     <AppRouter/>
                 </Container>

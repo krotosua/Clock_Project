@@ -6,6 +6,7 @@ import {
     CircularProgress,
     Divider,
     FormControlLabel,
+    IconButton,
     List,
     ListItem,
     ListItemText,
@@ -34,6 +35,8 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
 import Login from "../authPageComponents/Login";
+import ReviewsIcon from "@mui/icons-material/Reviews";
+import ReviewModal from "../ReviewModal";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -61,6 +64,8 @@ const OrderStepper = observer(({alertMessage}) => {
     const [openTime, setOpenTime] = useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [isAuth, setIsAuth] = useState(false)
+    const [openReview, setOpenReview] = useState(false)
+    const [masterId, setMasterId] = useState(null)
     const navigate = useNavigate();
 
 
@@ -77,12 +82,15 @@ const OrderStepper = observer(({alertMessage}) => {
                 size.selectedSize.id, masters.page, 3)
             if (res.status === 204) {
                 setFreeMasters([])
+                setLoading(false)
                 return
             }
             setFreeMasters(res.data.rows)
             masters.setMasters(res.data.rows);
             masters.setTotalCount(res.data.count);
+            setLoading(false)
         } catch (e) {
+            setLoading(false)
             return masters.setIsEmpty(true);
         }
         setLoading(false)
@@ -144,6 +152,10 @@ const OrderStepper = observer(({alertMessage}) => {
             setAnchorEl(event.currentTarget)
         }
     };
+    const getReviews = (id) => {
+        setMasterId(id)
+        setOpenReview(true)
+    }
 
     const handleBack = () => {
         setAnchorEl(null)
@@ -539,10 +551,14 @@ const OrderStepper = observer(({alertMessage}) => {
                                         <List disablePadding>
                                             <ListItem key={1} divider
                                             >
-                                                <ListItemText sx={{width: 10}} primary="№"/>
-                                                <ListItemText sx={{width: 10}} primary="Имя мастера"/>
-                                                <ListItemText sx={{width: 10,}} primary="Рейтинг"/>
-                                                <ListItemText sx={{width: 10, pr: 5}} primary="Город"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}} primary="№"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}}
+                                                              primary="Имя мастера"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}} primary="Рейтинг"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}} primary="Город"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center", mr: 5}}
+                                                              primary="Комментарии"/>
+
                                             </ListItem>
 
                                             <Divider orientation="vertical"/>
@@ -577,18 +593,28 @@ const OrderStepper = observer(({alertMessage}) => {
                                                                               </Tooltip> : "Занят"
                                                                       }
                                                             >
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={index + 1}/>
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={master.name}/>
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={<Rating name="read-only"
                                                                                                size="small"
                                                                                                precision={0.2}
                                                                                                value={master.rating}
                                                                                                readOnly/>}/>
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={master.cities[0].name}/>
+                                                                <ListItemText
+                                                                    sx={{width: 10, textAlign: "center"}}
+                                                                    primary={
+                                                                        <IconButton sx={{width: 5}}
+                                                                                    aria-label="Reviews"
+                                                                                    onClick={() => getReviews(master.id)}
+                                                                        >
+                                                                            <ReviewsIcon/>
+                                                                        </IconButton>
+                                                                    }/>
                                                             </ListItem>
                                                         );
                                                     })
@@ -625,6 +651,7 @@ const OrderStepper = observer(({alertMessage}) => {
                     ) : (
                         <Box sx={{display: 'flex', justifyContent: "center", mt: 2}}>
                             <Box><Typography variant="h4" sx={{my: 2}}>Заказ успешно создан</Typography>
+                                <Typography variant="h6" sx={{my: 2}}>Детали заказа отправлены на почту</Typography>
                                 {user.isAuth ?
                                     <Link to={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
                                           style={{textDecoration: 'none', color: 'white'}}>
@@ -642,6 +669,9 @@ const OrderStepper = observer(({alertMessage}) => {
                         </Box>
 
                     )}
+                {openReview ? <ReviewModal open={openReview}
+                                           masterId={masterId}
+                                           onClose={() => setOpenReview(false)}/> : null}
             </Box>
     );
 });

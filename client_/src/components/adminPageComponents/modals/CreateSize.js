@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {FormControl, TextField,Box,Modal,Button,Typography} from "@mui/material";
+import {Box, Button, FormControl, Modal, TextField, Typography} from "@mui/material";
 import {Context} from "../../../index";
 import {createSize, fetchSize} from "../../../http/sizeAPI";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
@@ -65,7 +65,7 @@ const CreateSize = ({open, onClose, alertMessage}) => {
 
 
     //--------------------Validation
-    const validName = blurSizeName && sizeName.length == 0
+    const validName = blurSizeName && sizeName.length === 0
     const validButton = errSize || sizeName.length === 0 || !sizeTime
     return (
         <div>

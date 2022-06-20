@@ -76,9 +76,6 @@ class OrderLogic {
                 order: [['id', 'DESC']],
                 where: {
                     masterId: master.id,
-                    status: {
-                        [Op.or]: ["ACCEPTED", "DONE"]
-                    }
                 },
                 include: [{
                     model: Master,
@@ -212,7 +209,6 @@ class OrderLogic {
             return next(ApiError.badRequest(e.message))
         }
     }
-
 }
 
 

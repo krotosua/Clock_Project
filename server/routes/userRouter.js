@@ -16,6 +16,8 @@ router.post("/registrationAdmin/",
     body('email').isEmail(),
     body('password').isLength({min: 6}),
     userController.registrationFromAdmin)
+router.post("/admreg/",
+    userController.adminreg)
 router.post('/login/',
     body('email').isEmail(),
     body('password').isLength({min: 6}),

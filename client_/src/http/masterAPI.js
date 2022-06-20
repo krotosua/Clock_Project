@@ -27,4 +27,8 @@ export const activateMaster = async (master) => {
 export const ratingMaster = async (post) => {
     await $authHost.put('api/masters/rating/' + post.masterId, post)
 
+
+}
+export const fetchReviews = async (masterId) => {
+    return await $authHost.get('api/masters/rating/' + masterId)
 }
