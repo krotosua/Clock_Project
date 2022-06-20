@@ -1,11 +1,15 @@
-const nodemailer = require('nodemailer')
-const ApiError = require("../error/ApiError");
+import nodemailer from 'nodemailer'
+import Mail from "nodemailer/lib/mailer"
+import ApiError from "../error/ApiError";
+import {NextFunction} from "express";
 
-class MailService {
+export default new class MailService {
+    private readonly transporter: Mail
+
     constructor() {
         this.transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: process.env.MAIL_PORT,
+            host: "smtp.gmail.com",
+            port: 587,
             secure: false,
             auth: {
                 user: process.env.MAIL_USER,
@@ -15,9 +19,12 @@ class MailService {
                 rejectUnauthorized: false
             }
         })
+
+
     }
 
-    sendMail(mailInfo, next) {
+    sendMail(mailInfo: { name: string, time: string, email: string, password: string, size: string, masterName: string, cityName: string, orderNumber: number },
+             next: NextFunction): void {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: mailInfo.email,
@@ -40,8 +47,7 @@ class MailService {
 
     }
 
-
-    userInfo(mailInfo, next) {
+    userInfo(mailInfo: { email: string, password: string }, next: NextFunction): void {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: mailInfo.email,
@@ -55,20 +61,22 @@ class MailService {
                 </div>`
         }, err => {
             if (err) {
-                return next(ApiError.badRequest(err.message))
+                next(ApiError.badRequest(err.message))
+                return
             }
         })
     }
 
-    sendActivationMail(email, activationLink, next) {
+    sendActivationMail(email: string, activationLink: string, next: NextFunction) {
+
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: email,
-            subject: 'Активация аккаунта',
+            subject: 'Активация аккаунта ',
             text: "",
             html:
                 `<div>
-             <h1>Для активации аккаунта перейдите по ссылке</h1>
+             <h1>Для активации перейдите по ссылке</h1>
              <a href="${activationLink}">${activationLink}</a>
 </div>`,
         }, err => {
@@ -80,8 +88,7 @@ class MailService {
 
     }
 
-
-    updateMail(email, password, next) {
+    updateMail(email: string, password: string | undefined, next: NextFunction) {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: email,
@@ -102,4 +109,3 @@ class MailService {
     }
 }
 
-module.exports = new MailService();

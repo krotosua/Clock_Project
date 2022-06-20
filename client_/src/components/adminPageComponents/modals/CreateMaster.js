@@ -213,7 +213,6 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
                                 onClick={close}> Закрыть</Button>
                     </Box>
                 </Box>
-
             </Box>
         </Modal>
     </div>);

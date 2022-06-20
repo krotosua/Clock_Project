@@ -8,6 +8,7 @@ idea/Clock_Project.iml
 .idea/Clock_Project.iml
 .idea/modules.xml
 .idea/vcs.xml
+server/dist
 server/node_modules/.package-lock.json
 server/node_modules/.bin/color-support
 server/node_modules/.bin/color-support.cmd

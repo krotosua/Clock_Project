@@ -1,9 +1,9 @@
 import * as React from 'react';
+import {useContext} from 'react';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import {useContext} from "react";
 import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
@@ -97,7 +97,7 @@ const OrderListMaster = observer(({alertMessage}) => {
                         <ListItemText sx={{width: 10}}
                                       primary={
                                           <Button color={order.status === "DONE" ? "success" : "error"}
-                                                  disabled={order.status !== "DONE" || order.status !== "ACCEPTED"}
+                                                  disabled={order.status !== "ACCEPTED" && order.status !== "DONE"}
                                                   size="small"
                                                   variant="outlined"
                                                   onClick={() => order.status === "ACCEPTED" ? changeStatus(order, "DONE") : changeStatus(order, "ACCEPTED")}>

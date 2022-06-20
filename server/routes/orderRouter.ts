@@ -1,11 +1,12 @@
-const express = require('express')
-const router = express.Router()
-const orderController = require("../controllers/orderController")
-const checkRole = require("../middleware/checkRoleMiddleware");
-const {body, param} = require("express-validator");
+import {Router} from 'express'
+import orderController from "../controllers/orderController"
+import checkRole from "../middleware/checkRoleMiddleware"
+import {body, param} from 'express-validator';
+
+const orderRouter = Router()
 
 
-router.post("/",
+orderRouter.post("/",
     body("name").not().isEmpty().isString().trim().escape(),
     body("email").isEmail().isString().trim().escape(),
     body("time").not().isEmpty(),
@@ -15,17 +16,17 @@ router.post("/",
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
     orderController.create,)
 
-router.get('/:userId', checkRole("CUSTOMER"),
+orderRouter.get('/:userId', checkRole("CUSTOMER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getUserOrders)
-router.get('/master/:userId', checkRole("MASTER"),
+
+orderRouter.get('/Master/:userId', checkRole("MASTER"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getMasterOrders)
 
+orderRouter.get('/', checkRole("ADMIN"), orderController.getAllOrders)
 
-router.get('/', checkRole("ADMIN"), orderController.getAllOrders)
-
-router.put("/:orderId",
+orderRouter.put("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),
     body("email").isEmail().isString().trim().escape(),
@@ -36,16 +37,15 @@ router.put("/:orderId",
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
     checkRole("ADMIN"), orderController.update)
 
-router.put("/statusChange/:orderId",
+orderRouter.put("/statusChange/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
-   orderController.statusChange)
+    orderController.statusChange)
 
 
-router.delete("/:orderId",
+orderRouter.delete("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
     checkRole("ADMIN"),
 
     orderController.deleteOne)
 
-
-module.exports = router
+export default orderRouter

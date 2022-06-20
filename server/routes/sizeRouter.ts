@@ -1,22 +1,26 @@
-const express = require('express')
-const router = express.Router()
-const sizeController = require("../controllers/sizeController")
-const checkRole = require("../middleware/checkRoleMiddleware")
-const {body, query, param} = require("express-validator");
+import express from 'express'
+import sizeController from "../controllers/sizeController"
+import checkRole from "../middleware/checkRoleMiddleware"
+import {body, param} from 'express-validator';
 
-router.post("/",
+const sizeRouter = express.Router()
+
+sizeRouter.post("/",
     body("name").not().isEmpty().isString().trim().escape(),
     body("date").not().isEmpty().isString(),
     checkRole("ADMIN"), sizeController.create)
-router.get('/', sizeController.getAll)
-router.put('/:sizeId',
+
+sizeRouter.get('/', sizeController.getAll)
+
+sizeRouter.put('/:sizeId',
     param("sizeId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),
     body("date").not().isEmpty().isString(),
     checkRole("ADMIN"), sizeController.update)
-router.delete('/:sizeId',
+
+sizeRouter.delete('/:sizeId',
     param("sizeId").not().isEmpty().isInt({gt: 0}),
     checkRole("ADMIN"), sizeController.deleteOne)
 
 
-module.exports = router
+export default sizeRouter

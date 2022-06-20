@@ -125,6 +125,7 @@ const OrderStepper = observer(({alertMessage}) => {
                         .find(city => city.id === cities.selectedCity).price
                 }
                 createOrder(orderInfo).then(res => {
+                    console.log(res)
                     cities.setSelectedCity(null)
                     size.setSelectedSize({date: "00:00:00"})
                     masters.setMasters([])
@@ -133,6 +134,7 @@ const OrderStepper = observer(({alertMessage}) => {
                     }
                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 }, err => {
+                    console.log(err)
                     alertMessage('Мастер занят', true)
                     setActiveStep(1)
                     setLoading(true)

@@ -1,26 +1,26 @@
-const express = require('express')
-const router = express.Router()
-const cityController = require("../controllers/cityController")
-const checkRole = require("../middleware/checkRoleMiddleware")
-const {body, param} = require('express-validator');
+import { Router } from 'express'
+const cityRouter = Router()
+import {body, param} from 'express-validator';
+import cityController from "../controllers/cityController"
+import checkRole from "../middleware/checkRoleMiddleware"
 
 
-router.post("/",
+cityRouter.post("/",
     body("name").not().isEmpty().isString().trim().escape(),
     checkRole("ADMIN"),
     cityController.create)
 
-router.put('/:cityId',
+cityRouter.put('/:cityId',
     body("name").not().isEmpty().isString().trim().escape(),
     param("cityId").not().isEmpty().isInt({gt: 0}),
     checkRole("ADMIN"),
     cityController.update)
 
-router.delete('/:cityId',
+cityRouter.delete('/:cityId',
     param("cityId").not().isEmpty().isInt({gt: 0}),
     checkRole("ADMIN"),
     cityController.deleteOne)
 
-router.get('/', cityController.getAll)
+cityRouter.get('/', cityController.getAll)
 
-module.exports = router
+export default cityRouter
