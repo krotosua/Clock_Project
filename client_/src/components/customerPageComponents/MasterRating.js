@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {Typography, Box, Button, Modal, Rating, TextField} from "@mui/material";
+import {Box, Button, Modal, Rating, TextField, Typography} from "@mui/material";
 import StarIcon from '@mui/icons-material/Star';
 import {ratingMaster} from "../../http/masterAPI";
 import {fetchCustomerOrders} from "../../http/orderAPI";
@@ -44,7 +44,7 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
     const sendRating = () => {
         const post = {
             rating: rating,
-            review:review,
+            review: review,
             orderId: dataForEdit.orderId,
             masterId: dataForEdit.masterId,
             userId: dataForEdit.userId,
@@ -59,7 +59,6 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
                     res.data.rows.map(item => {
                         item.date = new Date(item.date).toLocaleDateString("uk-UA")
                     })
-
                     orders.setIsEmpty(false)
                     orders.setOrders(res.data.rows)
                     orders.setTotalCount(res.data.count)
@@ -75,18 +74,14 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
     }
     return (
         <div>
-
             <Modal
                 open={open}
                 onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                         Оценить работу мастера
                     </Typography>
-
-
                     <Box sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
                         <Box
                             sx={{
@@ -112,7 +107,6 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
                             {rating !== null && (
                                 <Box sx={{ml: 2, fontSize: 25}}>{labels[hover !== -1 ? hover : rating]}</Box>
                             )}
-
                         </Box>
                         <TextField
                             fullWidth
@@ -124,8 +118,6 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
                             value={review}
                             onChange={(e) => setReview(e.target.value)}
                         />
-
-
                     </Box>
                     <Box
                         sx={{mt: 2, display: "flex", justifyContent: "space-between"}}

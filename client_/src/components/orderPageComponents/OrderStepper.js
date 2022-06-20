@@ -65,7 +65,7 @@ const OrderStepper = observer(({alertMessage}) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [isAuth, setIsAuth] = useState(false)
     const [openReview, setOpenReview] = useState(false)
-    const [masterId, setMasterId] = useState("")
+    const [masterId, setMasterId] = useState(null)
     const navigate = useNavigate();
 
 

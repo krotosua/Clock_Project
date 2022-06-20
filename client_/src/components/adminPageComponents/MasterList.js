@@ -34,7 +34,7 @@ const MasterList = observer(({alertMessage}) => {
     const [ratingToEdit, setRatingToEdit] = useState(null)
     const [cityToEdit, setCityToEdit] = useState([]);
     const [openReview, setOpenReview] = useState(false)
-    const [masterId, setMasterId] = useState("")
+    const [masterId, setMasterId] = useState(null)
     useEffect(() => {
         getMasters()
     }, [masters.page])
@@ -81,15 +81,15 @@ const MasterList = observer(({alertMessage}) => {
     }
 
     const createCityList = (master) => {
-        let cityList = ""
-        for (let i = 0; i < master.cities.length; i++) {
-            if (i === 0) {
-                cityList += `${master.cities[i].name}`
-            } else {
-                cityList = `${cityList}, ${master.cities[i].name}`
-            }
-        }
-        return cityList
+        return master.cities
+            .reduce((cityList, masterCity, index) => {
+                if (index === 0) {
+                    cityList += masterCity.name
+                } else {
+                    cityList += `, ${masterCity.name}`
+                }
+                return cityList
+            }, '')
     }
 
     const forEdit = (master) => {
