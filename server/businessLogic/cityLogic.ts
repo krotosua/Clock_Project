@@ -1,16 +1,16 @@
 import {City, Master} from '../models/models';
 import ApiError from '../error/ApiError';
-import {validationResult} from 'express-validator';
+import {Result, ValidationError, validationResult} from "express-validator";
 import {NextFunction, Request, Response} from "express";
 import {CreateCityDTO, UpdateCityDTO} from "../dto/city.dto";
-import {GetRowsDB, Pagination} from "../dto/global";
+import {GetRowsDB, Pagination, ReqQuery} from "../dto/global";
 
 
 class CityLogic {
 
-    async create(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    async create(req: Request, res: Response, next: NextFunction): Promise<Response<City | Result<ValidationError>> | void> {
         try {
-            const errors = validationResult(req);
+            const errors: Result<ValidationError> = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()});
             }
@@ -19,12 +19,13 @@ class CityLogic {
             return res.status(200).json({newCity});
         } catch (e) {
             next(ApiError.badRequest((e as Error).message));
+            return
         }
     }
 
-    async getAll(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<City[]> | void> {
         try {
-            let pagination: Pagination = req.query as any;
+            let pagination: Pagination = req.query;
             pagination.page = pagination.page || 1;
             pagination.limit = pagination.limit || 9;
             const offset = pagination.page * pagination.limit - pagination.limit;
@@ -38,39 +39,42 @@ class CityLogic {
             return res.status(200).json(cities)
         } catch (e) {
             next(ApiError.badRequest((e as Error).message));
+            return
         }
     }
 
-    async checkMasterCityId(id: number[]): Promise<void | object> {
+    async checkMasterCityId(id: number[]): Promise<boolean> {
         const cityCheck: City[] = await City.findAll({where: {id}})
         if (cityCheck.length !== id.length || cityCheck.length === 0) {
-            return ApiError.badRequest("WRONG CityId")
+            return true
         }
+        return false
     }
 
     async checkCityId(id: number, next: NextFunction): Promise<void | City> {
         const cityCheck: City | null = await City.findByPk(id);
         if (!cityCheck) {
-            return next(ApiError.badRequest("WRONG CityId"));
+            next(ApiError.badRequest("WRONG CityId"));
+            return
         }
         return cityCheck;
     }
 
-    async update(req: Request, res: Response, next: NextFunction): Promise<Response | Promise<any>> {
+    async update(req: Request, res: Response, next: NextFunction): Promise<Response<City> | void> {
         try {
             const cityId: string = req.params.cityId;
             const cityInfo: UpdateCityDTO = req.body;
             const cityUpdate = await City.update(cityInfo, {where: {id: cityId}});
             return res.status(201).json(cityUpdate);
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message));
+            next(ApiError.badRequest((e as Error).message));
+            return
         }
     }
 
-    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<Response | Promise<any>> {
+    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<Response<{ message: string }> | void> {
         try {
             const cityId: string = req.params.cityId;
-
             if (cityId) {
                 const cityDelete: City | null = await City.findOne({
                     where: {id: cityId},
@@ -78,19 +82,23 @@ class CityLogic {
                     attributes: ["id"]
                 })
                 if (cityDelete === null || cityDelete.masters === undefined) {
-                    return next(ApiError.badRequest("Id is empty"));
+                    next(ApiError.badRequest("Id is empty"));
+                    return
                 }
                 if (cityDelete.masters.length === 0) {
                     await cityDelete.destroy();
                     return res.status(204).json({message: "success"});
                 } else {
-                    return next(ApiError.Conflict("City isn`t empty"));
+                    next(ApiError.Conflict("City isn`t empty"));
+                    return
                 }
             } else {
-                return next(ApiError.badRequest("Id is empty"));
+                next(ApiError.badRequest("Id is empty"));
+                return
             }
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message));
+            next(ApiError.badRequest((e as Error).message));
+            return
         }
     }
 }

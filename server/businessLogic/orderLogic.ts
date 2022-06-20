@@ -4,7 +4,7 @@ import MailService from "../service/mailService"
 import {Op} from "sequelize";
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, UpdateMasterDTO} from "../dto/order.dto";
-import {GetRowsDB, Pagination, UpdateDB} from "../dto/global";
+import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
 const statusList: { WAITING: string, REJECTED: string, ACCEPTED: string, DONE: string } = {
     WAITING: "WAITING",
@@ -14,8 +14,6 @@ const statusList: { WAITING: string, REJECTED: string, ACCEPTED: string, DONE: s
 }
 
 class OrderLogic {
-
-
     async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {
         const {
             name,
@@ -27,10 +25,10 @@ class OrderLogic {
         return await Order.create({name, sizeClockId, userId, time, endTime, masterId, cityId, price})
     }
 
-    async getUserOrders(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    async getUserOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
         try {
-            const userId: string = req.params.userId
-            const pagination: Pagination = req.query as any
+            const userId: number = req.params.userId
+            const pagination: Pagination = req.query
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const offset: number = pagination.page * pagination.limit - pagination.limit
@@ -56,13 +54,14 @@ class OrderLogic {
             return res.status(200).json(orders)
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
-    async getMasterOrders(req: any, res: Response, next: NextFunction): Promise<void | Response> {
+    async getMasterOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
-            const userId: string = req.params.userId
-            const pagination: Pagination = req.query as any
+            const userId: number = req.params.userId
+            const pagination: Pagination = req.query
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const offset: number = pagination.page * pagination.limit - pagination.limit
@@ -100,9 +99,9 @@ class OrderLogic {
         }
     }
 
-    async getAllOrders(req: any, res: Response, next: NextFunction): Promise<void | Response> {
+    async getAllOrders(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
-            const pagination: Pagination = req.query as any
+            const pagination: Pagination = req.query
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const offset: number = pagination.page * pagination.limit - pagination.limit
@@ -125,7 +124,8 @@ class OrderLogic {
             }
             return res.status(200).json(orders)
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
+            return
         }
 
     }
@@ -153,10 +153,10 @@ class OrderLogic {
                 userId,
                 price
             }, {where: {id: orderId}})
-
             return orderUpdate
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
@@ -174,16 +174,18 @@ class OrderLogic {
             return orderUpdate
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
-    async deleteOne(req: any, res: Response, next: NextFunction): Promise<void | Response> {
+    async deleteOne(req: any, res: Response, next: NextFunction): Promise<void | Response<{ message: string }>> {
         try {
             const orderId: string = req.params.orderId
             await Order.destroy({where: {id: orderId}})
             return res.status(204).json({message: "success"})
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
@@ -200,13 +202,15 @@ class OrderLogic {
             let {time}: { time: Date | string } = req.body
             const masterMail: Master | null = await Master.findByPk(masterId)
             if (!masterMail) {
-                return next(ApiError.badRequest("masterId is wrong"))
+                next(ApiError.badRequest("masterId is wrong"))
+                return
             }
             time = new Date(time).toLocaleString("uk-UA")
             MailService.sendMail(name, time, email, size, masterMail.name, cityName, password, next)
 
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 

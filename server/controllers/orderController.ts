@@ -5,16 +5,16 @@ import sizeLogic from "../businessLogic/sizeLogic"
 import ApiError from "../error/ApiError";
 import sequelize from "../db";
 import cityLogic from "../businessLogic/cityLogic";
-import {validationResult} from "express-validator";
+import {Result, ValidationError, validationResult} from "express-validator";
 import {City, Order, SizeClock, User} from '../models/models'
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, UpdateMasterDTO} from "../dto/order.dto";
-import {UpdateDB} from "../dto/global";
+import {ReqQuery, UpdateDB} from "../dto/global";
 
 
 class OrderController {
 
-    async create(req: Request, res: Response, next: NextFunction): Promise<void | Response | Order> {
+    async create(req: Request, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | Order>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -29,24 +29,28 @@ class OrderController {
                 let {time}: { time: Date | string } = req.body
                 const clock: void | SizeClock = await sizeLogic.CheckClock(next, sizeClockId)
                 if (!clock) {
-                    return next(ApiError.badRequest("Clock`s wrong"))
+                    next(ApiError.badRequest("Clock`s wrong"))
+                    return
                 }
                 const endHour: number = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
                 const endTime: Date = new Date(new Date(time).setUTCHours(endHour, 0, 0))
                 time = new Date(time)
                 const city: void | City = await cityLogic.checkCityId(cityId, next)
                 if (!city) {
-                    return next(ApiError.badRequest("City`s wrong"))
+                    next(ApiError.badRequest("City`s wrong"))
+                    return
                 }
                 await masterLogic.checkOrders(next, masterId, time, endTime)
                 const user: User = await userLogic.GetOrCreateUser(req)
                 if (!user) {
-                    return next(ApiError.badRequest("Customer is wrong"))
+                    next(ApiError.badRequest("Customer is wrong"))
+                    return
                 }
                 const userId: number = user.getDataValue("id")
                 const order: void | Order = await orderLogic.create(req, next, userId, time, endTime)
                 if (!order) {
-                    return next(ApiError.badRequest("Customer is wrong"))
+                    next(ApiError.badRequest("Customer is wrong"))
+                    return
                 }
                 const data = {
                     order,
@@ -64,7 +68,7 @@ class OrderController {
 
     }
 
-    async update(req: Request, res: Response, next: NextFunction) {
+    async update(req: Request, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | UpdateDB<Order>>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -106,21 +110,25 @@ class OrderController {
         }
     }
 
-    async statusChange(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async statusChange(req: Request, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | UpdateDB<Order>>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
             const orders: void | UpdateDB<Order> = await orderLogic.statusChange(req, res, next)
-
+            if (!orders) {
+                next(ApiError.badRequest("Empty"))
+                return
+            }
             return res.status(201).json(orders)
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
-    async getUserOrders(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    async getUserOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -128,7 +136,7 @@ class OrderController {
         await orderLogic.getUserOrders(req, res, next)
     }
 
-    async getMasterOrders(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    async getMasterOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -136,12 +144,12 @@ class OrderController {
         await orderLogic.getMasterOrders(req, res, next)
     }
 
-    async getAllOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async getAllOrders(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void> {
         await orderLogic.getAllOrders(req, res, next)
     }
 
 
-    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});

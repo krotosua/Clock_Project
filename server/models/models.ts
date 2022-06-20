@@ -222,6 +222,7 @@ CitiesMasters.init({
     },
     {
         tableName: 'cities_masters',
+        modelName: 'cities_masters',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -239,6 +240,7 @@ City.init({
     },
     {
         tableName: 'cities',
+        modelName: 'city',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -264,6 +266,7 @@ User.init({
     },
     {
         tableName: 'users',
+        modelName: 'user',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -281,6 +284,7 @@ Customer.init({
     },
     {
         tableName: 'customers',
+        modelName: 'customer',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -306,6 +310,7 @@ Master.init({
     },
     {
         tableName: 'masters',
+        modelName: 'master',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -323,6 +328,7 @@ SizeClock.init({
     },
     {
         tableName: 'sizeClocks',
+        modelName: 'sizeClock',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -355,6 +361,7 @@ Order.init({
     },
     {
         tableName: 'orders',
+        modelName: 'order',
         sequelize: sequelizeConnection,
         timestamps: false
     })
@@ -375,6 +382,7 @@ Rating.init({
     },
     {
         tableName: 'rating',
+        modelName: 'rating',
         sequelize: sequelizeConnection,
         timestamps: false
     })

@@ -2,14 +2,14 @@ import jwt from "jsonwebtoken"
 import ApiError from "../error/ApiError"
 import {Customer, Master, Order, User} from "../models/models"
 import * as bcrypt from "bcrypt"
-import {validationResult} from "express-validator"
+import {Result, ValidationError, validationResult} from "express-validator"
 import MailService from "../service/mailService"
 import {v4 as uuidv4} from "uuid"
 import masterController from "../controllers/masterController"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
 import {CreateUserDTO, GetOrCreateUserDTO, LoginDTO, UpdateUserDTO} from "../dto/user.dto";
-import {GetRowsDB, Pagination, UpdateDB} from "../dto/global";
+import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
 
 const generateJwt = (id: number, email: string, role: string, isActivated?: boolean, name?: string): string => {
@@ -17,7 +17,7 @@ const generateJwt = (id: number, email: string, role: string, isActivated?: bool
 }
 
 class UserLogic {
-    async registration(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async registration(req: Request, res: Response, next: NextFunction): Promise<void | Response<User | Result<ValidationError>>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -48,6 +48,7 @@ class UserLogic {
                 const newUser: User | null = await User.create({email, role, password: hashPassword, activationLink})
                 if (isMaster) {
                     req.body.userId = newUser.id
+
                     await masterController.create(req, res, next)
                 } else {
                     await Customer.create({userId: newUser.id, name})
@@ -62,7 +63,7 @@ class UserLogic {
     }
 
 
-    async registrationFromAdmin(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async registrationFromAdmin(req: Request, res: Response, next: NextFunction): Promise<void | Response<User | Result<ValidationError>>> {
 
         try {
             req.body.isActivated = true
@@ -88,6 +89,7 @@ class UserLogic {
                 const newUser: User = await User.create({email, role, password: hashPassword, isActivated})
                 if (isMaster) {
                     req.body.userId = newUser.id
+                    console.log("hi")
                     await masterController.create(req, res, next)
                 } else {
                     await Customer.create({userId: newUser.id, name})
@@ -97,6 +99,7 @@ class UserLogic {
             return result
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
@@ -138,7 +141,7 @@ class UserLogic {
     }
 
 
-    async login(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async login(req: Request, res: Response, next: NextFunction): Promise<void | Response<{ token: string }>> {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -170,13 +173,13 @@ class UserLogic {
         }
     }
 
-    async check(req: any, res: Response, next: NextFunction): Promise<Response> {
+    async check(req: any, res: Response): Promise<Response<{ token: string }>> {
         const token: string = generateJwt(req.user.id, req.user.email, req.user.role, req.user.isActivated, req.user.name)
         return res.status(200).json({token})
     }
 
-    async checkEmail(req: Request, res: Response, next: NextFunction): Promise<Response> {
-        const email: string = req.query.email as any
+    async checkEmail(req: ReqQuery<{ email: string }>, res: Response): Promise<Response<User>> {
+        const email: string = req.query.email
         const userCheck: User | null = await User.findOne({where: {email: email}})
         if (!userCheck || userCheck.password === null) {
             return res.status(204).send({message: "204"})
@@ -184,7 +187,7 @@ class UserLogic {
         return res.status(200).json({userCheck})
     }
 
-    async updateUser(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async updateUser(req: Request, res: Response, next: NextFunction): Promise<void | Response<UpdateDB<User>>> {
         try {
             const userId: string = req.params.userId
             const {email, password}: UpdateUserDTO = req.body
@@ -198,13 +201,14 @@ class UserLogic {
             await MailService.updateMail(email, password ?? undefined, next)
             return res.status(201).json({userUpdate})
         } catch (e) {
-            return next(ApiError.badRequest("Wrong request"))
+            next(ApiError.badRequest("Wrong request"))
+            return
         }
     }
 
-    async getAll(req: Request, res: Response, next: NextFunction) {
+    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<User> | { message: string }>> {
         try {
-            let pagination: Pagination = req.query as any;
+            let pagination: Pagination = req.query;
             pagination.page = pagination.page || 1;
             pagination.limit = pagination.limit || 9;
             const offset: number = pagination.page * pagination.limit - pagination.limit;
@@ -219,10 +223,11 @@ class UserLogic {
             return res.status(200).json(users)
         } catch (e) {
             next(ApiError.badRequest((e as Error).message));
+            return
         }
     }
 
-    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void | Response<{ message: string }>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -245,11 +250,12 @@ class UserLogic {
                 await userDelete.destroy();
                 return res.status(204).json({message: "success"});
             } else {
-                return next(ApiError.Conflict("Customer has orders"));
+                next(ApiError.Conflict("Customer has orders"));
+                return
             }
-            return res.status(204).json("success");
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message));
+            next(ApiError.badRequest((e as Error).message));
+            return
         }
     }
 
@@ -258,17 +264,19 @@ class UserLogic {
             const activationLink: string = req.params.link
             const userActivate: User | null = await User.findOne({where: {activationLink}})
             if (!userActivate) {
-                return next(ApiError.badRequest("Not activated"));
+                next(ApiError.badRequest("Not activated"));
+                return
             }
             userActivate.isActivated = true
             await userActivate.save()
             return res.redirect(process.env.CLIENT_URL as string)
         } catch (e) {
-            return next(ApiError.badRequest((e as Error).message))
+            next(ApiError.badRequest((e as Error).message))
+            return
         }
     }
 
-    async activateAdmin(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+    async activateAdmin(req: Request, res: Response, next: NextFunction): Promise<void | Response<UpdateDB<User>>> {
         try {
             const userId: string = req.params.userId
             const isActivated: boolean = req.body.isActivated
@@ -277,7 +285,8 @@ class UserLogic {
             }, {where: {id: userId}})
             return res.status(201).json(userActivate)
         } catch (e) {
-            return next(ApiError.badRequest("Wrong request"))
+            next(ApiError.badRequest("Wrong request"))
+            return
         }
     }
 

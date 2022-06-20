@@ -1,6 +1,7 @@
 import userLogic from '../businessLogic/userLogic';
-import {validationResult} from "express-validator";
+import {Result, ValidationError, validationResult} from "express-validator";
 import {NextFunction, Request, Response} from "express";
+import {ReqQuery} from "../dto/global";
 
 
 class UserController {
@@ -17,15 +18,15 @@ class UserController {
         await userLogic.login(req, res, next)
     }
 
-    async check(req: Request, res: Response, next: NextFunction): Promise<void> {
-        await userLogic.check(req, res, next)
+    async check(req: Request, res: Response): Promise<void> {
+        await userLogic.check(req, res)
     }
 
-    async checkEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
-        await userLogic.checkEmail(req, res, next)
+    async checkEmail(req: ReqQuery<{ email: string }>, res: Response): Promise<void> {
+        await userLogic.checkEmail(req, res)
     }
 
-    async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void> {
         await userLogic.getAll(req, res, next)
     }
 
@@ -37,19 +38,18 @@ class UserController {
         await userLogic.activate(req, res, next)
     }
 
-    async activateAdmin(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    async activateAdmin(req: Request, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         await userLogic.activateAdmin(req, res, next)
-
     }
 
     async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         await userLogic.updateUser(req, res, next)
     }
-    
+
 }
 
 
