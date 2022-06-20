@@ -36,7 +36,7 @@ masterRouter.put('/activate/:masterId',
 masterRouter.put('/Rating/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     checkRole("CUSTOMER"), masterController.ratingUpdate)
-
+masterRouter.get('/rating/:masterId', masterController.getRatingReviews)
 masterRouter.delete('/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     checkRole("ADMIN"), masterController.deleteOne)

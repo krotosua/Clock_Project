@@ -55,6 +55,7 @@ interface MasterAttributes {
 interface RatingAttributes {
     id: number;
     rating: number;
+    review?: string;
     orderId?: number;
     masterId?: number;
     userId?: number;
@@ -170,6 +171,7 @@ class Rating extends Model<RatingAttributes, RatingInput>
     implements RatingAttributes {
     public id!: number;
     public rating!: number;
+    declare review?: string;
     declare orderId: number;
     declare masterId: number;
     declare userId: number;
@@ -378,7 +380,8 @@ Rating.init({
                 min: 0,
                 max: 5
             }, defaultValue: 0
-        }
+        },
+        review: {type: DataTypes.STRING, allowNull: true}
     },
     {
         tableName: 'rating',

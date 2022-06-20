@@ -1,7 +1,6 @@
 import {Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
-import {Op} from "sequelize";
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, UpdateMasterDTO} from "../dto/order.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
@@ -77,9 +76,6 @@ class OrderLogic {
                 order: [['id', 'DESC']],
                 where: {
                     masterId: masterFind.id,
-                    status: {
-                        [Op.or]: ["ACCEPTED", "DONE"]
-                    }
                 },
                 include: [{
                     model: Master,
@@ -111,7 +107,7 @@ class OrderLogic {
                     model: Master,
                 }, {
                     model: SizeClock,
-                    attributes: ['name'],
+                    attributes: ['date'],
 
                 }, {
                     model: User,
@@ -193,6 +189,7 @@ class OrderLogic {
         try {
             const cityName: string = result!.city.name
             const size: string = result!.clock.name
+            const orderNumber: number = result!.order.id
             const {
                 name,
                 email,
@@ -206,8 +203,20 @@ class OrderLogic {
                 return
             }
             time = new Date(time).toLocaleString("uk-UA")
-            MailService.sendMail(name, time, email, size, masterMail.name, cityName, password, next)
-
+            const mailInfo = {
+                name,
+                time,
+                email,
+                password,
+                size,
+                masterName: masterMail.name,
+                cityName,
+                orderNumber,
+            }
+            MailService.sendMail(mailInfo, next)
+            if (password) {
+                MailService.userInfo(mailInfo, next)
+            }
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return

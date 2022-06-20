@@ -23,21 +23,20 @@ export default new class MailService {
 
     }
 
-    sendMail(name: string, time: string, email: string, size: string, masterName: string, cityName: string, password: string, next: NextFunction) {
-
+    sendMail(mailInfo: { name: string, time: string, email: string, password: string, size: string, masterName: string, cityName: string, orderNumber: number },
+             next: NextFunction): void {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
-            to: email,
-            subject: 'Подтверждение заказа',
+            to: mailInfo.email,
+            subject: `Подтверждение заказа №${mailInfo.orderNumber}`,
             text: 'Письмо о успешно выполненной брони',
             html:
                 `<div>
-                <p>${name}, заказ успешно оформлен</p>
-                <p>Дата выполнения заказа: ${time}</p>
-                <p>Размер часов: ${size}</p>
-                <p>Мастер:${masterName} в городе ${cityName}</p>
+                <p>${mailInfo.name}, заказ №${mailInfo.orderNumber} успешно оформлен</p>
+                <p>Дата выполнения заказа: ${mailInfo.time}</p>
+                <p>Размер часов: ${mailInfo.size}</p>
+                <p>Мастер:${mailInfo.masterName} в городе ${mailInfo.cityName}</p>
                 <p>Хорошего, дня!</p>
-              <p>  ${password ? `Ваш пароль: ${password}` : ""}</p>
 </div>`,
         }, err => {
             if (err) {
@@ -46,6 +45,26 @@ export default new class MailService {
 
         })
 
+    }
+
+    userInfo(mailInfo: { email: string, password: string }, next: NextFunction): void {
+        this.transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to: mailInfo.email,
+            subject: `Данные для входа`,
+            text: 'Ваши данные для входа',
+            html:
+                `<div>
+                <p>Email: ${mailInfo.email}</p>
+                <p>Password: ${mailInfo.password}</p>
+                <p>Теперь можете выполнить  <a href="${process.env.LOGIN_URL}">АВТОРИЗАЦИЮ</a></p>
+                </div>`
+        }, err => {
+            if (err) {
+                next(ApiError.badRequest(err.message))
+                return
+            }
+        })
     }
 
     sendActivationMail(email: string, activationLink: string, next: NextFunction) {
@@ -69,7 +88,7 @@ export default new class MailService {
 
     }
 
-    updateMail(email: string, password: string|undefined, next: NextFunction) {
+    updateMail(email: string, password: string | undefined, next: NextFunction) {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: email,

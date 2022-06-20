@@ -45,5 +45,4 @@ userRouter.put('/:userId',
 userRouter.delete('/:userId', checkRole("ADMIN"),
     param("userId").not().isEmpty().isInt({gt: 0}),
     userController.deleteOne)
-
 export default userRouter

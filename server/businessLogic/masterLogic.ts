@@ -149,14 +149,14 @@ class MasterLogic {
         try {
             const result: UpdateDB<Master> | void = await sequelize.transaction(async () => {
                 const masterId: number = Number(req.params.masterId);
-                const {orderId, userId}: CreateRatingDTO = req.body;
+                const {orderId, userId, review}: CreateRatingDTO = req.body;
                 let newRating: number = req.body.rating;
                 const existsRating: Rating | null = await Rating.findOne({where: {orderId: orderId}});
                 if (existsRating) {
                     next(ApiError.badRequest("Wrong request"));
                     return
                 }
-                await Rating.create({rating: newRating, userId, masterId, orderId});
+                await Rating.create({rating: newRating, review, userId, masterId, orderId});
                 let allRating: GetRowsDB<Rating> = await Rating.findAndCountAll({
                     where: {masterId: masterId},
                     attributes: ["rating"]
@@ -171,6 +171,28 @@ class MasterLogic {
         } catch (e) {
             next(ApiError.badRequest("Wrong request"));
             return
+        }
+    }
+
+    async getRatingReviews(req: Request<{ masterId: number }> & ReqQuery<{ page: number, limit: number }>,
+                           res: Response, next: NextFunction) {
+        try {
+            const {masterId} = req.params
+            let {limit, page} = req.query
+            page = page || 1
+            limit = limit || 5
+            const offset = page * limit - limit
+            const ratingReviews = await Rating.findAndCountAll({
+                where: {masterId: masterId},
+                order: [['id', 'DESC']],
+                include: [{
+                    model: User,
+                    attributes: ["id"],
+                }]
+            })
+            return res.status(200).json(ratingReviews)
+        } catch (e) {
+            return next(ApiError.badRequest("Wrong request"))
         }
     }
 

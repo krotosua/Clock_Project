@@ -95,6 +95,11 @@ class MasterController {
         }
     }
 
+    async getRatingReviews(req: Request<{ masterId: number }> & ReqQuery<{ page: number, limit: number }>,
+                           res: Response, next: NextFunction): Promise<void> {
+        await masterLogic.getRatingReviews(req, res, next)
+    }
+
     async deleteOne(req: Request, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

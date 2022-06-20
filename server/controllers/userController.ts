@@ -38,6 +38,7 @@ class UserController {
         await userLogic.activate(req, res, next)
     }
 
+
     async activateAdmin(req: Request, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

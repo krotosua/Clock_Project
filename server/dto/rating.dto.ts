@@ -2,6 +2,7 @@ import {Optional} from "sequelize/types"
 
 export type CreateRatingDTO = {
     rating: number
+    review?: string
     orderId: number;
     userId: number
     masterId: number

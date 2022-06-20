@@ -89,7 +89,6 @@ class UserLogic {
                 const newUser: User = await User.create({email, role, password: hashPassword, isActivated})
                 if (isMaster) {
                     req.body.userId = newUser.id
-                    console.log("hi")
                     await masterController.create(req, res, next)
                 } else {
                     await Customer.create({userId: newUser.id, name})
@@ -115,8 +114,9 @@ class UserLogic {
             if (candidate) {
                 if (changeName && candidate.password !== null) {
                     await Customer.update({name: name}, {where: {userId: candidate.id}})
+                } else if (!regCustomer) {
+                    return candidate
                 }
-                return candidate
             }
             let newUser: User | null
             if (regCustomer) {
@@ -129,7 +129,11 @@ class UserLogic {
                 }
                 const hashPassword: string = await bcrypt.hash(password, 5)
                 req.body.password = password
-                newUser = await User.create({email, password: hashPassword, isActivated: true})
+                if (candidate) {
+                    newUser = await candidate.update({password: hashPassword, isActivated: true})
+                } else {
+                    newUser = await User.create({email, password: hashPassword, isActivated: true})
+                }
                 await Customer.create({userId: newUser.id, name})
             } else {
                 newUser = await User.create({email})
