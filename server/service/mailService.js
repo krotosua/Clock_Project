@@ -15,26 +15,21 @@ class MailService {
                 rejectUnauthorized: false
             }
         })
-
-
-
     }
 
-    sendMail(name, time, email, size, masterName, cityName,password, next) {
-
+    sendMail(mailInfo, next) {
         this.transporter.sendMail({
-            from:  process.env.MAIL_USER,
-            to: email,
-            subject: 'Подтверждение заказа',
+            from: process.env.MAIL_USER,
+            to: mailInfo.email,
+            subject: `Подтверждение заказа №${mailInfo.orderNumber}`,
             text: 'Письмо о успешно выполненной брони',
             html:
                 `<div>
-                <p>${name}, заказ успешно оформлен</p>
-                <p>Дата выполнения заказа: ${time}</p>
-                <p>Размер часов: ${size}</p>
-                <p>Мастер:${masterName} в городе ${cityName}</p>
+                <p>${mailInfo.name}, заказ №${mailInfo.orderNumber} успешно оформлен</p>
+                <p>Дата выполнения заказа: ${mailInfo.time}</p>
+                <p>Размер часов: ${mailInfo.size}</p>
+                <p>Мастер:${mailInfo.masterName} в городе ${mailInfo.cityName}</p>
                 <p>Хорошего, дня!</p>
-              <p>  ${password?`Ваш пароль: ${password}`:""}</p>
 </div>`,
         }, err => {
             if (err) {
@@ -44,16 +39,36 @@ class MailService {
         })
 
     }
-    sendActivationMail(email,activationLink,next) {
 
+
+    userInfo(mailInfo, next) {
         this.transporter.sendMail({
-            from:  process.env.MAIL_USER,
+            from: process.env.MAIL_USER,
+            to: mailInfo.email,
+            subject: `Данные для входа`,
+            text: 'Ваши данные для входа',
+            html:
+                `<div>
+                <p>Email: ${mailInfo.email}</p>
+                <p>Password: ${mailInfo.password}</p>
+                <p>Теперь можете выполнить  <a href="${process.env.LOGIN_URL}">АВТОРИЗАЦИЮ</a></p>
+                </div>`
+        }, err => {
+            if (err) {
+                return next(ApiError.badRequest(err.message))
+            }
+        })
+    }
+
+    sendActivationMail(email, activationLink, next) {
+        this.transporter.sendMail({
+            from: process.env.MAIL_USER,
             to: email,
-            subject: 'Активация аккаунта на',
+            subject: 'Активация аккаунта',
             text: "",
             html:
                 `<div>
-             <h1>Для активации перейдите по ссылке</h1>
+             <h1>Для активации аккаунта перейдите по ссылке</h1>
              <a href="${activationLink}">${activationLink}</a>
 </div>`,
         }, err => {
@@ -65,9 +80,10 @@ class MailService {
 
     }
 
-    updateMail(email,password,next){
+
+    updateMail(email, password, next) {
         this.transporter.sendMail({
-            from:  process.env.MAIL_USER,
+            from: process.env.MAIL_USER,
             to: email,
             subject: 'Активация аккаунта на',
             text: "",
@@ -75,7 +91,7 @@ class MailService {
                 `<div>
                 Данные для входа измененны:
                 email: ${email}
-                 <p>  ${password?`Ваш пароль: ${password}`:""}</p>
+                 <p>  ${password ? `Ваш пароль: ${password}` : ""}</p>
 </div>`,
         }, err => {
             if (err) {

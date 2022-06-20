@@ -454,7 +454,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                 <Box sx={{mb: 1}}> Дата заказа и время
                                     заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
                                 <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
-                                <Box> Имя мастера: <b>{freeMasters.find(item => item.id == chosenMaster).name}</b></Box>
+                                <Box> Имя мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
                                 <Box sx={{my: 2}}>Стоимость
                                     услуги: <b>{size.selectedSize.date !== "00:00:00" && cities.selectedCity ? size.selectedSize.date.slice(0, 2) * cities.cities
                                         .find(city => city.id === cities.selectedCity).price + " грн" : null} </b></Box>
@@ -540,7 +540,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                         <CircularProgress/>
                                     </Box>
                                 )
-                                : freeMasters.length == 0 ? (
+                                : freeMasters.length === 0 ? (
                                     <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>
                                         Все мастера заняты
                                     </Typography>) : (
@@ -568,7 +568,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                                 value={chosenMaster}
                                                 onChange={choseMaster}
                                             >
-                                                {freeMasters.length == 0 ? (
+                                                {freeMasters.length === 0 ? (
                                                     <Typography sx={{mb: 2}}>
                                                         Все мастера заняты
                                                     </Typography>
