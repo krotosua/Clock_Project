@@ -195,9 +195,18 @@ class OrderLogic {
             let {time} = req.body
             const master = await Master.findByPk(masterId)
             time = new Date(time).toLocaleString("uk-UA")
-            MailService.sendMail(name, time, email, size, master.name, cityName, orderNumber, next)
+            const mailInfo = {
+                name,
+                time,
+                email,
+                size,
+                masterName: master.name,
+                cityName,
+                orderNumber,
+            }
+            MailService.sendMail(mailInfo, next)
             if (password) {
-                MailService.userInfo(email, password, next)
+                MailService.userInfo(mailInfo, next)
             }
         } catch (e) {
             return next(ApiError.badRequest(e.message))

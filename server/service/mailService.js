@@ -17,18 +17,18 @@ class MailService {
         })
     }
 
-    sendMail(name, time, email, size, masterName, cityName, orderNumber, next) {
+    sendMail(mailInfo, next) {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
-            to: email,
-            subject: `Подтверждение заказа №${orderNumber}`,
+            to: mailInfo.email,
+            subject: `Подтверждение заказа №${mailInfo.orderNumber}`,
             text: 'Письмо о успешно выполненной брони',
             html:
                 `<div>
-                <p>${name}, заказ №${orderNumber} успешно оформлен</p>
-                <p>Дата выполнения заказа: ${time}</p>
-                <p>Размер часов: ${size}</p>
-                <p>Мастер:${masterName} в городе ${cityName}</p>
+                <p>${mailInfo.name}, заказ №${mailInfo.orderNumber} успешно оформлен</p>
+                <p>Дата выполнения заказа: ${mailInfo.time}</p>
+                <p>Размер часов: ${mailInfo.size}</p>
+                <p>Мастер:${mailInfo.masterName} в городе ${mailInfo.cityName}</p>
                 <p>Хорошего, дня!</p>
 </div>`,
         }, err => {
@@ -40,16 +40,16 @@ class MailService {
 
     }
 
-    userInfo(email, password, next) {
+    userInfo(mailInfo, next) {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
-            to: email,
+            to: mailInfo.email,
             subject: `Данные для входа`,
             text: 'Ваши данные для входа',
             html:
                 `<div>
-                <p>Email: ${email}</p>
-                <p>Password: ${password}</p>
+                <p>Email: ${mailInfo.email}</p>
+                <p>Password: ${mailInfo.password}</p>
                 <p>Теперь можете выполнить  <a href="${process.env.LOGIN_URL}">АВТОРИЗАЦИЮ</a></p>
                 </div>`
         }, err => {
