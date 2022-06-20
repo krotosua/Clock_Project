@@ -111,7 +111,7 @@ class OrderLogic {
                     model: Master,
                 }, {
                     model: SizeClock,
-                    attributes: ['name'],
+                    attributes: ['date'],
 
                 }, {
                     model: User,
