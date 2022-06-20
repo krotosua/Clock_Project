@@ -1,26 +1,25 @@
 import * as React from "react";
+import {useContext, useEffect, useState} from "react";
 import {
     Box,
-    Stepper,
-    Step,
-    StepLabel,
     Button,
-    Typography,
     CircularProgress,
+    Divider,
     FormControlLabel,
-    Radio,
-    RadioGroup,
-    Rating,
-    TextField,
-    Tooltip,
     List,
     ListItem,
     ListItemText,
-    Divider,
-    Popover
-
+    Popover,
+    Radio,
+    RadioGroup,
+    Rating,
+    Step,
+    StepLabel,
+    Stepper,
+    TextField,
+    Tooltip,
+    Typography
 } from "@mui/material";
-import {useContext, useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import {fetchMastersForOrder} from "../../http/masterAPI";
 import {observer} from "mobx-react-lite";
@@ -30,7 +29,7 @@ import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
 import {Context} from "../../index";
-import {LocalizationProvider, DatePicker, TimePicker} from "@mui/lab";
+import {DatePicker, LocalizationProvider, TimePicker} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
@@ -171,7 +170,7 @@ const OrderStepper = observer(({alertMessage}) => {
     useEffect(() => {
         if (activeStep === 1) {
             setLoading(true)
-            fetchMastersForOrder(cities.selectedCity,  new Date(new Date(date).setHours(time.getHours())), size.selectedSize.id, masters.page, 3).then(
+            fetchMastersForOrder(cities.selectedCity, new Date(new Date(date).setHours(time.getHours())), size.selectedSize.id, masters.page, 3).then(
                 (res) => {
                     if (res.status === 204) {
                         setFreeMasters([])
@@ -443,7 +442,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                 <Box sx={{mb: 1}}> Дата заказа и время
                                     заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
                                 <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
-                                <Box> Имя мастера: <b>{freeMasters.find(item => item.id == chosenMaster).name}</b></Box>
+                                <Box> Имя мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
                                 <Box sx={{my: 2}}>Стоимость
                                     услуги: <b>{size.selectedSize.date !== "00:00:00" && cities.selectedCity ? size.selectedSize.date.slice(0, 2) * cities.cities
                                         .find(city => city.id === cities.selectedCity).price + " грн" : null} </b></Box>
@@ -529,7 +528,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                         <CircularProgress/>
                                     </Box>
                                 )
-                                : freeMasters.length == 0 ? (
+                                : freeMasters.length === 0 ? (
                                     <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>
                                         Все мастера заняты
                                     </Typography>) : (
@@ -553,7 +552,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                                 value={chosenMaster}
                                                 onChange={choseMaster}
                                             >
-                                                {freeMasters.length == 0 ? (
+                                                {freeMasters.length === 0 ? (
                                                     <Typography sx={{mb: 2}}>
                                                         Все мастера заняты
                                                     </Typography>
