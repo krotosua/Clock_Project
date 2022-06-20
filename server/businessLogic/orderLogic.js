@@ -31,7 +31,7 @@ class OrderLogic {
             let offset = page * limit - limit
             let orders
             orders = await Order.findAndCountAll({
-                order:[['id', 'DESC']],
+                order: [['id', 'DESC']],
                 where: {userId: userId},
                 include: [{
                     model: Master,
@@ -73,7 +73,7 @@ class OrderLogic {
                 return next(ApiError.forbidden("Doesn`t activated"))
             }
             orders = await Order.findAndCountAll({
-                order:[['id', 'DESC']],
+                order: [['id', 'DESC']],
                 where: {
                     masterId: master.id,
                     status: {
@@ -106,7 +106,7 @@ class OrderLogic {
             let offset = page * limit - limit
             let orders
             orders = await Order.findAndCountAll({
-                order:[['id', 'DESC']],
+                order: [['id', 'DESC']],
                 include: [{
                     model: Master,
                 }, {
@@ -190,12 +190,15 @@ class OrderLogic {
         try {
             const cityName = result.city.name
             const size = result.clock.name
-            let {name,  time, email, masterId, password} = req.body
-
+            const {name, email, masterId, password} = req.body
+            const orderNumber = result.order.id
+            let {time} = req.body
             const master = await Master.findByPk(masterId)
             time = new Date(time).toLocaleString("uk-UA")
-            MailService.sendMail(name,  time, email, size, master.name, cityName, password, next)
-
+            MailService.sendMail(name, time, email, size, master.name, cityName, orderNumber, next)
+            if (password) {
+                MailService.userInfo(email, password, next)
+            }
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }

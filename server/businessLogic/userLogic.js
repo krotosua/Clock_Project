@@ -90,7 +90,7 @@ class UserLogic {
         }
     }
 
-    async GetOrCreateUser(req, res, next) {
+    async GetOrCreateUser(req) {
         try {
             let {email, name, regCustomer, changeName} = req.body
             const candidate = await User.findOne({where: {email}})
@@ -99,8 +99,9 @@ class UserLogic {
                 if (changeName && candidate.password !== null) {
                     const customer = await Customer.findOne({where: {userId: candidate.id}})
                     await customer.update({name: name})
+                } else if (!regCustomer) {
+                    return candidate
                 }
-                return candidate
             }
             let user
             if (regCustomer) {
@@ -118,7 +119,6 @@ class UserLogic {
                 } else {
                     user = await User.create({email, password: hashPassword, isActivated: true})
                 }
-
                 await Customer.create({userId: user.id, name})
             } else {
                 user = await User.create({email})
@@ -205,7 +205,7 @@ class UserLogic {
             await user.update({
                 email: email, password: hashPassword,
             })
-            await MailService.updateMail(email, password)
+            await MailService.updateMail(email, password, next)
             return res.status(201).json({user})
         } catch (e) {
             return next(ApiError.badRequest("Wrong request"))
