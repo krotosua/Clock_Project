@@ -3,6 +3,7 @@ const router = express.Router()
 const masterController = require("../controllers/masterController")
 const checkRole = require("../middleware/checkRoleMiddleware")
 const {body, param, query} = require('express-validator');
+const masterLogic = require("../businessLogic/masterLogic");
 
 
 router.post("/",
@@ -21,12 +22,10 @@ router.get('/:cityId',
     masterController.getMastersForOrder)
 
 router.put('/:masterId',
-
     param("masterId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),
     body("rating").not().isEmpty().not().isString().isInt({gt: -1, lt: 6}),
     body("cityId").not().isEmpty().isArray(),
-
     checkRole("ADMIN"), masterController.update)
 
 router.put('/activate/:masterId',
@@ -37,11 +36,9 @@ router.put('/activate/:masterId',
 router.put('/rating/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     checkRole("CUSTOMER"), masterController.ratingUpdate)
-
+router.get('/rating/:masterId', masterController.getRatingReviews)
 router.delete('/:masterId',
-
     param("masterId").not().isEmpty().isInt({gt: 0}),
-
     checkRole("ADMIN"), masterController.deleteOne)
 
 

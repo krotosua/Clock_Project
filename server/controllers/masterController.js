@@ -81,6 +81,11 @@ class MasterController {
         }
     }
 
+    async getRatingReviews(req, res, next) {
+        await masterLogic.getRatingReviews(req, res, next)
+
+    }
+
     async deleteOne(req, res, next) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

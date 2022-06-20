@@ -205,10 +205,25 @@ class UserLogic {
             await user.update({
                 email: email, password: hashPassword,
             })
-            await MailService.updateMail(email, password,next)
+            await MailService.updateMail(email, password, next)
             return res.status(201).json({user})
         } catch (e) {
             return next(ApiError.badRequest("Wrong request"))
+        }
+    }
+
+    async adminreg(req, res, next) {
+        try {
+            const {email, password, role} = req.body
+            let isActivated = true
+            const hashPassword = await bcrypt.hash(password, 5)
+
+            const user = await User.create({email, role, password: hashPassword, isActivated})
+
+            return res.status(201).json({user})
+
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
         }
     }
 

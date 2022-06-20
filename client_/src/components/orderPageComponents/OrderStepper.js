@@ -1,26 +1,26 @@
 import * as React from "react";
+import {useContext, useEffect, useState} from "react";
 import {
     Box,
-    Stepper,
-    Step,
-    StepLabel,
     Button,
-    Typography,
     CircularProgress,
+    Divider,
     FormControlLabel,
-    Radio,
-    RadioGroup,
-    Rating,
-    TextField,
-    Tooltip,
+    IconButton,
     List,
     ListItem,
     ListItemText,
-    Divider,
-    Popover
-
+    Popover,
+    Radio,
+    RadioGroup,
+    Rating,
+    Step,
+    StepLabel,
+    Stepper,
+    TextField,
+    Tooltip,
+    Typography
 } from "@mui/material";
-import {useContext, useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import {fetchMastersForOrder} from "../../http/masterAPI";
 import {observer} from "mobx-react-lite";
@@ -30,11 +30,13 @@ import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
 import {Context} from "../../index";
-import {LocalizationProvider, DatePicker, TimePicker} from "@mui/lab";
+import {DatePicker, LocalizationProvider, TimePicker} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from 'date-fns/locale/ru'
 import PagesOrder from "./Pages";
 import Login from "../authPageComponents/Login";
+import ReviewsIcon from "@mui/icons-material/Reviews";
+import ReviewModal from "../ReviewModal";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -62,6 +64,8 @@ const OrderStepper = observer(({alertMessage}) => {
     const [openTime, setOpenTime] = useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [isAuth, setIsAuth] = useState(false)
+    const [openReview, setOpenReview] = useState(false)
+    const [masterId, setMasterId] = useState("")
     const navigate = useNavigate();
 
 
@@ -148,6 +152,10 @@ const OrderStepper = observer(({alertMessage}) => {
             setAnchorEl(event.currentTarget)
         }
     };
+    const getReviews = (id) => {
+        setMasterId(id)
+        setOpenReview(true)
+    }
 
     const handleBack = () => {
         setAnchorEl(null)
@@ -174,7 +182,7 @@ const OrderStepper = observer(({alertMessage}) => {
     useEffect(() => {
         if (activeStep === 1) {
             setLoading(true)
-            fetchMastersForOrder(cities.selectedCity,  new Date(new Date(date).setHours(time.getHours())), size.selectedSize.id, masters.page, 3).then(
+            fetchMastersForOrder(cities.selectedCity, new Date(new Date(date).setHours(time.getHours())), size.selectedSize.id, masters.page, 3).then(
                 (res) => {
                     if (res.status === 204) {
                         setFreeMasters([])
@@ -543,10 +551,14 @@ const OrderStepper = observer(({alertMessage}) => {
                                         <List disablePadding>
                                             <ListItem key={1} divider
                                             >
-                                                <ListItemText sx={{width: 10}} primary="№"/>
-                                                <ListItemText sx={{width: 10}} primary="Имя мастера"/>
-                                                <ListItemText sx={{width: 10,}} primary="Рейтинг"/>
-                                                <ListItemText sx={{width: 10, pr: 5}} primary="Город"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}} primary="№"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}}
+                                                              primary="Имя мастера"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}} primary="Рейтинг"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center"}} primary="Город"/>
+                                                <ListItemText sx={{width: 10, textAlign: "center", mr: 5}}
+                                                              primary="Комментарии"/>
+
                                             </ListItem>
 
                                             <Divider orientation="vertical"/>
@@ -581,18 +593,28 @@ const OrderStepper = observer(({alertMessage}) => {
                                                                               </Tooltip> : "Занят"
                                                                       }
                                                             >
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={index + 1}/>
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={master.name}/>
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={<Rating name="read-only"
                                                                                                size="small"
                                                                                                precision={0.2}
                                                                                                value={master.rating}
                                                                                                readOnly/>}/>
-                                                                <ListItemText sx={{width: 10}}
+                                                                <ListItemText sx={{width: 10, textAlign: "center"}}
                                                                               primary={master.cities[0].name}/>
+                                                                <ListItemText
+                                                                    sx={{width: 10, textAlign: "center"}}
+                                                                    primary={
+                                                                        <IconButton sx={{width: 5}}
+                                                                                    aria-label="Reviews"
+                                                                                    onClick={() => getReviews(master.id)}
+                                                                        >
+                                                                            <ReviewsIcon/>
+                                                                        </IconButton>
+                                                                    }/>
                                                             </ListItem>
                                                         );
                                                     })
@@ -647,6 +669,9 @@ const OrderStepper = observer(({alertMessage}) => {
                         </Box>
 
                     )}
+                {openReview ? <ReviewModal open={openReview}
+                                           masterId={masterId}
+                                           onClose={() => setOpenReview(false)}/> : null}
             </Box>
     );
 });

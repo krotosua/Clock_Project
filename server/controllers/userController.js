@@ -14,6 +14,9 @@ class UserController {
         await userLogic.registrationFromAdmin(req, res, next)
     }
 
+    async adminreg(req, res, next) {
+        await userLogic.adminreg(req, res, next)
+    }
 
     async login(req, res, next) {
         await userLogic.login(req, res, next)
