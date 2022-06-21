@@ -404,6 +404,7 @@ Rating.belongsTo(Master, {
 
 Master.belongsToMany(City, {through: CitiesMasters, foreignKey: 'cityId'})
 City.belongsToMany(Master, {through: CitiesMasters, foreignKey: 'masterId'})
+
 User.hasOne(Rating, {
     foreignKey: 'userId'
 })
