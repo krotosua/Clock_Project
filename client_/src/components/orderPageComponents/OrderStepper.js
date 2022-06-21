@@ -402,6 +402,8 @@ const OrderStepper = observer(({alertMessage}) => {
                                             <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
                                                 <Typography sx={{p: 2}}>
                                                     Сменить Ваши персональные данные?
+                                                    {user.isAuth && user.userName !== name ?
+                                                        <div style={{textAlign: "center"}}><b>Имя</b></div> : null}
                                                 </Typography>
                                                 <Button onClick={() => {
                                                     setAnchorEl(null)
@@ -501,42 +503,6 @@ const OrderStepper = observer(({alertMessage}) => {
                     activeStep === steps.length - 2 ? (
                         <Box sx={{mt: 2, position: "relative"}}>
 
-
-                            <Popover
-                                id={id}
-                                open={open}
-                                onClose={() => {
-                                    setChangeName(false)
-                                    setAnchorEl(null)
-                                }}
-                                anchorOrigin={{
-                                    vertical: 'center',
-                                    horizontal: 'center',
-                                }}
-                                transformOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'center',
-                                }}
-
-                            >
-                                <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
-                                    <Typography sx={{p: 2}}>
-                                        Сменить Ваши данные?
-                                    </Typography>
-                                    <Button onClick={() => {
-                                        setChangeName(true)
-                                        setAnchorEl(null)
-                                    }}>
-                                        Да
-                                    </Button>
-                                    <Button onClick={() => {
-                                        setAnchorEl(null)
-                                        setChangeName(false)
-                                    }}>
-                                        Нет
-                                    </Button>
-                                </Box>
-                            </Popover>
                             {loading ?
                                 (
                                     <Box sx={{
