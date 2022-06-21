@@ -37,6 +37,7 @@ class SizeLogic {
             pagination.limit = pagination.limit || 12
             const offset = pagination.page * pagination.limit - pagination.limit
             const sizes: GetRowsDB<SizeClock> = await SizeClock.findAndCountAll({
+                order: [['date', 'ASC']],
                 limit: pagination.limit, offset
             })
             if (!sizes.count) {

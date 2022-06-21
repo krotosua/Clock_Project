@@ -30,7 +30,7 @@ class CityLogic {
             pagination.limit = pagination.limit || 9;
             const offset = pagination.page * pagination.limit - pagination.limit;
             const cities: GetRowsDB<City> = await City.findAndCountAll({
-                order: [['id', 'ASC']],
+                order: [['name', 'ASC']],
                 limit: pagination.limit, offset
             })
             if (!cities.count) {

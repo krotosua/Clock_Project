@@ -27,23 +27,22 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
     const [blurPrice, setBlurPrice] = useState(false)
     const [price, setPrice] = useState(cityToEdit.price)
 
-    const changeCity = () => {
+    const changeCity = async () => {
         const cityInfo = {
             id: cityToEdit.id,
             name: cityName.trim(),
-           price:price
+            price: price
         }
-
-        updateCity(cityInfo).then(res => {
+        try {
+            await updateCity(cityInfo)
             change("name", cityName)
             change("price", price)
-
             close()
             alertMessage('Название изменено успешно', false)
-        }, err => {
+        } catch (e) {
             setErrCity(true)
             alertMessage('Не удалось изменить название', true)
-        })
+        }
     }
     const close = () => {
         setErrCity(false)
@@ -68,7 +67,6 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
                 onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                         Изменить название города {cityToEdit.name}
                     </Typography>
@@ -108,7 +106,6 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
                                 }}
                             />
                         </FormControl>
-
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >

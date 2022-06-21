@@ -1,11 +1,9 @@
 import * as React from 'react';
-import {
-    Box, List, ListItem, ListItemText, IconButton, Typography, Divider, Tooltip,
-} from '@mui/material';
+import {useContext, useEffect, useState} from 'react';
+import {Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {deleteSize, fetchSize} from "../../http/sizeAPI";
 import CreateSize from "./modals/CreateSize";
@@ -21,33 +19,33 @@ const SizeList = observer(({alertMessage, getValue}) => {
     const [idToEdit, setIdToEdit] = useState(null);
     const [sizeToEdit, setSizeToEdit] = useState(null);
     const [dateToEdit, setDateToEdit] = useState(null);
-    const getSize = () => {
-        fetchSize(size.page, 10).then(res => {
+    const getSize = async () => {
+        try {
+            const res = await fetchSize(size.page, 10)
             if (res.status === 204) {
                 return size.setIsEmpty(true)
             }
             size.setIsEmpty(false)
             size.setSize(res.data.rows)
             size.setTotalCount(res.data.count)
-        }, (err) => {
+        } catch (e) {
             size.setIsEmpty(true)
-        })
+        }
     }
-    useEffect(() => {
-        getSize()
+    useEffect(async () => {
+        await getSize()
     }, [size.page])
 
 
-    const removeSize = (id) => {
-        deleteSize(id).then((res) => {
+    const removeSize = async (id) => {
+        try {
+            await deleteSize(id)
             size.setSize(size.size.filter(obj => obj.id !== id));
             alertMessage('Успешно удаленно', false)
-            getSize()
-        }, (err) => {
+            await getSize()
+        } catch (e) {
             alertMessage('Не удалось удалить', true)
-            return
-        })
-
+        }
     }
 
     return (<Box>
@@ -130,12 +128,13 @@ const SizeList = observer(({alertMessage, getValue}) => {
                 })}
             </List>
             {createVisible ? <CreateSize open={createVisible}
+                                         getSize={() => getSize()}
                                          alertMessage={alertMessage}
                                          onClose={() => {
                                              setCreateVisible(false)
-                                         }}/>:null}
+                                         }}/> : null}
             {editVisible ? <EditSize
-                getSize={()=>getSize()}
+                getSize={() => getSize()}
                 open={editVisible}
                 onClose={() => setEditVisible(false)}
                 idToEdit={idToEdit}

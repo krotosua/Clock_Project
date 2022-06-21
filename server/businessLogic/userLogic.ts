@@ -217,11 +217,14 @@ class UserLogic {
             pagination.page = pagination.page || 1;
             pagination.limit = pagination.limit || 9;
             const offset: number = pagination.page * pagination.limit - pagination.limit;
-            const users: GetRowsDB<User> = await User.findAndCountAll({
-                attributes: ["email", "id", "role", "isActivated"], include: [{
-                    model: Master
-                },], limit: pagination.limit, offset
-            })
+            const users: GetRowsDB<User> = await User.findAndCountAll(
+                {
+                    order: [['id', 'ASC']],
+                    attributes: ["email", "id", "role", "isActivated"],
+                    include: [{
+                        model: Master
+                    },], limit: pagination.limit, offset
+                })
             if (!users.count) {
                 return res.status(204).json({message: "List is empty"});
             }

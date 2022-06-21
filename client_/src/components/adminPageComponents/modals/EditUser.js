@@ -1,19 +1,19 @@
 import React, {useContext, useState} from 'react';
 import {
+    Box,
+    Button,
     Checkbox,
     FormControl,
     FormControlLabel,
     FormHelperText,
     InputAdornment,
+    Modal,
     OutlinedInput,
     TextField,
-    Box,
-    Button,
-    Modal,
     Typography
 } from "@mui/material";
 import {Context} from "../../../index";
-import {fetchUsers, updateUser} from "../../../http/userAPI";
+import {updateUser} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -30,7 +30,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
+const EditUser = (({open, onClose, userToEdit, alertMessage, getUsers}) => {
     const {user} = useContext(Context)
     const [userEmail, setUserEmail] = useState(userToEdit.email)
     const [blurEmail, setBlurEmail] = useState(false)
@@ -42,30 +42,23 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
     const [error, setError] = useState(false)
     const [blurPassword, setBlurPassword] = useState(false)
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
-    const changeUser = () => {
+    const changeUser = async () => {
         const changeInfo = {
             email: userEmail
         }
         if (editPassword) {
             changeInfo.password = password
         }
-        updateUser(userToEdit.id, changeInfo).then(
-            res => {
-                close()
-                alertMessage("Успешно измененно", false)
-            }, err => {
-                alertMessage("Не удалось изменить ", true)
-            }
-        )
+        try {
+            await updateUser(userToEdit.id, changeInfo)
+            await getUsers()
+            alertMessage("Успешно измененно", false)
+            close()
+        } catch (e) {
+            alertMessage("Не удалось изменить ", true)
+        }
     }
-
     const close = () => {
-        fetchUsers(user.page, 10).then(res => {
-            user.setIsEmpty(false)
-            user.setUsersList(res.data.rows)
-            user.setTotalCount(res.data.count)
-        }, (err) => {
-        })
         onClose()
     }
     const handleClickShowPassword = () => {
@@ -82,13 +75,11 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                 onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                         Изменить данные пользователя
                     </Typography>
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
-
                             <TextField
                                 error={blurEmail && reg.test(userEmail) == false}
                                 label="Изменить email пользователя"
@@ -100,12 +91,9 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                                 onFocus={() => setBlurEmail(false)}
                                 onBlur={() => setBlurEmail(true)}
                                 onChange={e => setUserEmail(e.target.value)}
-
                             />
-
                         </FormControl>
                         {editPassword ?
-
                             <FormControl sx={{my: 1}} variant="outlined">
                                 <InputLabel htmlFor="Password">Пароль</InputLabel>
                                 <OutlinedInput
@@ -113,7 +101,7 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                                     id="Password"
                                     label="Новый пароль"
                                     type={showPassword ? 'text' : 'password'}
-                                    autocomplete="new-password"
+                                    autoComplete="new-password"
                                     value={password}
                                     onChange={(e => {
                                         setPassword(e.target.value)
@@ -137,7 +125,6 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                                     "Длина пароля должна быть не менее 6 символов"
                                     : ""}</FormHelperText>
                             </FormControl> : null}
-
                         {editPassword ?
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
@@ -145,7 +132,7 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                                     error={error || blurPasswordCheck && password !== passwordCheck}
                                     id="Check Password"
                                     label="Подтвердить новый пароль"
-                                    autocomplete="new-password"
+                                    autoComplete="new-password"
                                     type={showPasswordCheck ? 'text' : 'password'}
                                     value={passwordCheck}
                                     onChange={(e => {
@@ -170,21 +157,18 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                                     error={true}>{blurPasswordCheck && password !== passwordCheck ? "Пароли не совпадают" : ""}</FormHelperText>
 
                             </FormControl> : null}
-
-
                         <Box>
                             <FormControlLabel
                                 label="Сменить пароль"
                                 control={
                                     <Checkbox onChange={(e) => setEditPassword(e.target.checked)}/>}
-
                             />
                         </Box>
                         <Box
                             sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                         >
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                    disabled={blurEmail && reg.test(userEmail) == false}
+                                    disabled={blurEmail && reg.test(userEmail) === false}
                                     onClick={changeUser}>
                                 Изменить
                             </Button>
@@ -192,7 +176,6 @@ const EditUser = (({open, onClose, userToEdit, alertMessage,}) => {
                                     onClick={close}> Закрыть</Button>
                         </Box>
                     </Box>
-
                 </Box>
             </Modal>
         </div>

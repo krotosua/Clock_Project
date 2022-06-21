@@ -40,6 +40,7 @@ class MasterLogic {
                 }, {model: User}],
             })
 
+
             if (!masters.count) {
                 return res.status(204).json({message: "List is empty"});
             }

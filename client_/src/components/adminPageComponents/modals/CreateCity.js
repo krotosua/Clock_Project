@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import {Box, Button, FormControl, InputAdornment, Modal, TextField, Typography} from "@mui/material";
-import {createCity, fetchCity,} from "../../../http/cityAPI";
+import {createCity,} from "../../../http/cityAPI";
 import {Context} from "../../../index";
 
 
@@ -15,37 +15,33 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateCity = ({open, onClose, alertMessage,}) => {
+const CreateCity = ({open, onClose, alertMessage, getCity}) => {
     const [cityName, setCityName] = useState("")
     const [errCity, setErrCity] = useState(false)
     const [blurCityName, setBlurCityName] = useState(false)
     const [blurPrice, setBlurPrice] = useState(false)
     const [price, setPrice] = useState("")
     let {cities} = useContext(Context)
-    const addCity = () => {
+    const addCity = async () => {
         const cityInfo = {
             name: cityName.trim(),
             price: price
         }
-        createCity(cityInfo).then(res => {
-                cities.setIsEmpty(false)
-                alertMessage("Город успешно создан", false)
-                close()
-                fetchCity(cities.page, 10).then(res => {
-                    cities.setIsEmpty(false)
-                    cities.setCities(res.data.rows)
-                    cities.setTotalCount(res.data.count)
-                }, error => cities.setIsEmpty(true))
-
-            },
-            err => {
-                setErrCity(true)
-                alertMessage("Не удалось создать город", true)
-            })
+        try {
+            await createCity(cityInfo)
+            cities.setIsEmpty(false)
+            alertMessage("Город успешно создан", false)
+            await getCity()
+            close()
+        } catch (e) {
+            setErrCity(true)
+            alertMessage("Не удалось создать город", true)
+        }
     }
     const close = () => {
         setErrCity(false)
         setBlurCityName(false)
+        setBlurPrice(false)
         setCityName("")
         setPrice("")
         onClose()
@@ -54,13 +50,11 @@ const CreateCity = ({open, onClose, alertMessage,}) => {
     const validName = blurCityName && cityName.length === 0
     return (
         <div>
-
             <Modal
                 open={open}
                 onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
                         Добавить название города
                     </Typography>

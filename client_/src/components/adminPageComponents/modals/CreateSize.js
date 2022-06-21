@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {Box, Button, FormControl, Modal, TextField, Typography} from "@mui/material";
 import {Context} from "../../../index";
-import {createSize, fetchSize} from "../../../http/sizeAPI";
+import {createSize} from "../../../http/sizeAPI";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import {TimePicker} from "@mui/lab";
@@ -18,41 +18,32 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateSize = ({open, onClose, alertMessage}) => {
+const CreateSize = ({open, onClose, alertMessage, getSize}) => {
     const [sizeName, setSizeName] = useState("")
     const [sizeTime, setSizeTime] = useState(null)
     const [errSize, setErrSize] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [blurSizeName, setBlurSizeName] = useState(false)
-    let {size,} = useContext(Context)
+    let {size} = useContext(Context)
 
-    const addSize = () => {
+    const addSize = async () => {
         if (!sizeName || !sizeTime) {
             setErrSize(true)
             return
         }
-
         const infoSize = {
             name: sizeName.trim(),
             date: sizeTime.toLocaleTimeString(),
-
         }
-        createSize(infoSize).then(res => {
-                size.setIsEmpty(false)
-                fetchSize(size.page, 10).then(res => {
-                    size.setIsEmpty(false)
-                    size.setSize(res.data.rows)
-                    size.setTotalCount(res.data.count)
-                }, (err) => {
-                    size.setIsEmpty(true)
-                })
-                alertMessage("Размер часов добавлен", false)
-                close()
-            },
-            err => {
-                setErrSize(true)
-                alertMessage("Не удалось добавить размер часов", true)
-            })
+        try {
+            await createSize(infoSize)
+            alertMessage("Размер часов добавлен", false)
+            getSize()
+            close()
+        } catch (e) {
+            setErrSize(true)
+            alertMessage("Не удалось добавить размер часов", true)
+        }
     }
     const close = () => {
         setErrSize(false)

@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
-import {fetchUsers, registrationFromAdmin} from "../../../http/userAPI";
+import {registrationFromAdmin} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -31,7 +31,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateUser = (({open, onClose, alertMessage,}) => {
+const CreateUser = (({open, onClose, alertMessage, getUsers}) => {
     const {cities, user} = useContext(Context)
     const [email, setEmail] = useState("")
     const [error, setError] = useState(false)
@@ -39,73 +39,34 @@ const CreateUser = (({open, onClose, alertMessage,}) => {
     const [password, setPassword] = useState('')
     const [blurPassword, setBlurPassword] = useState(false)
     const [blurEmail, setBlurEmail] = useState(false)
-
-
     const [passwordCheck, setPasswordCheck] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [showPasswordCheck, setShowPasswordCheck] = useState(false)
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
     const [isMaster, setIsMaster] = useState(false)
 
-    const createUser = () => {
-let masterData,customerData
-        isMaster ?
-            masterData={
-                email,password,isMaster,isActivated:true, name, cityId: cities.selectedCity
-            }:
-            customerData={
-                email,password,isMaster,isActivated:true, name,
-            }
-        isMaster ?
-            registrationFromAdmin(masterData)
-                .then(res => {
-                    close()
-
-                    alertMessage("Пользователь успешно добавлен", false)
-                    fetchUsers(user.page, 10).then(res => {
-                        if (res.status === 204) {
-                            return user.setIsEmpty(true)
-
-                        }
-                        user.setIsEmpty(false)
-                        user.setUsersList(res.data.rows)
-                        user.setTotalCount(res.data.count)
-                    }, error => user.setIsEmpty(true))
-                }, (err) => {
-                    alertMessage("Не удалось добавить пользователя", true)
-
-                })
-            :
-            registrationFromAdmin(customerData)
-                .then(res => {
-                    close()
-                    alertMessage("Пользователь успешно добавлен", false)
-                    fetchUsers(user.page, 10).then(res => {
-                        if (res.status === 204) {
-                            return user.setIsEmpty(true)
-
-                        }
-                        user.setIsEmpty(false)
-                        user.setUsersList(res.data.rows)
-                        user.setTotalCount(res.data.count)
-                    }, error => user.setIsEmpty(true))
-                }, err => {
-
-                    alertMessage("Не удалось добавить пользователя", true)
-
-                })
-
+    const createUser = async () => {
+        const userData = {
+            email,
+            password,
+            isMaster,
+            isActivated: true,
+            name,
+            cityId: cities.selectedCity ?? undefined
+        }
+        try {
+            await registrationFromAdmin(userData)
+            close()
+            alertMessage("Пользователь успешно добавлен", false)
+            getUsers()
+        } catch (e) {
+            alertMessage("Не удалось добавить пользователя", true)
+        }
     }
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword)
     };
     const close = () => {
-        fetchUsers(user.page, 10).then(res => {
-            user.setIsEmpty(false)
-            user.setUsersList(res.data.rows)
-            user.setTotalCount(res.data.count)
-        }, (err) => {
-        })
         onClose()
     }
 
@@ -121,7 +82,6 @@ let masterData,customerData
                 onClose={close}
             >
                 <Box sx={style}>
-
                     <Typography align="center" variant="h5">
                         Регистрация нового пользователя
                     </Typography>
@@ -244,7 +204,7 @@ let masterData,customerData
                             <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
                                     disabled={unlockButton}
                                     onClick={createUser}>
-                                Изменить
+                                Зарегестрировать
                             </Button>
                             <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                     onClick={close}> Закрыть</Button>

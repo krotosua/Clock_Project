@@ -19,18 +19,21 @@ const UserList = observer(({alertMessage}) => {
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
-    const getUsers = () => {
-        fetchUsers(user.page, 10).then(res => {
+    const getUsers = async () => {
+        try {
+            const res = await fetchUsers(user.page, 10)
             if (res.status === 204) {
                 return user.setIsEmpty(true)
             }
             user.setIsEmpty(false)
             user.setUsersList(res.data.rows)
             user.setTotalCount(res.data.count)
-        }, error => user.setIsEmpty(true))
+        } catch (e) {
+            user.setIsEmpty(true)
+        }
     }
-    useEffect(() => {
-        getUsers()
+    useEffect(async () => {
+        await getUsers()
 
     }, [user.page])
     const changeActiveted = async (user) => {
@@ -38,30 +41,27 @@ const UserList = observer(({alertMessage}) => {
             id: user.id,
             isActivated: !user.isActivated
         }
-
-        activateUser(changeInfo)
-            .then(res => {
-                alertMessage('Данные мастера успешно изменены', false)
-                return user.isActivated = !user.isActivated
-            }, err => {
-                alertMessage('Не удалось изменить данные мастера', true)
-            })
-
+        try {
+            await activateUser(changeInfo)
+            alertMessage('Данные мастера успешно изменены', false)
+            return user.isActivated = !user.isActivated
+        } catch (e) {
+            alertMessage('Не удалось изменить данные мастера', true)
+        }
     }
 
-    const removeUser = (id) => {
-        deleteUser(id).then(data => {
+    const removeUser = async (id) => {
+        try {
+            await deleteUser(id)
             user.setUsersList(user.usersList.filter(user => user.id !== id));
             alertMessage('Успешно удаленно', false)
-            getUsers()
-
-        }, (err) => {
+            await getUsers()
+        } catch (e) {
             alertMessage('Не удалось удалить, так как у пользователя остались заказы', true)
-        })
+        }
     }
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
-
             <List subheader={<Typography sx={{mt: 4, mb: 2,}}
                                          variant="h6" component="div">
                 Пользователи
@@ -147,28 +147,31 @@ const UserList = observer(({alertMessage}) => {
                                                 setUserToEdit(user)
                                             }}
                                 >
-
                                     <EditIcon/>
                                 </IconButton>
                             </Tooltip> : null}
 
                         </ListItem>
-
                     )
                 })}
 
             </List>
-            {editVisible ? <EditUser
-                open={editVisible}
-                userToEdit={userToEdit}
-                onClose={() => {
-                    setEditVisible(false)
-                }}
-                alertMessage={alertMessage}
-            /> : null}
-            {createVisible ? <CreateUser open={createVisible}
-                                         onClose={() => setCreateVisible(false)}
-                                         alertMessage={alertMessage}/> : null}
+            {editVisible ?
+                <EditUser
+                    open={editVisible}
+                    userToEdit={userToEdit}
+                    onClose={() => {
+                        setEditVisible(false)
+                    }}
+                    getUsers={() => getUsers()}
+                    alertMessage={alertMessage}
+                /> : null}
+            {createVisible ?
+                <CreateUser
+                    getUsers={() => getUsers()}
+                    open={createVisible}
+                    onClose={() => setCreateVisible(false)}
+                    alertMessage={alertMessage}/> : null}
 
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>

@@ -23,7 +23,6 @@ export default function SelectorMasterCity({cityChosen, error, open}) {
         const {
             target: {value},
         } = event
-
         setCityName(
             typeof value === 'string' ? value.split(',') : value,
         );
@@ -54,7 +53,6 @@ export default function SelectorMasterCity({cityChosen, error, open}) {
                     MenuProps={MenuProps}
                 >
                     {cities.cities.map((city, index) => {
-
                         return (
                             <MenuItem key={index} value={city}>
                                 <Checkbox

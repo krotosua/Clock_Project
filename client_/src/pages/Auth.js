@@ -1,21 +1,23 @@
 import React, {useContext, useState} from "react";
 import {
     Box,
+    Button,
     Card,
-    CardContent, Checkbox,
+    CardContent,
+    Checkbox,
     Container,
-    FormControl, FormControlLabel, FormHelperText, InputAdornment, OutlinedInput,
-    TextField, Typography, Button, IconButton, InputLabel
+    FormControl,
+    FormControlLabel,
+    FormHelperText,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    OutlinedInput,
+    TextField,
+    Typography
 } from "@mui/material";
-import {
-    NavLink,
-    useLocation,
-    useNavigate
-} from "react-router-dom";
-import {
-    CONGRATULATION_ROUTE,
-    LOGIN_ROUTE, START_ROUTE,
-} from "../utils/consts";
+import {NavLink, useLocation, useNavigate} from "react-router-dom";
+import {CONGRATULATION_ROUTE, LOGIN_ROUTE,} from "../utils/consts";
 import {registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
@@ -61,13 +63,12 @@ const Auth = observer(() => {
                 cityId: cities.selectedCity ?? undefined
             }
             if (password.length >= 6 && reg.test(email) !== false) {
-                    await registration(dataUser)
+                await registration(dataUser)
                 navigate(CONGRATULATION_ROUTE)
                 alertMessage("Письмо для подтверждения Email отправлено на почту", false)
-                return
+
             } else {
                 setError(true)
-                return
             }
         } catch (e) {
             setError(true)
@@ -123,7 +124,7 @@ const Auth = observer(() => {
                                     })}
                                 />
                                 <TextField
-                                    error={error || blurEmail && reg.test(email) == false}
+                                    error={error || blurEmail && reg.test(email) === false}
 
                                     sx={{mb: 2}}
                                     id="Email"
@@ -131,7 +132,7 @@ const Auth = observer(() => {
                                     variant="outlined"
                                     type={"email"}
                                     value={email}
-                                    helperText={blurEmail && reg.test(email) == false ?
+                                    helperText={blurEmail && reg.test(email) === false ?
                                         "Введите email формата: clock@clock.com" :
                                         error ? "Пользователь с таким email уже существует" : ""
                                     }

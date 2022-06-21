@@ -29,11 +29,9 @@ const ReviewModal = ({open, onClose, masterId}) => {
             }
             setLoading(false)
             setReviews(res.data.rows)
-
         } catch (e) {
             setLoading(false)
         }
-
     }, [])
     return (
         <div>
@@ -68,7 +66,7 @@ const ReviewModal = ({open, onClose, masterId}) => {
                                                 </Box>
 
                                             </Box>
-                                            <TextField
+                                            {review.review ? <TextField
                                                 fullWidth
                                                 InputProps={{
                                                     readOnly: true,
@@ -82,7 +80,7 @@ const ReviewModal = ({open, onClose, masterId}) => {
                                                 }}
                                                 multiline
                                                 value={review.review}
-                                            />
+                                            /> : null}
                                             <Divider sx={{mt: 1}}/>
                                         </Box>
                                     )

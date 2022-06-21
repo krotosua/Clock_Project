@@ -1,23 +1,23 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {
+    Box,
+    Button,
     CircularProgress,
+    Divider,
     FormControlLabel,
+    List,
+    ListItem,
+    ListItemText,
+    Modal,
     Radio,
     RadioGroup,
     Rating,
     TextField,
     Tooltip,
-    Modal,
-    Button,
-    Box,
-    Typography,
-    List,
-    ListItem,
-    Divider,
-    ListItemText
+    Typography
 } from "@mui/material";
 import {Context} from "../../../index";
-import {fetchAlLOrders, updateOrder} from "../../../http/orderAPI";
+import {updateOrder} from "../../../http/orderAPI";
 import SelectorSize from "../../orderPageComponents/SelectorSize";
 import SelectorCity from "../../SelectorCity";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
@@ -45,7 +45,8 @@ const EditOrder = observer(({
                                 idToEdit,
                                 dateToEdit,
                                 timeToEdit,
-                                orderToEdit
+                                orderToEdit,
+                                getOrders
                             }) => {
     let {cities, size, masters, orders} = useContext(Context)
     const [error, setError] = useState(false)
@@ -67,47 +68,45 @@ const EditOrder = observer(({
     const [openTime, setOpenTime] = useState(false)
     const [changedMaster, setChangedMaster] = useState(false)
     const [price, setPrice] = useState(orderToEdit.price)
-    const getMasters = () => {
+    const getMasters = async () => {
         setLoading(true)
-        fetchMastersForOrder(cityChosen, new Date(new Date(date).setHours(time.getHours(), 0, 0)), sizeClock, masters.page, 3).then(
-            (res) => {
-                if (res.status === 204) {
-                    setFreeMasters([])
-                    return
-                }
-                setFreeMasters(res.data.rows)
-                masters.setMasters(res.data.rows);
-                masters.setTotalCount(res.data.count);
-            },
-            () => {
-                masters.setIsEmpty(true);
+        try {
+            const res = await fetchMastersForOrder(cityChosen, new Date(new Date(date).setHours(time.getHours(), 0, 0)), sizeClock, masters.page, 3)
+            if (res.status === 204) {
+                setFreeMasters([])
+                return
             }
-        ).finally(() => setLoading(false));
-
+            setFreeMasters(res.data.rows)
+            masters.setMasters(res.data.rows);
+            masters.setTotalCount(res.data.count);
+        } catch (e) {
+            masters.setIsEmpty(true);
+        } finally {
+            setLoading(false)
+        }
     }
     useEffect(() => {
         size.setSelectedSize(size.size.find(clock => clock.id === orderToEdit.sizeClockId))
     }, [])
-    useEffect(() => {
-
+    useEffect(async () => {
         if (openList) {
-            getMasters()
+            await getMasters()
         }
     }, [masters.page, openList])
 
 
-    const changeOrder = () => {
+    const changeOrder = async () => {
         if (checkInfo) {
             alertMessage('Не удалось изменить заказ', true)
             return
         }
         if (time.toLocaleTimeString("uk-UA") !== timeToEdit.toLocaleTimeString("uk-UA") ||
-            dateToEdit.toLocaleDateString("uk-UA") !== date.toLocaleDateString()
+            dateToEdit.toLocaleDateString("uk-UA") !== date.toLocaleDateString("uk-UA")
             || orderToEdit.masterId !== changedMaster
             || orderToEdit.cityId !== cityChosen || orderToEdit.sizeClockId !== sizeClock) {
             setChangedMaster(true)
         }
-        updateOrder({
+        const changeInfo = {
             id: idToEdit,
             name: name.trim(),
             email: email.trim(),
@@ -117,26 +116,17 @@ const EditOrder = observer(({
             sizeClockId: Number(sizeClock),
             changedMaster: changedMaster,
             price
-        }).then(res => {
+        }
+        try {
+            await updateOrder(changeInfo)
             close()
             alertMessage('Заказ успешно изменен', false)
-            fetchAlLOrders(orders.page, 8).then(res => {
-                if (res.status === 204) {
-                    orders.setIsEmpty(true)
-                    return
-                }
-                res.data.rows.map(item => {
-                    item.date = new Date(item.date).toLocaleDateString()
-                })
-                orders.setIsEmpty(false)
-                orders.setOrders(res.data.rows)
-                orders.setTotalCount(res.data.count)
-            }, error => orders.setIsEmpty(true))
-        }, err => {
+            await getOrders()
+        } catch (e) {
             setError(true)
             alertMessage('Не удалось изменить заказ.Мастер занят', true)
             setOpenList(false)
-        })
+        }
     }
     const choseMaster = (event, master) => {
         event ? setChosenMaster(event.target.value) : setChosenMaster(master);
