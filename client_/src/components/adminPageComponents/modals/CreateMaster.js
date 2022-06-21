@@ -4,7 +4,6 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, FormHelperText, InputAdornment, OutlinedInput, TextField} from "@mui/material";
-import {fetchMasters} from "../../../http/masterAPI";
 import {Context} from "../../../index";
 import {observer} from "mobx-react-lite";
 import SelectorMasterCity from "./SelectorMasterCity";
@@ -24,7 +23,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateMaster = observer(({open, onClose, alertMessage}) => {
+const CreateMaster = observer(({open, onClose, alertMessage, getMasters}) => {
     let {cities, masters} = useContext(Context)
     const [masterName, setMasterName] = useState("")
     const [masterRating, setMasterRating] = useState("")
@@ -39,7 +38,7 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
     const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
     const [blurEmail, setBlurEmail] = useState(false)
     const [errMaster, setErrMaster] = useState(false)
-    const addMaster = () => {
+    const addMaster = async () => {
         const masterData = {
             email,
             password,
@@ -47,24 +46,15 @@ const CreateMaster = observer(({open, onClose, alertMessage}) => {
             name: masterName,
             cityId: cities.selectedCity
         }
-        registrationFromAdmin(masterData).then(res => {
+        try {
+            await registrationFromAdmin(masterData)
             close()
+            await getMasters()
             alertMessage("Мастер успешно добавлен", false)
-            fetchMasters(null, masters.page, 10).then(res => {
-                if (res.status === 204) {
-                    return masters.setIsEmpty(true)
-                }
-                masters.setIsEmpty(false)
-                masters.setMasters(res.data.rows)
-                masters.setTotalCount(res.data.rows.length)
-            }, (err) => {
-                return masters.setIsEmpty(true)
-
-            })
-        }, err => {
+        } catch (e) {
             setErrMaster(true)
             alertMessage("Не удалось добавить мастера", true)
-        })
+        }
     }
     const close = () => {
         setMasterName("")

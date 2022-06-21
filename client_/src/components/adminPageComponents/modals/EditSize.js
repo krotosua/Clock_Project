@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {FormControl, Modal, Button, Box, Typography, TextField} from "@mui/material";
+import {Box, Button, FormControl, Modal, TextField, Typography} from "@mui/material";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import {TimePicker} from "@mui/lab";
@@ -17,7 +17,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit,}) => {
+const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit, getSize}) => {
 
     const [sizeName, setSizeName] = useState(sizeToEdit.name)
     const [sizeTime, setSizeTime] = useState(dateToEdit)
@@ -26,20 +26,21 @@ const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit
     const [blurSizeName, setBlurSizeName] = useState(false)
 
 
-    const changeSize = () => {
+    const changeSize = async () => {
         const changeInfo = {
             id: idToEdit,
             date: sizeTime.toLocaleTimeString(),
             name: sizeName.trim()
         }
-        updateSize(changeInfo).then(res => {
-
+        try {
+            await updateSize(changeInfo)
+            getSize()
             close()
             alertMessage('Название изменено успешно', false)
-        }, err => {
+        } catch (e) {
             setErrSize(true)
             alertMessage('Не удалось изменить название', true)
-        })
+        }
     }
 
 

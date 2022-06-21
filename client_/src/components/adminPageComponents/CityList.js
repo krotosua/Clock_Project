@@ -1,18 +1,9 @@
 import * as React from 'react';
-import {
-    Box,
-    List,
-    ListItem,
-    ListItemText,
-    IconButton,
-    Typography,
-    Divider,
-    Tooltip,
-} from '@mui/material';
+import {useContext, useEffect, useState} from 'react';
+import {Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {useContext, useEffect, useState} from "react";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import {deleteCity, fetchCity} from "../../http/cityAPI";
@@ -27,12 +18,13 @@ const CityList = observer(({alertMessage}) => {
     const [editVisible, setEditVisible] = useState(false)
     const [cityToEdit, setCityToEdit] = useState(null);
 
-    useEffect(() => {
-        getCity()
+    useEffect(async () => {
+        await getCity()
     }, [cities.page])
 
-    const getCity = () => {
-        fetchCity(cities.page, 10).then(res => {
+    const getCity = async () => {
+        try {
+            const res = await fetchCity(cities.page, 10)
             if (res.status === 204) {
                 return cities.setIsEmpty(true)
             } else {
@@ -40,17 +32,19 @@ const CityList = observer(({alertMessage}) => {
                 cities.setCities(res.data.rows)
                 cities.setTotalCount(res.data.count)
             }
-        }, error => cities.setIsEmpty(true))
+        } catch (e) {
+            cities.setIsEmpty(true)
+        }
     }
-    const removeCity = (id) => {
-        deleteCity(id).then((res) => {
+    const removeCity = async (id) => {
+        try {
+            await deleteCity(id)
             cities.setCities(cities.cities.filter(obj => obj.id !== id));
             alertMessage('Успешно удаленно', false)
-            getCity()
-        }, (err) => {
+            await getCity()
+        } catch (e) {
             alertMessage('Не удалось удалить, так как в городе присутствуют мастера', true)
-        })
-
+        }
     }
 
     return (<Box>
@@ -144,7 +138,7 @@ const CityList = observer(({alertMessage}) => {
             /> : null}
 
             <CreateCity open={cityVisible}
-
+                        getCity={() => getCity()}
                         onClose={() => setCityVisible(false)}
                         alertMessage={alertMessage}/>
 

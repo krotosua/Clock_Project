@@ -1,11 +1,11 @@
 import * as React from 'react';
-import {Box, List, ListItem, ListItemText, Divider, Button, Tooltip, Rating} from '@mui/material';
-import {useContext, useState} from "react";
+import {useContext, useState} from 'react';
+import {Box, Button, Divider, List, ListItem, ListItemText, Rating, Tooltip} from '@mui/material';
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import MasterRating from "./MasterRating";
 
-const OrderListCustomer = observer(() => {
+const OrderListCustomer = observer(({getOrders}) => {
     let {orders, cities} = useContext(Context)
     const [open, setOpen] = useState(false)
     const [dataForEdit, setDataForEdit] = useState({})
@@ -73,7 +73,8 @@ const OrderListCustomer = observer(() => {
                         divider
                     >
                         <ListItemText sx={{width: 10}}
-                                      primary={index + 1}
+                                      primary={order.id}
+                                      primary={order.id}
                         />
 
                         <ListItemText sx={{width: 10}}
@@ -98,9 +99,9 @@ const OrderListCustomer = observer(() => {
                                       primary={order.price}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={order.status ==="DONE"?"Выполнен":
-                                          order.status ==="ACCEPTED"?"Подтвержден":
-                                              order.status ==="REJECTED"?"Отказ":"Ожидание"}
+                                      primary={order.status === "DONE" ? "Выполнен" :
+                                          order.status === "ACCEPTED" ? "Подтвержден" :
+                                              order.status === "REJECTED" ? "Отказ" : "Ожидание"}
                         />
                         <ListItemText sx={{width: 10}}
 
@@ -128,7 +129,6 @@ const OrderListCustomer = observer(() => {
                                                   </span>
                                           </Tooltip>}
                         />
-
                     </ListItem>)
                 })}
                 <Divider/>
@@ -137,6 +137,7 @@ const OrderListCustomer = observer(() => {
 
             {open ? <MasterRating open={open}
                                   dataForEdit={dataForEdit}
+                                  getOrders={getOrders}
                                   onClose={() => setOpen(false)}
             /> : null}
         </Box>

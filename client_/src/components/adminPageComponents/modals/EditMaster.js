@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
-import {fetchMasters, updateMaster} from "../../../http/masterAPI";
+import {updateMaster} from "../../../http/masterAPI";
 import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
 
@@ -20,7 +20,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen}) => {
+const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen, getMasters}) => {
     const {cities, masters} = useContext(Context)
     const [masterName, setMasterName] = useState(nameToEdit)
     const [masterRating, setMasterRating] = useState(ratingToEdit)
@@ -30,30 +30,25 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
     useEffect(() => {
         cities.setSelectedCity(cityChosen.map(city => city.id))
     }, [])
-    const changeMaster = () => {
+    const changeMaster = async () => {
         const changeInfo = {
             id: idToEdit,
             name: masterName.trim(),
             rating: masterRating,
             cityId: cities.selectedCity
         }
-
-        updateMaster(changeInfo)
-            .then(res => {
-                close()
-                alertMessage('Данные мастера успешно изменены', false)
-            }, err => {
-                setErrMaster(true)
-                alertMessage('Не удалось изменить данные мастера', true)
-            })
+        try {
+            await updateMaster(changeInfo)
+            await getMasters()
+            close()
+            alertMessage('Данные мастера успешно изменены', false)
+        } catch (e) {
+            setErrMaster(true)
+            alertMessage('Не удалось изменить данные мастера', true)
+        }
     }
 
     const close = () => {
-        fetchMasters(null, masters.page, 10).then(res => {
-            masters.setMasters(res.data.rows)
-            masters.setTotalCount(res.data.rows.length)
-        }, (err) => {
-        })
         setErrMaster(false)
         onClose()
     }

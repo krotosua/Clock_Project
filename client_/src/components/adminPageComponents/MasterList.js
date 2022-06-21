@@ -35,49 +35,49 @@ const MasterList = observer(({alertMessage}) => {
     const [cityToEdit, setCityToEdit] = useState([]);
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
-    useEffect(() => {
-        getMasters()
+    useEffect(async () => {
+        await getMasters()
     }, [masters.page])
 
 
-    const getMasters = () => {
-        fetchMasters(null, masters.page, 10).then(res => {
+    const getMasters = async () => {
+        try {
+            const res = await fetchMasters(null, masters.page, 10)
             if (res.status === 204) {
                 return masters.setIsEmpty(true)
             }
             masters.setIsEmpty(false)
             masters.setMasters(res.data.rows)
             masters.setTotalCount(res.data.count)
-        }, (err) => {
+        } catch (e) {
             return masters.setIsEmpty(true)
-
-        })
+        }
     }
 
-    const changeActiveted = (master) => {
+    const changeActiveted = async (master) => {
         let changeInfo = {
             id: master.id,
             isActivated: !master.isActivated
         }
-
-        activateMaster(changeInfo)
-            .then(res => {
-                alertMessage('Данные мастера успешно изменены', false)
-                return master.isActivated = !master.isActivated
-            }, err => {
-                alertMessage('Не удалось изменить данные мастера', true)
-            })
+        try {
+            await activateMaster(changeInfo)
+            alertMessage('Данные мастера успешно изменены', false)
+            return master.isActivated = !master.isActivated
+        } catch (e) {
+            alertMessage('Не удалось изменить данные мастера', true)
+        }
     }
 
 
-    const removeMaster = (id) => {
-        deleteMaster(id).then((res) => {
+    const removeMaster = async (id) => {
+        try {
+            await deleteMaster(id)
             masters.setMasters(masters.masters.filter(master => master.id !== id));
             alertMessage('Успешно удаленно', false)
-            getMasters()
-        }, (err) => {
+            await getMasters()
+        } catch (e) {
             alertMessage('Не удалось удалить, так как у мастера есть еще заказы', true)
-        })
+        }
     }
 
     const createCityList = (master) => {
@@ -211,12 +211,14 @@ const MasterList = observer(({alertMessage}) => {
                                        alertMessage={alertMessage}
                                        nameToEdit={nameToEdit}
                                        ratingToEdit={ratingToEdit}
+                                       getMasters={() => getMasters()}
                                        cityChosen={cityToEdit}/> : null}
             {openReview ? <ReviewModal open={openReview}
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
             <CreateMaster open={createVisible}
+                          getMasters={() => getMasters()}
                           alertMessage={alertMessage}
                           onClose={() => setCreateVisible(false)}/>
         </Box>
