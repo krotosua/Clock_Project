@@ -114,7 +114,8 @@ class UserLogic {
             if (candidate) {
                 if (changeName && candidate.password !== null) {
                     await Customer.update({name: name}, {where: {userId: candidate.id}})
-                } else if (!regCustomer) {
+                }
+                if (!regCustomer) {
                     return candidate
                 }
             }
@@ -154,6 +155,7 @@ class UserLogic {
             const {email, password}: LoginDTO = req.body
             const userLogin: User | null = await User.findOne({
                 where: {email},
+                include: {all: true, nested: true}
             })
             if (!userLogin) {
                 return next(ApiError.NotFound('Customer with this name not found'))
@@ -162,11 +164,10 @@ class UserLogic {
             if (!comparePassword) {
                 return next(ApiError.Unauthorized('Wrong password'))
             }
-            userLogin.role === "MASTER" ? await userLogin!.getMaster() : await userLogin!.getCustomer()
             let token: string
-            if (userLogin.master !== undefined) {
+            if (userLogin.master !== undefined && userLogin.role === "MASTER") {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.master.name)
-            } else if (userLogin.customer !== undefined) {
+            } else if (userLogin.customer !== undefined && userLogin.role === "CUSTOMER") {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.customer.name)
             } else {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated)

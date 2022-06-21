@@ -39,7 +39,7 @@ class MasterLogic {
 
                 }, {model: User}],
             })
-            console.log(masters)
+
             if (!masters.count) {
                 return res.status(204).json({message: "List is empty"});
             }
@@ -182,12 +182,13 @@ class MasterLogic {
             page = page || 1
             limit = limit || 5
             const offset = page * limit - limit
-            const ratingReviews = await Rating.findAndCountAll({
+            const ratingReviews: any = await Rating.findAndCountAll({
                 where: {masterId: masterId},
                 order: [['id', 'DESC']],
                 include: [{
                     model: User,
                     attributes: ["id"],
+
                 }]
             })
             return res.status(200).json(ratingReviews)
