@@ -1,4 +1,4 @@
-import {City, Master, Order, Rating, SizeClock, User} from '../models/models'
+import {City, Customer, Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import {Op} from "sequelize";
 import sizeLogic from "./sizeLogic"
@@ -182,13 +182,16 @@ class MasterLogic {
             page = page || 1
             limit = limit || 5
             const offset = page * limit - limit
-            const ratingReviews: any = await Rating.findAndCountAll({
+            const ratingReviews: { rows: Rating[], count: number } = await Rating.findAndCountAll({
                 where: {masterId: masterId},
                 order: [['id', 'DESC']],
                 include: [{
                     model: User,
                     attributes: ["id"],
-
+                    include: [{
+                        model: Customer,
+                        attributes: ["name"]
+                    }]
                 }]
             })
             return res.status(200).json(ratingReviews)
