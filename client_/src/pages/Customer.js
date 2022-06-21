@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import OrderListCustomer from '../components/customerPageComponents/OrderListCustomer'
-import {Box, Fab, Tooltip} from "@mui/material";
+import {Box, CircularProgress, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import {ORDER_ROUTE} from "../utils/consts";
 import {Link, useNavigate, useParams} from "react-router-dom";
@@ -13,32 +13,46 @@ const Customer = observer(() => {
     const navigate = useNavigate()
     let {orders} = useContext(Context)
     const {id} = useParams()
-    const getOrders = () => {
-        fetchCustomerOrders(id, orders.page, 8).then(res => {
+    const [loading, setLoading] = useState(true)
+    const getOrders = async () => {
+        try {
+            const res = await fetchCustomerOrders(id, orders.page, 8)
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
             }
-            res.data.rows.map(item => {
-                item.date = new Date(item.date).toLocaleDateString("uk-UA")
-            })
-
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
-        }, error => orders.setIsEmpty(true))
+        } catch (e) {
+            orders.setIsEmpty(true)
+        } finally {
+            setLoading(false)
+        }
     }
-    useEffect(() => {
-        getOrders()
+    useEffect(async () => {
+        await getOrders()
     }, [orders.page])
 
-
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
+    }
     return (
         <Box>
             <Box sx={{height: "750px", pt: 5, position: "relative"}}>
                 <h2>Список заказов</h2>
                 <Box sx={{height: "650px"}}>
-                    <OrderListCustomer/>
+                    <OrderListCustomer
+                        getOrders={() => getOrders()}/>
                 </Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>

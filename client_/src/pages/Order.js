@@ -1,9 +1,4 @@
-import {
-    Card,
-    CardContent,
-    Container,
-
-} from "@mui/material";
+import {Card, CardContent, Container,} from "@mui/material";
 import React, {useContext, useEffect, useState} from "react";
 import OrderStepper from "../components/orderPageComponents/OrderStepper"
 import {observer} from "mobx-react-lite";
@@ -22,22 +17,26 @@ const Order = observer(() => {
         setMessage(message)
         setIsError(bool)
     }
-    useEffect(() => {
-        fetchCity().then(res => {
-            if (res.status === 204) {
+    useEffect(async () => {
+        try {
+            const cityRes = await fetchCity()
+            if (cityRes.status === 204) {
                 cities.setIsEmpty(true)
             } else {
-                cities.setCities(res.data.rows)
+                cities.setCities(cityRes.data.rows)
             }
-        })
-        fetchSize().then(res => {
-            if (res.status === 204) {
+        } catch (e) {
+            cities.setIsEmpty(true)
+        }
+        try {
+            const sizeRes = await fetchSize()
+            if (sizeRes.status === 204) {
                 return size.setIsEmpty(true)
             }
-            return size.setSize(res.data.rows)
-        }, (err) => {
+            return size.setSize(sizeRes.data.rows)
+        } catch (e) {
             size.setIsEmpty(true)
-        })
+        }
     }, [])
 
     return (
@@ -48,7 +47,6 @@ const Order = observer(() => {
                 justifyContent: "center",
                 alignItems: "center",
                 height: "800px",
-
             }}
         >
             <Card sx={{width: 1000, p: 1, bgcolor: '#f5f5f5'}}>

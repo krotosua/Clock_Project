@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import OrderListMaster from '../components/masterPageComponents/OrderListMaster'
-import {CircularProgress, Box} from "@mui/material";
+import {Box, CircularProgress} from "@mui/material";
 import {useNavigate, useParams} from "react-router-dom";
 import {fetchMasterOrders} from "../http/orderAPI";
 import {Context} from "../index";
@@ -22,24 +22,25 @@ const Master = observer(() => {
         setMessage(message)
         setIsError(bool)
     }
-    const getOrders = () => {
-        fetchMasterOrders(id, orders.page, 8).then(res => {
+    const getOrders = async () => {
+        try {
+            const res = await fetchMasterOrders(id, orders.page, 8)
             setActivated(true)
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
             }
-            res.data.rows.map(item => {
-                item.date = new Date(item.date).toLocaleDateString("uk-UA")
-            })
-
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
-        }).catch(error => setActivated(false)).finally(() => setLoading(false))
+        } catch (error) {
+            setActivated(false)
+        } finally {
+            setLoading(false)
+        }
     }
-    useEffect(() => {
-        getOrders()
+    useEffect(async () => {
+        await getOrders()
     }, [orders.page])
 
     if (loading) {
@@ -75,10 +76,7 @@ const Master = observer(() => {
                         <h3>Требуется активация от администратора</h3>
                     </Box>
                 </Box>
-
-
             }
-
             <MyAlert open={open}
                      onClose={() => setOpen(false)}
                      message={message}

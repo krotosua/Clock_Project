@@ -61,8 +61,7 @@ const OrderListMaster = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Статус"
                     />
-
-
+                    
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
@@ -73,7 +72,7 @@ const OrderListMaster = observer(({alertMessage}) => {
                         divider
                     >
                         <ListItemText sx={{width: 10}}
-                                      primary={index + 1}
+                                      primary={order.id}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={order.name}

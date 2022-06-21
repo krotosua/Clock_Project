@@ -49,8 +49,9 @@ const OrderList = observer(({alertMessage}) => {
     };
 
     const navigate = useNavigate()
-    const getOrders = () => {
-        fetchAlLOrders(orders.page, 8).then(res => {
+    const getOrders = async () => {
+        try {
+            const res = await fetchAlLOrders(orders.page, 8)
             if (res.status === 204) {
                 orders.setIsEmpty(true)
                 return
@@ -58,23 +59,26 @@ const OrderList = observer(({alertMessage}) => {
             orders.setIsEmpty(false)
             orders.setOrders(res.data.rows)
             orders.setTotalCount(res.data.count)
-        }, () => orders.setIsEmpty(true))
+        } catch (e) {
+            orders.setIsEmpty(true)
+        }
     }
 
-    useEffect(() => {
-        getOrders()
+    useEffect(async () => {
+        await getOrders()
     }, [orders.page])
 
-    const removeOrder = (id) => {
-        deleteOrder(id).then(() => {
+    const removeOrder = async (id) => {
+        try {
+            await deleteOrder(id)
             orders.setOrders(orders.orders.filter(obj => obj.id !== id));
             alertMessage('Успешно удаленно', false)
             orders.setIsEmpty(false)
-            getOrders()
-        }, () => {
+            await getOrders()
+        } catch (e) {
             alertMessage('Не удалось удалить', true)
             orders.setIsEmpty(false)
-        })
+        }
     }
     const editOrder = (order, time) => {
         setOrderToEdit(order)
@@ -110,7 +114,7 @@ const OrderList = observer(({alertMessage}) => {
                     </Link>}
                 >
                     <ListItemText sx={{width: 10}}
-                                  primary="Id"
+                                  primary="ID"
                     />
                     <ListItemText sx={{width: 10}}
                                   primary="Имя"
@@ -226,6 +230,7 @@ const OrderList = observer(({alertMessage}) => {
                 alertMessage={alertMessage}
                 idToEdit={idToEdit}
                 timeToEdit={timeToEdit}
+                getOrders={() => getOrders()}
             /> : null}
 
         </Box>

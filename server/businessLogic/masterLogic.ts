@@ -1,4 +1,4 @@
-import {City, Master, Order, Rating, SizeClock, User} from '../models/models'
+import {City, Customer, Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import {Op} from "sequelize";
 import sizeLogic from "./sizeLogic"
@@ -39,7 +39,6 @@ class MasterLogic {
 
                 }, {model: User}],
             })
-            console.log(masters)
             if (!masters.count) {
                 return res.status(204).json({message: "List is empty"});
             }
@@ -188,6 +187,10 @@ class MasterLogic {
                 include: [{
                     model: User,
                     attributes: ["id"],
+                    include: [{
+                        model: Customer,
+                        attributes: ["name"]
+                    }]
                 }]
             })
             return res.status(200).json(ratingReviews)

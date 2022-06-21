@@ -2,7 +2,6 @@ import React, {useContext, useState} from 'react';
 import {Box, Button, Modal, Rating, TextField, Typography} from "@mui/material";
 import StarIcon from '@mui/icons-material/Star';
 import {ratingMaster} from "../../http/masterAPI";
-import {fetchCustomerOrders} from "../../http/orderAPI";
 import {Context} from "../../index";
 import {useParams} from "react-router-dom";
 
@@ -34,13 +33,13 @@ const getLabelText = (value) => {
     return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
 }
 
-const MasterRating = ({open, onClose, dataForEdit}) => {
+const MasterRating = ({open, onClose, dataForEdit, getOrders}) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(-1);
     const [review, setReview] = useState()
     let {orders} = useContext(Context)
     const {id} = useParams()
-    const sendRating = () => {
+    const sendRating = async () => {
         const post = {
             rating: rating,
             review: review,
@@ -48,22 +47,13 @@ const MasterRating = ({open, onClose, dataForEdit}) => {
             masterId: dataForEdit.masterId,
             userId: dataForEdit.userId,
         }
-        ratingMaster(post).then(res => {
-                fetchCustomerOrders(id, orders.page, 8).then(res => {
-                    if (res.status === 204) {
-                        orders.setIsEmpty(true)
-                        return
-                    }
-                    res.data.rows.map(item => {
-                        item.date = new Date(item.date).toLocaleDateString("uk-UA")
-                    })
-                    orders.setIsEmpty(false)
-                    orders.setOrders(res.data.rows)
-                    orders.setTotalCount(res.data.count)
-                }, error => orders.setIsEmpty(true))
-                close()
-            }
-        )
+        try {
+            await ratingMaster(post)
+            getOrders()
+            close()
+        } catch (e) {
+
+        }
     }
 
     const close = () => {

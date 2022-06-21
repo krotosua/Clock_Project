@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Box, List, ListItemText, Divider, Container, Link, ListItemButton, styled} from "@mui/material";
+import {Box, Container, Divider, Link, List, ListItemButton, ListItemText, styled} from "@mui/material";
 import CityList from "../components/adminPageComponents/CityList"
 import MasterList from "../components/adminPageComponents/MasterList";
 import OrderList from "../components/adminPageComponents/OrderList";
@@ -27,7 +27,6 @@ const SelectButton = styled(ListItemButton)`
   }
 `;
 const Admin = observer(() => {
-
     const location = useLocation();
     const navigate = useNavigate()
     const cityList = location.pathname === ADMIN_CITY_LIST_ROUTE;
@@ -36,7 +35,6 @@ const Admin = observer(() => {
     const orderList = location.pathname === ADMIN_ORDER_LIST_ROUTE;
     const usersList = location.pathname === ADMIN_USERS_ROUTE
     const adminRoute = location.pathname === ADMIN_ROUTE
-
     const [cityVisible, setCityVisible] = useState(false)
     const [masterVisible, setMasterVisible] = useState(false)
     const [sizeVisible, setSizeVisible] = useState(false)
@@ -49,11 +47,9 @@ const Admin = observer(() => {
         setIsError(bool)
     }
 
-
     const preventDefault = (event) => event.preventDefault();
 
     return (
-
         <Container disableGutters
                    sx={{pt: 2}}>
             <Box sx={{
@@ -134,8 +130,6 @@ const Admin = observer(() => {
                     /> : <Box sx={{height: "800px"}}> </Box>}
 
                 </Box>
-
-
                 <CreateCity open={cityVisible}
                             onClose={() => setCityVisible(false)}
                             alertMessage={alertMessage}/>

@@ -90,13 +90,14 @@ const OrderStepper = observer(({alertMessage}) => {
             masters.setTotalCount(res.data.count);
             setLoading(false)
         } catch (e) {
-            setLoading(false)
             return masters.setIsEmpty(true);
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
+
     }
 
-    const handleNext = (event) => {
+    const handleNext = async (event) => {
         if (user.isAuth || regCustomer !== null) {
             if (user.userName !== name && changeName === null) {
                 setEmailExists(false)
@@ -105,7 +106,7 @@ const OrderStepper = observer(({alertMessage}) => {
                 return
             }
             if (activeStep === 0) {
-                getMasters()
+                await getMasters()
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
             } else if (activeStep === 1 && chosenMaster) {
                 setChosenMaster(Number(chosenMaster))
@@ -124,8 +125,8 @@ const OrderStepper = observer(({alertMessage}) => {
                     price: size.selectedSize.date.slice(0, 2) * cities.cities
                         .find(city => city.id === cities.selectedCity).price
                 }
-                createOrder(orderInfo).then(res => {
-                    console.log(res)
+                try {
+                    await createOrder(orderInfo)
                     cities.setSelectedCity(null)
                     size.setSelectedSize({date: "00:00:00"})
                     masters.setMasters([])
@@ -133,24 +134,26 @@ const OrderStepper = observer(({alertMessage}) => {
                         user.setUserName(name)
                     }
                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                }, err => {
-                    console.log(err)
+                } catch (e) {
+                    console.log(e)
                     alertMessage('Мастер занят', true)
                     setActiveStep(1)
                     setLoading(true)
                     getMasters()
-                })
-
+                }
             }
         } else {
             setLoading(true)
-            checkEmail(email).then(res => {
+            try {
+                const res = checkEmail(email)
                 if (res.status === 204) {
                     setEmailExists(false)
                 } else if (res.status === 200) {
                     setEmailExists(true)
                 }
-            }).finally(() => setLoading(false))
+            } finally {
+                setLoading(false)
+            }
             setAnchorEl(event.currentTarget)
         }
     };
@@ -181,23 +184,26 @@ const OrderStepper = observer(({alertMessage}) => {
 
     }, [])
 
-    useEffect(() => {
+    useEffect(async () => {
         if (activeStep === 1) {
             setLoading(true)
-            fetchMastersForOrder(cities.selectedCity, new Date(new Date(date).setHours(time.getHours())), size.selectedSize.id, masters.page, 3).then(
-                (res) => {
-                    if (res.status === 204) {
-                        setFreeMasters([])
-                        return
-                    }
-                    setFreeMasters(res.data.rows)
-                    masters.setMasters(res.data.rows);
-                    masters.setTotalCount(res.data.count);
-                },
-                (err) => {
-                    masters.setIsEmpty(true);
+            try {
+                const res = await fetchMastersForOrder(cities.selectedCity,
+                    new Date(new Date(date).setHours(time.getHours())),
+                    size.selectedSize.id,
+                    masters.page, 3)
+                if (res.status === 204) {
+                    setFreeMasters([])
+                    return
                 }
-            ).finally(() => setLoading(false));
+                setFreeMasters(res.data.rows)
+                masters.setMasters(res.data.rows);
+                masters.setTotalCount(res.data.count);
+            } catch {
+                masters.setIsEmpty(true);
+            } finally {
+                setLoading(false)
+            }
         }
     }, [masters.page])
 
@@ -214,7 +220,6 @@ const OrderStepper = observer(({alertMessage}) => {
                     }}/>
             </Box>
             :
-
             <Box sx={{width: "100%"}}>
                 <Stepper activeStep={activeStep}>
                     {steps.map((label) => {
