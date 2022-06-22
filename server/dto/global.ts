@@ -11,4 +11,12 @@ export type Pagination = {
     limit: number;
     page: number;
 }
+
+export enum Roles {
+    ADMIN = "ADMIN",
+    CUSTOMER = "CUSTOMER",
+    MASTER = "MASTER"
+}
+
 export type ReqQuery<T> = Request<{}, {}, {}, T>
+

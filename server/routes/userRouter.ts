@@ -3,6 +3,7 @@ import userController from '../controllers/userController'
 import authMiddleware from '../middleware/authMiddleware'
 import checkRole from "../middleware/checkRoleMiddleware"
 import {body, param} from 'express-validator';
+import {Roles} from "../dto/global";
 
 const userRouter = express.Router()
 
@@ -32,17 +33,17 @@ userRouter.get('/checkEmail/',
 userRouter.put('/activate/:userId',
     param("userId").not().isEmpty().isInt({gt: 0}),
     body("isActivated").not().isEmpty().isBoolean(),
-    checkRole("ADMIN"), userController.activateAdmin)
+    checkRole(Roles.ADMIN), userController.activateAdmin)
 
 userRouter.get('/activate/:link', userController.activate)
 
-userRouter.get("/", checkRole("ADMIN"), userController.getAll)
+userRouter.get("/", checkRole(Roles.ADMIN), userController.getAll)
 
 userRouter.put('/:userId',
     param("userId").not().isEmpty().isInt({gt: 0}),
-    checkRole("ADMIN"), userController.updateUser)
+    checkRole(Roles.ADMIN), userController.updateUser)
 
-userRouter.delete('/:userId', checkRole("ADMIN"),
+userRouter.delete('/:userId', checkRole(Roles.ADMIN),
     param("userId").not().isEmpty().isInt({gt: 0}),
     userController.deleteOne)
 export default userRouter

@@ -9,6 +9,7 @@ import Divider from "@mui/material/Divider";
 import {observer} from "mobx-react-lite";
 import Button from "@mui/material/Button";
 import {statusChangeOrder} from "../../http/orderAPI";
+import {STATUS_LIST} from "../../store/OrderStore";
 
 
 const OrderListMaster = observer(({alertMessage}) => {
@@ -61,7 +62,7 @@ const OrderListMaster = observer(({alertMessage}) => {
                     <ListItemText sx={{width: 10}}
                                   primary="Статус"
                     />
-                    
+
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
@@ -95,18 +96,17 @@ const OrderListMaster = observer(({alertMessage}) => {
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={
-                                          <Button color={order.status === "DONE" ? "success" : "error"}
-                                                  disabled={order.status !== "ACCEPTED" && order.status !== "DONE"}
+                                          <Button color={order.status === STATUS_LIST.DONE ? "success" : "error"}
+                                                  disabled={order.status !== STATUS_LIST.ACCEPTED && order.status !== STATUS_LIST.DONE}
                                                   size="small"
                                                   variant="outlined"
                                                   onClick={() => order.status === "ACCEPTED" ? changeStatus(order, "DONE") : changeStatus(order, "ACCEPTED")}>
-                                              {order.status === "DONE" ? "Выполнен"
-                                                  : order.status === "ACCEPTED" ? "Подтвержден"
-                                                      : order.status === "REJECTED" ? "Отказ" : "Ожиднаие"}
+                                              {order.status === STATUS_LIST.DONE ? "Выполнен"
+                                                  : order.status === STATUS_LIST.ACCEPTED ? "Подтвержден"
+                                                      : order.status === STATUS_LIST.REJECTED ? "Отказ" : "Ожиднаие"}
                                           </Button>
                                       }
                         />
-
                     </ListItem>)
                 })}
                 <Divider/>

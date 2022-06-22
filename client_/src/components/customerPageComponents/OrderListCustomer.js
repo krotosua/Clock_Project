@@ -4,6 +4,7 @@ import {Box, Button, Divider, List, ListItem, ListItemText, Rating, Tooltip} fro
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import MasterRating from "./MasterRating";
+import {STATUS_LIST} from "../../store/OrderStore";
 
 const OrderListCustomer = observer(({getOrders}) => {
     let {orders, cities} = useContext(Context)
@@ -74,7 +75,6 @@ const OrderListCustomer = observer(({getOrders}) => {
                     >
                         <ListItemText sx={{width: 10}}
                                       primary={order.id}
-                                      primary={order.id}
                         />
 
                         <ListItemText sx={{width: 10}}
@@ -99,9 +99,9 @@ const OrderListCustomer = observer(({getOrders}) => {
                                       primary={order.price}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={order.status === "DONE" ? "Выполнен" :
-                                          order.status === "ACCEPTED" ? "Подтвержден" :
-                                              order.status === "REJECTED" ? "Отказ" : "Ожидание"}
+                                      primary={order.status === STATUS_LIST.DONE ? "Выполнен" :
+                                          order.status === STATUS_LIST.ACCEPTED ? "Подтвержден" :
+                                              order.status === STATUS_LIST.REJECTED ? "Отказ" : "Ожидание"}
                         />
                         <ListItemText sx={{width: 10}}
 
@@ -120,7 +120,7 @@ const OrderListCustomer = observer(({getOrders}) => {
                                               <Button color="success"
                                                       size="small"
                                                       variant="outlined"
-                                                      disabled={order.status !== "DONE"}
+                                                      disabled={order.status !== STATUS_LIST.DONE}
                                                       onClick={() => {
                                                           createData(order)
                                                       }}>

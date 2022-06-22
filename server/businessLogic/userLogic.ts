@@ -9,7 +9,7 @@ import masterController from "../controllers/masterController"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
 import {CreateUserDTO, GetOrCreateUserDTO, LoginDTO, UpdateUserDTO} from "../dto/user.dto";
-import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
+import {GetRowsDB, Pagination, ReqQuery, Roles, UpdateDB} from "../dto/global";
 
 
 const generateJwt = (id: number, email: string, role: string, isActivated?: boolean, name?: string): string => {
@@ -30,7 +30,7 @@ class UserLogic {
                     isMaster,
                     name
                 }: CreateUserDTO = req.body
-                const role: string = isMaster ? "MASTER" : "CUSTOMER"
+                const role: string = isMaster ? Roles.MASTER : Roles.CUSTOMER
                 const candidate: User | null = await User.findOne({where: {email}})
                 if (candidate) {
                     if (candidate.password !== null) {
@@ -73,7 +73,7 @@ class UserLogic {
             }
             const result: void | Response = await sequelize.transaction(async () => {
                 const {email, password, isMaster, name, isActivated}: CreateUserDTO = req.body;
-                const role: string = isMaster ? "MASTER" : "CUSTOMER";
+                const role: string = isMaster ? Roles.MASTER : Roles.CUSTOMER;
                 const candidate: User | null = await User.findOne({where: {email}})
                 if (candidate) {
                     if (candidate.password !== null) {
@@ -164,13 +164,15 @@ class UserLogic {
             if (!comparePassword) {
                 return next(ApiError.Unauthorized('Wrong password'))
             }
-            let token: string
-            if (userLogin.master !== undefined && userLogin.role === "MASTER") {
+            let token: string = ""
+            if (userLogin.master !== undefined && userLogin.role === Roles.MASTER) {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.master.name)
-            } else if (userLogin.customer !== undefined && userLogin.role === "CUSTOMER") {
+            } else if (userLogin.customer !== undefined && userLogin.role === Roles.CUSTOMER) {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.customer.name)
-            } else {
+            } else if (userLogin.role === Roles.ADMIN) {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated)
+            } else {
+                next(ApiError.badRequest("Wrong role"))
             }
             return res.status(201).json({token})
         } catch (e) {

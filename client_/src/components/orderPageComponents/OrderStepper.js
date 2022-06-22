@@ -37,6 +37,7 @@ import PagesOrder from "./Pages";
 import Login from "../authPageComponents/Login";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
+import {ROLE_LIST} from "../../store/UserStore";
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -178,7 +179,7 @@ const OrderStepper = observer(({alertMessage}) => {
 
     useEffect(() => {
         if (user.isAuth) {
-            user.userRole !== "ADMIN" ? setName(user.userName) : setName("")
+            user.userRole !== ROLE_LIST.ADMIN ? setName(user.userName) : setName("")
             setEmail(user.user.email)
         }
 

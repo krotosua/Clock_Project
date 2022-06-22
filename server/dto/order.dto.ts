@@ -24,5 +24,12 @@ export type SendMassageDTO = {
     password: string
 }
 
+export enum statusList {
+    WAITING = "WAITING",
+    REJECTED = "REJECTED",
+    ACCEPTED = "ACCEPTED",
+    DONE = "DONE",
+}
+
 
 export type UpdateMasterDTO = Optional<CreateOrderDTO, 'name'>

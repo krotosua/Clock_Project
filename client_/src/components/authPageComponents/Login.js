@@ -1,5 +1,6 @@
 import {
-    Box, Card,
+    Box,
+    Card,
     CardContent,
     Container,
     FormControl,
@@ -8,28 +9,24 @@ import {
     OutlinedInput,
     TextField
 } from "@mui/material";
-import {
-    NavLink,
-    useLocation,
-    useNavigate
-} from "react-router-dom";
+import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-
 import {
     ADMIN_ROUTE,
     CUSTOMER_ORDER_ROUTE,
     MASTER_ORDER_ROUTE,
-    REGISTRATION_ROUTE,
     ORDER_ROUTE,
+    REGISTRATION_ROUTE,
 } from "../../utils/consts";
 import Button from "@mui/material/Button";
 import React, {useContext, useState} from "react";
 import {observer} from "mobx-react-lite";
 import {login} from "../../http/userAPI";
 import {Context} from "../../index";
+import {ROLE_LIST} from "../../store/UserStore";
 
 
 const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
@@ -52,8 +49,7 @@ const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
                 setError(true)
                 return
             }
-
-            if (dataUser.isActivated === false && dataUser.role !== "ADMIN") {
+            if (dataUser.isActivated === false && dataUser.role !== ROLE_LIST.ADMIN) {
                 alertMessage("Требуется подтвердить Email", true)
                 return
             }
@@ -64,11 +60,10 @@ const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
             if (isOrder) {
                 getMasters()
                 nextPage()
-
             } else {
-                dataUser.role === "CUSTOMER" && dataUser.isActivated === true ?
+                dataUser.role === ROLE_LIST.CUSTOMER && dataUser.isActivated === true ?
                     navigate(`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`) :
-                    user.userRole === 'MASTER' && dataUser.isActivated === true ?
+                    user.userRole === ROLE_LIST.MASTER && dataUser.isActivated === true ?
                         navigate(`${MASTER_ORDER_ROUTE}/${user.user.id}`) : navigate(ADMIN_ROUTE)
             }
         } catch (e) {
