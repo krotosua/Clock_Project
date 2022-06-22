@@ -6,6 +6,7 @@ import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
 import {CreateMasterDTO, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
 import {CreateRatingDTO} from "../dto/rating.dto";
+import {addHours} from 'date-fns'
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
 const {and, lt, lte, not, is, or, gt, gte, notIn} = Op;
@@ -64,8 +65,7 @@ class MasterLogic {
             if (clock === undefined) {
                 return next(ApiError.NotFound("clock not found"));
             }
-            const endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2));
-            const endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0));
+            const endTime = addHours(new Date(time), Number(clock.date.slice(0, 2)))
             time = new Date(time)
             page = page || 1;
             limit = limit || 12;
