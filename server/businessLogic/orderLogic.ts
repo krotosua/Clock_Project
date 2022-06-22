@@ -2,15 +2,9 @@ import {Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
-import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, UpdateMasterDTO} from "../dto/order.dto";
+import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, statusList, UpdateMasterDTO} from "../dto/order.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
-const statusList: { WAITING: string, REJECTED: string, ACCEPTED: string, DONE: string } = {
-    WAITING: "WAITING",
-    REJECTED: "REJECTED",
-    ACCEPTED: "ACCEPTED",
-    DONE: "DONE",
-}
 
 class OrderLogic {
     async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {

@@ -1,5 +1,12 @@
 import {makeAutoObservable} from "mobx";
 
+export const STATUS_LIST = {
+    WAITING: "WAITING",
+    REJECTED: "REJECTED",
+    ACCEPTED: "ACCEPTED",
+    DONE: "DONE",
+}
+
 export default class OrderStore {
     constructor() {
         this._orders = []

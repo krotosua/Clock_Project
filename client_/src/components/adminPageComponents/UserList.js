@@ -10,12 +10,12 @@ import Pages from "../Pages";
 import {activateUser, deleteUser, fetchUsers} from "../../http/userAPI";
 import EditUser from "./modals/EditUser";
 import CreateUser from "./modals/CreateUser";
+import {ROLE_LIST} from "../../store/UserStore";
 
 
 const UserList = observer(({alertMessage}) => {
 
     let {user} = useContext(Context)
-
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
@@ -99,9 +99,9 @@ const UserList = observer(({alertMessage}) => {
                     return (<ListItem
                             key={user.id}
                             divider
-                            secondaryAction={user.role !== "ADMIN" ? <Tooltip title={'Удалить пользователя'}
-                                                                              placement="right"
-                                                                              arrow>
+                            secondaryAction={user.role !== ROLE_LIST.ADMIN ? <Tooltip title={'Удалить пользователя'}
+                                                                                      placement="right"
+                                                                                      arrow>
                                 <IconButton sx={{width: 10}}
                                             edge="end"
                                             aria-label="delete"
@@ -136,9 +136,9 @@ const UserList = observer(({alertMessage}) => {
                                               {user.isActivated ? "Активный" : "Не активный"}
                                           </Button>}
                             />
-                            {user.role !== "ADMIN" ? <Tooltip title={'Изменить данные пользователя'}
-                                                              placement="left"
-                                                              arrow>
+                            {user.role !== ROLE_LIST.ADMIN ? <Tooltip title={'Изменить данные пользователя'}
+                                                                      placement="left"
+                                                                      arrow>
                                 <IconButton sx={{width: 5}}
                                             edge="end"
                                             aria-label="Edit"

@@ -1,11 +1,16 @@
 import {makeAutoObservable} from "mobx";
 
+export const ROLE_LIST = {
+    ADMIN: "ADMIN",
+    CUSTOMER: "CUSTOMER",
+    MASTER: "MASTER"
+}
 export default class UserStore {
     constructor() {
         this._isAuth = false
         this._user = {}
         this._userRole = ""
-        this._userName=""
+        this._userName = ""
         this._usersList = []
         this._isEmpty = false
         this._page = 1
@@ -25,6 +30,7 @@ export default class UserStore {
     setUserRole(role) {
         this._userRole = role
     }
+
     setUserName(name) {
         this._userName = name
     }
@@ -60,6 +66,7 @@ export default class UserStore {
     get userRole() {
         return this._userRole
     }
+
     get userName() {
         return this._userName
     }

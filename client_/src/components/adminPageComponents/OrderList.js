@@ -24,7 +24,9 @@ import {deleteOrder, fetchAlLOrders, statusChangeOrder} from "../../http/orderAP
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
+import {STATUS_LIST} from "../../store/OrderStore";
 import {add, isPast, set} from 'date-fns'
+
 
 const OrderList = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
@@ -194,12 +196,10 @@ const OrderList = observer(({alertMessage}) => {
                                               onChange={(event) => handleChange(event.target.value, order)}
                                               label="Статус"
                                           >
-                                              <MenuItem value={"WAITING"}>
-                                                  Ожидание
-                                              </MenuItem>
-                                              <MenuItem value={"REJECTED"}>Отказ</MenuItem>
-                                              <MenuItem value={"ACCEPTED"}>Подтвержден</MenuItem>
-                                              <MenuItem value={"DONE"}>Выполнен</MenuItem>
+                                              <MenuItem value={STATUS_LIST.WAITING}>Ожидание</MenuItem>
+                                              <MenuItem value={STATUS_LIST.REJECTED}>Отказ</MenuItem>
+                                              <MenuItem value={STATUS_LIST.ACCEPTED}>Подтвержден</MenuItem>
+                                              <MenuItem value={STATUS_LIST.DONE}>Выполнен</MenuItem>
                                           </Select>
                                       </FormControl>}
                         />
