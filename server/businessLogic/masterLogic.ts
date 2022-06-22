@@ -8,7 +8,7 @@ import {CreateMasterDTO, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto"
 import {CreateRatingDTO} from "../dto/rating.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
-const {and, lt, lte, not, is, or, gt, gte} = Op;
+const {and, lt, lte, not, is, or, gt, gte, notIn} = Op;
 
 class MasterLogic {
     async create(req: Request, res: Response, next: NextFunction): Promise<Master | void> {
@@ -30,6 +30,7 @@ class MasterLogic {
             limit = limit || 12;
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master> = await Master.findAndCountAll({
+                distinct: true,
                 order: [['id', 'DESC']],
                 attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
@@ -37,15 +38,11 @@ class MasterLogic {
                         attributes: []
                     },
 
-                }, {model: User}],
+                }, {model: User}], limit, offset
             })
-
-
             if (!masters.count) {
                 return res.status(204).json({message: "List is empty"});
             }
-            masters.count = masters.rows.length;
-            masters.rows = masters.rows.slice(offset, page * limit);
             return res.json(masters);
         } catch (e) {
             next(ApiError.NotFound((e as Error).message));
@@ -69,35 +66,38 @@ class MasterLogic {
             }
             const endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2));
             const endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0));
+            time = new Date(time)
             page = page || 1;
             limit = limit || 12;
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master>;
+            const orders = await Order.findAll({
+                where: {
+                    [not]: [{
+                        [or]: [{
+                            [and]: [{time: {[lt]: time}}, {endTime: {[lte]: time}}]
+                        }, {
+                            [and]: [{time: {[gte]: endTime}}, {endTime: {[gt]: endTime}}]
+                        }]
+                    }]
+                },
+                attributes: ["masterId"],
+                group: "masterId"
+            })
             masters = await Master.findAndCountAll({
                 order: [['id', 'DESC']],
+                distinct: true,
                 where: {
-                    isActivated: {[is]: true}
+                    isActivated: {[is]: true},
+                    id: {[notIn]: orders.map(order => order.masterId)}
                 }, include: [{
                     model: City,
                     where: {id: cityId},
                     through: {
                         attributes: []
                     }
-                }, {
-                    model: Order, where: {
-                        [not]: [{
-                            [or]: [{
-                                [and]: [{time: {[lt]: time}}, {endTime: {[lte]: time}}]
-                            }, {
-                                [and]: [{time: {[gte]: endTime}}, {endTime: {[gt]: endTime}}]
-                            }]
-                        }]
-                    }, required: false
-                }]
+                }], limit, offset
             });
-            masters.rows = masters.rows.filter(master => master.orders!.length === 0);
-            masters.count = masters.rows.length;
-            masters.rows = masters.rows.slice(offset, page * limit);
             if (!masters.count) {
                 return res.status(204).json({message: "List is empty"});
             }
