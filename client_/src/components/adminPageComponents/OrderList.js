@@ -24,13 +24,13 @@ import {deleteOrder, fetchAlLOrders, statusChangeOrder} from "../../http/orderAP
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
-
+import {add, isPast, set} from 'date-fns'
 
 const OrderList = observer(({alertMessage}) => {
     let {orders, cities} = useContext(Context)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
-    const [timeToEdit, setTimeToEdit] = useState(new Date(0, 0, 0, new Date().getHours() + 1));
+    const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
     const [orderToEdit, setOrderToEdit] = useState(null)
 
     const handleChange = async (statusOrder, order) => {
@@ -81,9 +81,10 @@ const OrderList = observer(({alertMessage}) => {
         }
     }
     const editOrder = (order, time) => {
+        const date = new Date()
         setOrderToEdit(order)
         setIdToEdit(order.id)
-        setTimeToEdit(new Date(new Date(0, 0, 0).setHours(time.slice(0, 2), 0, 0)))
+        setTimeToEdit(set(new Date(0, 0, 0), {hours: time.slice(0, 2)}))
         setEditVisible(true)
     }
     return (<Box>
@@ -202,7 +203,7 @@ const OrderList = observer(({alertMessage}) => {
                                           </Select>
                                       </FormControl>}
                         />
-                        {Date.now() > Date.parse(order.time) ? null :
+                        {isPast(new Date(order.time)) ? null :
 
                             <Tooltip title={'Изменить заказ'}
                                      placement="left"

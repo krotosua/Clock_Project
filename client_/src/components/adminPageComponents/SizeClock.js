@@ -10,7 +10,7 @@ import CreateSize from "./modals/CreateSize";
 import EditSize from "./modals/EditSize";
 import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
-
+import {set} from 'date-fns'
 
 const SizeList = observer(({alertMessage, getValue}) => {
     let {size} = useContext(Context)
@@ -118,7 +118,11 @@ const SizeList = observer(({alertMessage, getValue}) => {
                                             setEditVisible(true)
                                             setIdToEdit(size.id)
                                             setSizeToEdit(size)
-                                            setDateToEdit(new Date(new Date().setHours(size.date.slice(0, 2), 0, 0)))
+                                            setDateToEdit(set(new Date(), {
+                                                hours: size.date.slice(0, 2),
+                                                minutes: 0,
+                                                seconds: 0
+                                            }))
                                         }}
                             >
                                 <EditIcon/>
