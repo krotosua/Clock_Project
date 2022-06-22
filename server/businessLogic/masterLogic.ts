@@ -8,7 +8,7 @@ import {CreateMasterDTO, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto"
 import {CreateRatingDTO} from "../dto/rating.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
-const {and, lt, lte, not, is, or, gt, gte, between} = Op;
+const {and, lt, lte, not, is, or, gt, gte, notIn} = Op;
 
 class MasterLogic {
     async create(req: Request, res: Response, next: NextFunction): Promise<Master | void> {
@@ -66,25 +66,35 @@ class MasterLogic {
             }
             const endHour = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2));
             const endTime = new Date(new Date(time).setUTCHours(endHour, 0, 0));
+            time = new Date(time)
             page = page || 1;
             limit = limit || 12;
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master>;
+            const orders = await Order.findAll({
+                where: {
+                    [not]: [{
+                        [or]: [{
+                            [and]: [{time: {[lt]: time}}, {endTime: {[lte]: time}}]
+                        }, {
+                            [and]: [{time: {[gte]: endTime}}, {endTime: {[gt]: endTime}}]
+                        }]
+                    }]
+                },
+                attributes: ["masterId"],
+                group: "masterId"
+            })
             masters = await Master.findAndCountAll({
                 order: [['id', 'DESC']],
                 distinct: true,
                 where: {
-                    isActivated: {[is]: true}
+                    isActivated: {[is]: true},
+                    id: {[notIn]: orders.map(order => order.masterId)}
                 }, include: [{
                     model: City,
                     where: {id: cityId},
                     through: {
                         attributes: []
-                    }
-                }, {
-                    model: Order, where: {
-                        time: {[between]: [time, endTime]},
-                        endTime: {[between]: [time, endTime]}
                     }
                 }], limit, offset
             });
