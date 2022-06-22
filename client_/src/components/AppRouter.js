@@ -7,7 +7,6 @@ import {ROLE_LIST} from "../store/UserStore";
 
 const AppRouter = observer(() => {
     const {user} = useContext(Context)
-
     return (<Routes>
         {user.userRole === ROLE_LIST.ADMIN && adminRoutes.map(({path, Component}) => <Route key={path} path={path}
                                                                                             element={<Component/>}
@@ -23,6 +22,7 @@ const AppRouter = observer(() => {
                                                                                                              }) =>
             <Route
                 key={path} path={path} element={<Component/>} exact/>)}
+
         {publicRoutes.map(({path, Component}) => <Route key={path} path={path} element={<Component/>} exact/>)}
         <Route
             path="*"

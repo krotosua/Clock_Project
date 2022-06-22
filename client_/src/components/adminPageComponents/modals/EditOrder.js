@@ -27,6 +27,7 @@ import {DatePicker, TimePicker} from "@mui/lab";
 import {fetchMastersForOrder} from "../../../http/masterAPI";
 import {observer} from "mobx-react-lite";
 import PagesOrder from "../../orderPageComponents/Pages";
+import {addHours, getHours, isSameDay, isSameHour, isToday, set} from "date-fns";
 
 
 const style = {
@@ -71,7 +72,11 @@ const EditOrder = observer(({
     const getMasters = async () => {
         setLoading(true)
         try {
-            const res = await fetchMastersForOrder(cityChosen, new Date(new Date(date).setHours(time.getHours(), 0, 0)), sizeClock, masters.page, 3)
+            const res = await fetchMastersForOrder(cityChosen, set(new Date(date), {
+                hours: getHours(time),
+                minutes: 0,
+                seconds: 0
+            }), sizeClock, masters.page, 3)
             if (res.status === 204) {
                 setFreeMasters([])
                 return
@@ -100,8 +105,8 @@ const EditOrder = observer(({
             alertMessage('Не удалось изменить заказ', true)
             return
         }
-        if (time.toLocaleTimeString("uk-UA") !== timeToEdit.toLocaleTimeString("uk-UA") ||
-            dateToEdit.toLocaleDateString("uk-UA") !== date.toLocaleDateString("uk-UA")
+        if (!isSameHour(time, timeToEdit) ||
+            !isSameDay(dateToEdit, date)
             || orderToEdit.masterId !== changedMaster
             || orderToEdit.cityId !== cityChosen || orderToEdit.sizeClockId !== sizeClock) {
             setChangedMaster(true)
@@ -110,7 +115,7 @@ const EditOrder = observer(({
             id: idToEdit,
             name: name.trim(),
             email: email.trim(),
-            time: new Date(new Date(date).setHours(time.getHours(), 0, 0)),
+            time: set(new Date(date), {hours: getHours(time), minutes: 0, seconds: 0}),
             cityId: cityChosen,
             masterId: chosenMaster,
             sizeClockId: Number(sizeClock),
@@ -143,7 +148,7 @@ const EditOrder = observer(({
     }
 
     const timeChange = (newValue) => {
-        setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(), 0, 0)));
+        setTime(set(new Date(), {hours: getHours(newValue), minutes: 0, seconds: 0}));
         setOpenList(false)
         setChosenMaster(null)
         setOpenTime(false)
@@ -261,28 +266,29 @@ const EditOrder = observer(({
                         <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                             <TimePicker
                                 readOnly
-                                label="Кол-во часов на ремонт"
-                                open={openTime}
+                                label="Выберите время"
                                 value={time}
+                                open={openTime}
                                 onChange={(newValue) => timeChange(newValue)}
                                 onError={(e) =>
                                     e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
                                 ampm={false}
                                 views={["hours"]}
-                                minTime={date.toLocaleDateString("uk-UA") == new Date().toLocaleDateString("uk-UA") ?
-                                    new Date(0, 0, 0, new Date().getHours() + 1) :
+                                minTime={isToday(date) ?
+                                    addHours(set(new Date(), {minutes: 0, seconds: 0}), 1) :
                                     new Date(0, 0, 0, 8)}
                                 maxTime={new Date(0, 0, 0, 22)}
                                 renderInput={(params) =>
-                                    <TextField
-                                        onClick={() => setOpenTime(true)}
-                                        sx={{
-                                            '& .MuiInputBase-input': {
-                                                cursor: "pointer"
-                                            }
-                                        }}
-                                        {...params} />}
+                                    <TextField helperText="Заказы принимаются с 8:00 до 22:00"
+                                               sx={{
+                                                   '& .MuiInputBase-input': {
+                                                       cursor: "pointer"
+                                                   }
+                                               }}
+                                               onClick={() => setOpenTime(true)}
+                                               {...params} />}
                             />
+
                         </LocalizationProvider>
 
                         {!changedMaster ? <Box>

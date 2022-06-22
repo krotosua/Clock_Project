@@ -38,6 +38,8 @@ import Login from "../authPageComponents/Login";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
 import {ROLE_LIST} from "../../store/UserStore";
+import {addHours, getHours, isToday, set} from 'date-fns'
+
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
@@ -50,7 +52,7 @@ const OrderStepper = observer(({alertMessage}) => {
     const [emailExists, setEmailExists] = useState(false)
     const [regCustomer, setRegCustomer] = useState(null)
     const [date, setDate] = useState(new Date());
-    const [time, setTime] = useState(new Date(new Date().setUTCHours(new Date().getUTCHours() + 1, 0, 0)));
+    const [time, setTime] = useState(addHours(set(new Date(), {minutes: 0, seconds: 0}), 1));
     const [chosenMaster, setChosenMaster] = useState(null);
     const [sizeClock, setSizeClock] = useState(null);
     const [cityChosen, setCityChosen] = useState(null);
@@ -69,7 +71,6 @@ const OrderStepper = observer(({alertMessage}) => {
     const [masterId, setMasterId] = useState(null)
     const navigate = useNavigate();
 
-
     const handleClose = () => {
         setAnchorEl(null);
     };
@@ -79,7 +80,11 @@ const OrderStepper = observer(({alertMessage}) => {
     const getMasters = async () => {
         setLoading(true)
         try {
-            const res = await fetchMastersForOrder(cities.selectedCity, new Date(new Date(date).setHours(time.getHours(), 0, 0)),
+            const res = await fetchMastersForOrder(cities.selectedCity, set(new Date(date), {
+                    hours: getHours(time),
+                    minutes: 0,
+                    seconds: 0
+                }),
                 size.selectedSize.id, masters.page, 3)
             if (res.status === 204) {
                 setFreeMasters([])
@@ -116,7 +121,7 @@ const OrderStepper = observer(({alertMessage}) => {
 
                 const orderInfo = {
                     name,
-                    time: new Date(new Date(date).setHours(time.getHours(), 0, 0)),
+                    time: set(new Date(date), {hours: getHours(time), minutes: 0, seconds: 0}),
                     email,
                     changeName,
                     cityId: cityChosen,
@@ -136,7 +141,6 @@ const OrderStepper = observer(({alertMessage}) => {
                     }
                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 } catch (e) {
-                    console.log(e)
                     alertMessage('Мастер занят', true)
                     setActiveStep(1)
                     setLoading(true)
@@ -190,7 +194,11 @@ const OrderStepper = observer(({alertMessage}) => {
             setLoading(true)
             try {
                 const res = await fetchMastersForOrder(cities.selectedCity,
-                    new Date(new Date(date).setHours(time.getHours())),
+                    set(new Date(date), {
+                        hours: getHours(time),
+                        minutes: 0,
+                        seconds: 0
+                    }),
                     size.selectedSize.id,
                     masters.page, 3)
                 if (res.status === 204) {
@@ -288,7 +296,6 @@ const OrderStepper = observer(({alertMessage}) => {
                                 value={date}
                                 open={openDate}
                                 onChange={(newDate) => {
-
                                     setDate(newDate);
                                     setOpenDate(false)
                                     setChosenMaster(null)
@@ -314,7 +321,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                 value={time}
                                 open={openTime}
                                 onChange={(newValue) => {
-                                    setTime(new Date(new Date().setUTCHours(newValue.getUTCHours(), 0, 0)));
+                                    setTime(set(new Date(), {hours: getHours(newValue), minutes: 0, seconds: 0}));
                                     setOpenTime(false)
                                     setChosenMaster(null)
                                 }}
@@ -322,8 +329,8 @@ const OrderStepper = observer(({alertMessage}) => {
                                     e ? setErrorTimePicker(true) : setErrorTimePicker(false)}
                                 ampm={false}
                                 views={["hours"]}
-                                minTime={date.toLocaleDateString('uk-UA') === new Date().toLocaleDateString('uk-UA') ?
-                                    new Date(0, 0, 0, new Date().getHours() + 1) :
+                                minTime={isToday(date) ?
+                                    addHours(set(new Date(), {minutes: 0, seconds: 0}), 1) :
                                     new Date(0, 0, 0, 8)}
                                 maxTime={new Date(0, 0, 0, 22)}
                                 renderInput={(params) =>
@@ -403,9 +410,10 @@ const OrderStepper = observer(({alertMessage}) => {
                                             <Box sx={{display: 'flex', flexDirection: "column", mb: 1}}>
                                                 <Typography sx={{p: 2}}>
                                                     Сменить Ваши персональные данные?
-                                                    {user.isAuth && user.userName !== name ?
-                                                        <div style={{textAlign: "center"}}><b>Имя</b></div> : null}
                                                 </Typography>
+                                                <div style={{textAlign: "center"}}>
+                                                    {user.isAuth && user.userName !== name ?
+                                                        <b>Имя</b> : null}</div>
                                                 <Button onClick={() => {
                                                     setAnchorEl(null)
                                                     setChangeName(true)

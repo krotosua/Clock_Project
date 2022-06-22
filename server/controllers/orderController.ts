@@ -10,6 +10,7 @@ import {City, Order, SizeClock, User} from '../models/models'
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, UpdateMasterDTO} from "../dto/order.dto";
 import {ReqQuery, UpdateDB} from "../dto/global";
+import {addHours} from "date-fns";
 
 
 class OrderController {
@@ -32,8 +33,7 @@ class OrderController {
                     next(ApiError.badRequest("Clock`s wrong"))
                     return
                 }
-                const endHour: number = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
-                const endTime: Date = new Date(new Date(time).setUTCHours(endHour, 0, 0))
+                const endTime: Date = addHours(new Date(time), Number(clock.date.slice(0, 2)))
                 time = new Date(time)
                 const city: void | City = await cityLogic.checkCityId(cityId, next)
                 if (!city) {
@@ -86,8 +86,7 @@ class OrderController {
                 if (!clock) {
                     return next(ApiError.badRequest("Clock`s wrong"))
                 }
-                const endHour: number = Number(new Date(time).getUTCHours()) + Number(clock.date.slice(0, 2))
-                const endTime: Date = new Date(new Date(time).setUTCHours(endHour, 0, 0))
+                const endTime: Date = addHours(new Date(time), Number(clock.date.slice(0, 2)))
                 time = new Date(time)
                 const city: void | City = await cityLogic.checkCityId(cityId, next)
                 if (!city) {
