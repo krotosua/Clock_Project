@@ -25,7 +25,7 @@ import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
 import {STATUS_LIST} from "../../store/OrderStore";
-import {add, isPast, set} from 'date-fns'
+import {add, getHours, isPast, set, setHours} from 'date-fns'
 
 
 const OrderList = observer(({alertMessage}) => {
@@ -83,7 +83,6 @@ const OrderList = observer(({alertMessage}) => {
         }
     }
     const editOrder = (order, time) => {
-        const date = new Date()
         setOrderToEdit(order)
         setIdToEdit(order.id)
         setTimeToEdit(set(new Date(0, 0, 0), {hours: time.slice(0, 2)}))
@@ -183,7 +182,7 @@ const OrderList = observer(({alertMessage}) => {
                                       primary={city.price + " грн"}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={order.sizeClock.date.slice(0, 2) + " ч."}/>
+                                      primary={getHours(setHours(new Date(), order.sizeClock.date.slice(0, 2))) + " ч."}/>
                         <ListItemText sx={{width: 10}}
                                       primary={order.price + " грн"}
                         />

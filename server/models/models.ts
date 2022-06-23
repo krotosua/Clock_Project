@@ -381,7 +381,7 @@ Rating.init({
                 max: 5
             }, defaultValue: 0
         },
-        review: {type: DataTypes.STRING, allowNull: true}
+        review: {type: DataTypes.TEXT, allowNull: true}
     },
     {
         tableName: 'rating',

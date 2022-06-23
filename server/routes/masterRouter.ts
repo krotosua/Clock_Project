@@ -25,7 +25,7 @@ masterRouter.put('/:masterId',
 
     param("masterId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),
-    body("rating").not().isEmpty().not().isString().isInt({gt: -1, lt: 6}),
+    body("rating").not().isEmpty().not().isString().isFloat({gt: -1, lt: 6}),
     body("cityId").not().isEmpty().isArray(),
     checkRole(Roles.ADMIN), masterController.update)
 
@@ -36,8 +36,13 @@ masterRouter.put('/activate/:masterId',
 
 masterRouter.put('/Rating/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
+    body("rating").not().isEmpty().not().isString().isFloat({gt: -1, lt: 6}),
+    body("review").isString().isLength({min: 0, max: 1000}),
     checkRole(Roles.CUSTOMER), masterController.ratingUpdate)
-masterRouter.get('/rating/:masterId', masterController.getRatingReviews)
+masterRouter.get('/rating/:masterId',
+    param("masterId").not().isEmpty().isInt({gt: 0}),
+    masterController.getRatingReviews)
+
 masterRouter.delete('/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     checkRole(Roles.ADMIN), masterController.deleteOne)
