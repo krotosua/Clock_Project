@@ -35,6 +35,8 @@ const MasterList = observer(({alertMessage}) => {
     const [cityToEdit, setCityToEdit] = useState([]);
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
+    const [openCityList, setOpenCityList] = useState({})
+    const citiesLimit = 2
     useEffect(async () => {
         await getMasters()
     }, [masters.page])
@@ -80,12 +82,14 @@ const MasterList = observer(({alertMessage}) => {
         }
     }
 
-    const createCityList = (master) => {
+    const createCityList = (master, all) => {
         return master.cities
             .reduce((cityList, masterCity, index) => {
                 if (index === 0) {
                     cityList += masterCity.name
-                } else {
+                } else if (index < citiesLimit) {
+                    cityList += `, ${masterCity.name}`
+                } else if (all) {
                     cityList += `, ${masterCity.name}`
                 }
                 return cityList
@@ -171,8 +175,31 @@ const MasterList = observer(({alertMessage}) => {
                                               primary={
                                                   <Rating name="read-only" size="small" value={master.rating}
                                                           precision={0.2} readOnly/>}/>
-                                <ListItemText sx={{width: 10, textAlign: "center"}}
-                                              primary={createCityList(master)}/>
+                                <ListItemText sx={{
+                                    width: 10,
+                                    textAlign: "center",
+                                    pl: openCityList === master ? 5 : 0,
+                                    maxHeight: 150,
+                                    overflowY: "auto",
+                                    wordBreak: "break-word"
+                                }}
+                                              primary={
+                                                  <Box>
+                                                      {openCityList === master ?
+                                                          <Box>
+                                                              {createCityList(master, true)}
+                                                              <Button
+                                                                  onClick={() => setOpenCityList({})}>скрыть</Button>
+                                                          </Box>
+                                                          :
+                                                          <Box>
+                                                              {createCityList(master)}
+                                                              {master.cities.length > citiesLimit ?
+                                                                  <Button size="small"
+                                                                          onClick={() => setOpenCityList(master)}>больше</Button> : null}</Box>
+                                                      }
+                                                  </Box>
+                                              }/>
                                 <ListItemText sx={{width: 10, textAlign: "center"}}
                                               primary={
                                                   <IconButton sx={{width: 5}}

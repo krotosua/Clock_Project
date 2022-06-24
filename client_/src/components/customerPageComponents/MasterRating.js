@@ -1,9 +1,7 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {Box, Button, Modal, Rating, TextField, Typography} from "@mui/material";
 import StarIcon from '@mui/icons-material/Star';
 import {ratingMaster} from "../../http/masterAPI";
-import {Context} from "../../index";
-import {useParams} from "react-router-dom";
 
 const labels = {
     0.5: "😡",
@@ -36,9 +34,7 @@ const getLabelText = (value) => {
 const MasterRating = ({open, onClose, dataForEdit, getOrders}) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(-1);
-    const [review, setReview] = useState()
-    let {orders} = useContext(Context)
-    const {id} = useParams()
+    const [review, setReview] = useState("")
     const sendRating = async () => {
         const post = {
             rating: rating,
@@ -98,19 +94,21 @@ const MasterRating = ({open, onClose, dataForEdit, getOrders}) => {
                         </Box>
                         <TextField
                             fullWidth
+                            error={1000 < review.length}
                             rows={4}
                             id="review"
                             label="Оставьте свой комментарий"
+                            helperText={`Символов осталось: ${1000 - review.length}`}
                             multiline
-                            maxRows={4}
                             value={review}
-                            onChange={(e) => setReview(e.target.value)}
+                            onChange={(e) => 1000 > review.length
+                            || e.nativeEvent.inputType === "deleteContentBackward" ? setReview(e.target.value) : null}
                         />
                     </Box>
                     <Box
                         sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                     >
-                        <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                        <Button color="success" disabled={1000 < review.length} sx={{flexGrow: 1}} variant="outlined"
                                 onClick={sendRating}
                         > Отправить отзыв</Button>
                         <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
