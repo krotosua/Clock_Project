@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
@@ -15,18 +15,21 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
-import {activateMaster, deleteMaster, fetchMasters} from "../../http/masterAPI";
+import {activateMaster, deleteMaster} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
 import Pages from "../Pages";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
+import {useDispatch, useSelector} from "react-redux";
+import {activationMasterAction, removeMasterAction, setPageMasterAction} from "../../store/MasterStore";
+import {getMasters} from '../../asyncActions/masters'
 
 
-const MasterList = observer(({alertMessage}) => {
-    let {masters, cities} = useContext(Context)
+const MasterList = ({alertMessage}) => {
+    const dispatch = useDispatch()
+    const cities = useSelector(state => state.city)
+    const masters = useSelector(state => state.masters)
     const [createVisible, setCreateVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
@@ -35,24 +38,10 @@ const MasterList = observer(({alertMessage}) => {
     const [cityToEdit, setCityToEdit] = useState([]);
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
-    useEffect(async () => {
-        await getMasters()
+    useEffect(() => {
+        dispatch(getMasters(masters.page))
     }, [masters.page])
 
-
-    const getMasters = async () => {
-        try {
-            const res = await fetchMasters(null, masters.page, 10)
-            if (res.status === 204) {
-                return masters.setIsEmpty(true)
-            }
-            masters.setIsEmpty(false)
-            masters.setMasters(res.data.rows)
-            masters.setTotalCount(res.data.count)
-        } catch (e) {
-            return masters.setIsEmpty(true)
-        }
-    }
 
     const changeActiveted = async (master) => {
         let changeInfo = {
@@ -61,8 +50,8 @@ const MasterList = observer(({alertMessage}) => {
         }
         try {
             await activateMaster(changeInfo)
+            dispatch(activationMasterAction(changeInfo))
             alertMessage('Данные мастера успешно изменены', false)
-            return master.isActivated = !master.isActivated
         } catch (e) {
             alertMessage('Не удалось изменить данные мастера', true)
         }
@@ -72,7 +61,7 @@ const MasterList = observer(({alertMessage}) => {
     const removeMaster = async (id) => {
         try {
             await deleteMaster(id)
-            masters.setMasters(masters.masters.filter(master => master.id !== id));
+            dispatch(removeMasterAction(id))
             alertMessage('Успешно удаленно', false)
             await getMasters()
         } catch (e) {
@@ -91,7 +80,6 @@ const MasterList = observer(({alertMessage}) => {
                 return cityList
             }, '')
     }
-
     const forEdit = (master) => {
         let changeCity = []
         setEditVisible(true)
@@ -144,7 +132,7 @@ const MasterList = observer(({alertMessage}) => {
                 </ListItem>
 
                 <Divider orientation="vertical"/>
-                {masters.IsEmpty ? <h1>Список пуст</h1> :
+                {masters.isEmpty ? <h1>Список пуст</h1> :
                     masters.masters.map((master, index) => {
                         return (
                             <ListItem
@@ -211,20 +199,20 @@ const MasterList = observer(({alertMessage}) => {
                                        alertMessage={alertMessage}
                                        nameToEdit={nameToEdit}
                                        ratingToEdit={ratingToEdit}
-                                       getMasters={() => getMasters()}
+                                       getMasters={() => dispatch(getMasters(masters.page))}
                                        cityChosen={cityToEdit}/> : null}
             {openReview ? <ReviewModal open={openReview}
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
             <CreateMaster open={createVisible}
-                          getMasters={() => getMasters()}
+                          getMasters={() => dispatch(getMasters(masters.page))}
                           alertMessage={alertMessage}
                           onClose={() => setCreateVisible(false)}/>
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages context={masters}/>
+            <Pages store={masters} pagesFunction={setPageMasterAction}/>
         </Box>
     </Box>);
-})
+}
 export default MasterList;

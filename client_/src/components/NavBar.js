@@ -1,23 +1,24 @@
 import * as React from 'react';
-import {useContext} from 'react';
 import {AppBar, Button, Container, CssBaseline, Toolbar, Typography} from '@mui/material';
-import {Context} from "../index";
-import {observer} from "mobx-react-lite";
 import {Link, useNavigate} from "react-router-dom";
 import {ADMIN_ROUTE, CUSTOMER_ORDER_ROUTE, LOGIN_ROUTE, MASTER_ORDER_ROUTE, START_ROUTE} from "../utils/consts";
+import {useDispatch, useSelector} from "react-redux";
+import {resetUserAction} from "../store/UserStore";
+import {getCities} from "../asyncActions/cities";
+import {getSizes} from "../asyncActions/sizes";
 
 
-const NavBar = observer(() => {
-    const {user} = useContext(Context)
+const NavBar = () => {
+    const user = useSelector(state => state.user)
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const logOut = () => {
-        user.setUser({})
-        user.setIsAuth(false)
-        user.setUserRole("")
+        dispatch(resetUserAction())
+        dispatch(getCities(1))
+        dispatch(getSizes(1))
         localStorage.setItem('token', "")
         navigate(START_ROUTE)
     }
-
 
     return (
         <React.Fragment>
@@ -91,6 +92,6 @@ const NavBar = observer(() => {
         </React.Fragment>
 
     );
-})
+}
 
 export default NavBar

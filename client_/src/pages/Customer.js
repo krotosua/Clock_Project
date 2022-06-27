@@ -1,37 +1,32 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import OrderListCustomer from '../components/customerPageComponents/OrderListCustomer'
 import {Box, CircularProgress, Fab, Tooltip} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import {ORDER_ROUTE} from "../utils/consts";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {fetchCustomerOrders,} from "../http/orderAPI";
-import {Context} from "../index";
-import {observer} from "mobx-react-lite";
 import Pages from "../components/Pages";
+import {setPageOrderAction} from "../store/OrderStore";
+import {useDispatch, useSelector} from "react-redux";
+import MyAlert from "../components/adminPageComponents/MyAlert";
+import {getCustomerOrders} from "../asyncActions/orders";
 
-const Customer = observer(() => {
+const Customer = () => {
     const navigate = useNavigate()
-    let {orders} = useContext(Context)
+    const orders = useSelector(state => state.orders)
+    const dispatch = useDispatch()
     const {id} = useParams()
     const [loading, setLoading] = useState(true)
-    const getOrders = async () => {
-        try {
-            const res = await fetchCustomerOrders(id, orders.page, 8)
-            if (res.status === 204) {
-                orders.setIsEmpty(true)
-                return
-            }
-            orders.setIsEmpty(false)
-            orders.setOrders(res.data.rows)
-            orders.setTotalCount(res.data.count)
-        } catch (e) {
-            orders.setIsEmpty(true)
-        } finally {
-            setLoading(false)
-        }
+    const [open, setOpen] = useState(false)
+    const [isError, setIsError] = useState(false)
+    const [message, setMessage] = useState("")
+    const alertMessage = (message, bool) => {
+        setOpen(true)
+        setMessage(message)
+        setIsError(bool)
     }
     useEffect(async () => {
-        await getOrders()
+        dispatch(getCustomerOrders(id, orders.page))
+        setLoading(false)
     }, [orders.page])
 
     if (loading) {
@@ -46,13 +41,16 @@ const Customer = observer(() => {
             </Box>
         )
     }
+
+
     return (
         <Box>
             <Box sx={{height: "750px", pt: 5, position: "relative"}}>
                 <h2>Список заказов</h2>
                 <Box sx={{height: "650px"}}>
                     <OrderListCustomer
-                        getOrders={() => getOrders()}/>
+                        alertMessage={alertMessage}
+                        getOrders={() => dispatch(getCustomerOrders(id, orders.page))}/>
                 </Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>
@@ -67,11 +65,16 @@ const Customer = observer(() => {
                 </Link>
             </Box>
             <Box style={{display: "flex", justifyContent: "center"}}>
-                <Pages context={orders}/>
+                <Pages store={orders} pagesFunction={setPageOrderAction}/>
             </Box>
+            <MyAlert open={open}
+                     onClose={() => setOpen(false)}
+                     message={message}
+                     isError={isError}/>
+
         </Box>
 
     );
-});
+};
 
 export default Customer;

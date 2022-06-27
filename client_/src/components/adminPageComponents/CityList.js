@@ -1,47 +1,34 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
-import {deleteCity, fetchCity} from "../../http/cityAPI";
+import {deleteCity} from "../../http/cityAPI";
 import CreateCity from "./modals/CreateCity";
 import EditCity from "./modals/EditCity";
 import Pages from "../Pages";
+import {useDispatch, useSelector} from "react-redux";
+import {removeCityAction, setPageCityAction} from "../../store/CityStore";
+import {getCities} from "../../asyncActions/cities";
 
 
-const CityList = observer(({alertMessage}) => {
-    let {cities} = useContext(Context)
+const CityList = ({alertMessage}) => {
+    const dispatch = useDispatch()
+    const cities = useSelector(state => state.city)
     const [cityVisible, setCityVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [cityToEdit, setCityToEdit] = useState(null);
-
     useEffect(async () => {
-        await getCity()
+        dispatch(getCities(cities.page))
     }, [cities.page])
 
-    const getCity = async () => {
-        try {
-            const res = await fetchCity(cities.page, 10)
-            if (res.status === 204) {
-                return cities.setIsEmpty(true)
-            } else {
-                cities.setIsEmpty(false)
-                cities.setCities(res.data.rows)
-                cities.setTotalCount(res.data.count)
-            }
-        } catch (e) {
-            cities.setIsEmpty(true)
-        }
-    }
     const removeCity = async (id) => {
         try {
             await deleteCity(id)
-            cities.setCities(cities.cities.filter(obj => obj.id !== id));
+            dispatch(removeCityAction(id))
             alertMessage('Успешно удаленно', false)
-            await getCity()
+            dispatch(getCities(cities.page))
         } catch (e) {
             alertMessage('Не удалось удалить, так как в городе присутствуют мастера', true)
         }
@@ -80,7 +67,7 @@ const CityList = observer(({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {cities.IsEmpty ? <h1>Список пуст</h1> : cities.cities.map((city, index) => {
+                {cities.isEmpty ? <h1>Список пуст</h1> : cities.cities.map((city, index) => {
 
                     return (<ListItem
                             key={city.id}
@@ -125,7 +112,6 @@ const CityList = observer(({alertMessage}) => {
 
                     )
                 })}
-
             </List>
 
             {editVisible ? <EditCity
@@ -137,15 +123,15 @@ const CityList = observer(({alertMessage}) => {
                 alertMessage={alertMessage}
             /> : null}
 
-            <CreateCity open={cityVisible}
-                        getCity={() => getCity()}
-                        onClose={() => setCityVisible(false)}
-                        alertMessage={alertMessage}/>
+            {cityVisible ? <CreateCity open={cityVisible}
+                                       getCity={() => dispatch(getCities(cities.page))}
+                                       onClose={() => setCityVisible(false)}
+                                       alertMessage={alertMessage}/> : null}
 
         </Box>
         <Box style={{display: "flex", justifyContent: "center"}}>
-            <Pages context={cities}/>
+            <Pages store={cities} pagesFunction={setPageCityAction}/>
         </Box>
     </Box>);
-})
+}
 export default CityList;

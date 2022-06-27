@@ -1,12 +1,13 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
 import {updateMaster} from "../../../http/masterAPI";
-import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
+import {useDispatch, useSelector} from "react-redux";
+import {setSelectedCityAction} from "../../../store/CityStore";
 
 
 const style = {
@@ -21,14 +22,15 @@ const style = {
     p: 4,
 };
 const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen, getMasters}) => {
-    const {cities, masters} = useContext(Context)
+    const cities = useSelector(state => state.city)
+    const dispatch = useDispatch()
     const [masterName, setMasterName] = useState(nameToEdit)
     const [masterRating, setMasterRating] = useState(ratingToEdit)
     const [blurMasterName, setBlurMasterName] = useState(false)
     const [errMaster, setErrMaster] = useState(false)
 
     useEffect(() => {
-        cities.setSelectedCity(cityChosen.map(city => city.id))
+        dispatch(setSelectedCityAction(cityChosen.map(city => city.id)))
     }, [])
     const changeMaster = async () => {
         const changeInfo = {

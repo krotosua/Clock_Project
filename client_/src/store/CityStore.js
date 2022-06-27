@@ -1,57 +1,57 @@
-import {makeAutoObservable} from "mobx";
+const defaultState = {
+    cities: [],
+    isEmpty: false,
+    selectedCity: [],
+    page: 1,
+    totalCount: 0,
+    limit: 10
+}
+const SET_CITIES = "SET_CITIES"
+const SET_SELECTED_CITY = "SET_SELECTED_CITY"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
+const SET_PAGE = "SET_PAGE"
+const SET_TOTAL_COUNT = "SET_TOTAL_COUNT"
+const REMOVE_CITY = "REMOVE_CITY"
+const CHANGE_CITY = "CHANGE_CITY"
+const GET_CITIES = "GET_CITIES"
+const RESET = "RESET"
 
-export default class CityStore {
-    constructor() {
-        this._cities = []
-        this._isEmpty = false
-        this._selectedCity = 0
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 10
-        makeAutoObservable(this)
-    }
+export const cityReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_CITIES:
+            return {...state, cities: action.payload}
+        case GET_CITIES:
+            return state.cities
+        case SET_SELECTED_CITY:
+            return {...state, selectedCity: action.payload}
 
-    setCities(cities) {
-        this._cities = cities
-    }
+        case SET_IS_EMPTY:
+            return {...state, isEmpty: action.payload}
 
-    setSelectedCity(type) {
-        this._selectedCity = type
-    }
+        case SET_PAGE:
+            return {...state, page: action.payload}
 
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
+        case SET_TOTAL_COUNT:
+            return {...state, totalCount: action.payload}
 
-    setPage(page) {
-        this._page = page
-    }
+        case CHANGE_CITY:
+            return {
+                ...state,
+                cities: state.cities.map(city => city.id === action.payload.id ? city = action.payload : city)
+            }
 
-    setTotalCount(count) {
-        this._totalCount = count
-    }
-
-    get cities() {
-        return this._cities
-    }
-
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get selectedCity() {
-        return this._selectedCity
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
+        case REMOVE_CITY:
+            return {...state, cities: state.cities.filter(city => city.id !== action.payload)}
+        
+        default:
+            return state
     }
 }
+
+export const setCitiesAction = (payload) => ({type: SET_CITIES, payload})
+export const setSelectedCityAction = (payload) => ({type: SET_SELECTED_CITY, payload})
+export const setEmptyCityAction = (payload) => ({type: SET_IS_EMPTY, payload})
+export const setPageCityAction = (payload) => ({type: SET_PAGE, payload})
+export const setTotalCountCitiesAction = (payload) => ({type: SET_TOTAL_COUNT, payload})
+export const setChangeCityAction = (payload) => ({type: CHANGE_CITY, payload})
+export const removeCityAction = (payload) => ({type: REMOVE_CITY, payload})

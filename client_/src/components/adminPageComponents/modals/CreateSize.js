@@ -1,6 +1,5 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {Box, Button, FormControl, Modal, TextField, Typography} from "@mui/material";
-import {Context} from "../../../index";
 import {createSize} from "../../../http/sizeAPI";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
@@ -24,7 +23,6 @@ const CreateSize = ({open, onClose, alertMessage, getSize}) => {
     const [errSize, setErrSize] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [blurSizeName, setBlurSizeName] = useState(false)
-    let {size} = useContext(Context)
 
     const addSize = async () => {
         if (!sizeName || !sizeTime) {
@@ -46,21 +44,13 @@ const CreateSize = ({open, onClose, alertMessage, getSize}) => {
         }
     }
     const close = () => {
-        setErrSize(false)
-        setSizeName("")
-        setSizeTime(null)
-        setOpenTime(false)
-        setBlurSizeName(false)
         onClose()
     }
-
-
     //--------------------Validation
     const validName = blurSizeName && sizeName.length === 0
     const validButton = errSize || sizeName.length === 0 || !sizeTime
     return (
         <div>
-
             <Modal
                 open={open}
                 onClose={close}

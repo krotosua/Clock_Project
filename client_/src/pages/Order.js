@@ -1,14 +1,17 @@
 import {Card, CardContent, Container,} from "@mui/material";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import OrderStepper from "../components/orderPageComponents/OrderStepper"
-import {observer} from "mobx-react-lite";
-import {Context} from "../index";
 import {fetchSize} from "../http/sizeAPI";
 import {fetchCity} from "../http/cityAPI";
 import MyAlert from "../components/adminPageComponents/MyAlert";
+import {useDispatch, useSelector} from "react-redux";
+import {setCitiesAction, setEmptyCityAction} from "../store/CityStore";
+import {setIsEmptySizeAction, setSizesAction} from "../store/SizeStore";
 
-const Order = observer(() => {
-    const {size, cities} = useContext(Context)
+const Order = () => {
+    const dispatch = useDispatch()
+    const size = useSelector(state => state.sizes)
+    const cities = useSelector(state => state.city)
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
@@ -21,21 +24,21 @@ const Order = observer(() => {
         try {
             const cityRes = await fetchCity()
             if (cityRes.status === 204) {
-                cities.setIsEmpty(true)
+                dispatch(setEmptyCityAction(true))
             } else {
-                cities.setCities(cityRes.data.rows)
+                dispatch(setCitiesAction(cityRes.data.rows))
             }
         } catch (e) {
-            cities.setIsEmpty(true)
+            dispatch(setEmptyCityAction(true))
         }
         try {
             const sizeRes = await fetchSize()
             if (sizeRes.status === 204) {
-                return size.setIsEmpty(true)
+                dispatch(setIsEmptySizeAction(true))
             }
-            return size.setSize(sizeRes.data.rows)
+            dispatch(setSizesAction(sizeRes.data.rows))
         } catch (e) {
-            size.setIsEmpty(true)
+            dispatch(setIsEmptySizeAction(true))
         }
     }, [])
 
@@ -60,6 +63,6 @@ const Order = observer(() => {
                      isError={isError}/>
         </Container>
     );
-});
+};
 
 export default Order;

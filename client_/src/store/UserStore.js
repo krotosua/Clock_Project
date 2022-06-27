@@ -1,89 +1,81 @@
-import {makeAutoObservable} from "mobx";
-
+const defaultState = {
+    users: [],
+    user: {},
+    isAuth: false,
+    isEmpty: false,
+    userRole: "",
+    userName: "",
+    page: 1,
+    totalCount: 0,
+    limit: 10
+}
 export const ROLE_LIST = {
     ADMIN: "ADMIN",
     CUSTOMER: "CUSTOMER",
     MASTER: "MASTER"
 }
-export default class UserStore {
-    constructor() {
-        this._isAuth = false
-        this._user = {}
-        this._userRole = ""
-        this._userName = ""
-        this._usersList = []
-        this._isEmpty = false
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 10
-        makeAutoObservable(this)
-    }
+const SET_USERS = "SET_USERS"
+const SET_USER = "SET_USER"
+const SET_USER_NAME = "SET_USER_NAME"
+const SET_USER_ROLE = "SET_USER_ROLE"
+const SET_IS_AUTH = "SET_IS_AUTH"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
+const SET_PAGE = "SET_PAGE"
+const SET_TOTAL_COUNT = "SET_TOTAL_COUNT"
+const REMOVE_USER = "REMOVE_USER"
+const USER_ACTIVATION = "USER_ACTIVATION"
+const RESET = "RESET"
 
-    setIsAuth(bool) {
-        this._isAuth = bool
-    }
+export const userReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_USERS:
+            return {...state, users: action.payload}
 
-    setUser(user) {
-        this._user = user
-    }
+        case SET_USER:
+            return {...state, user: action.payload}
 
-    setUserRole(role) {
-        this._userRole = role
-    }
+        case SET_USER_NAME:
+            return {...state, userName: action.payload}
 
-    setUserName(name) {
-        this._userName = name
-    }
+        case SET_USER_ROLE:
+            return {...state, userRole: action.payload}
 
-    setUsersList(users) {
-        this._usersList = users
-    }
+        case SET_IS_EMPTY:
+            return {...state, isEmpty: action.payload}
 
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
+        case SET_IS_AUTH:
+            return {...state, isAuth: action.payload}
 
-    setPage(page) {
-        this._page = page
-    }
+        case SET_PAGE:
+            return {...state, page: action.payload}
 
-    setTotalCount(count) {
-        this._totalCount = count
-    }
+        case SET_TOTAL_COUNT:
+            return {...state, totalCount: action.payload}
 
-    get isAuth() {
-        return this._isAuth
-    }
+        case REMOVE_USER:
+            return {...state, users: state.users.filter(user => user.id !== action.payload)}
 
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get user() {
-        return this._user
-    }
-
-    get userRole() {
-        return this._userRole
-    }
-
-    get userName() {
-        return this._userName
-    }
-
-    get usersList() {
-        return this._usersList
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
+        case USER_ACTIVATION:
+            return {
+                ...state,
+                users: state.users.map(user =>
+                    user.id === action.payload.id ? {...user, isActivated: action.payload.isActivated} : user)
+            }
+        case RESET:
+            return state = defaultState
+        default:
+            return state
     }
 }
+
+export const setUsersAction = (payload) => ({type: SET_USERS, payload})
+export const setUserAction = (payload) => ({type: SET_USER, payload})
+export const setUserNameAction = (payload) => ({type: SET_USER_NAME, payload})
+export const setUserRoleAction = (payload) => ({type: SET_USER_ROLE, payload})
+export const setIsEmptyUserAction = (payload) => ({type: SET_IS_EMPTY, payload})
+export const setIsAuthUserAction = (payload) => ({type: SET_IS_AUTH, payload})
+export const setPageUserAction = (payload) => ({type: SET_PAGE, payload})
+export const setTotalCountUserAction = (payload) => ({type: SET_TOTAL_COUNT, payload})
+export const removeUserAction = (payload) => ({type: REMOVE_USER, payload})
+export const activationUserAction = (payload) => ({type: USER_ACTIVATION, payload})
+export const resetUserAction = () => ({type: RESET})

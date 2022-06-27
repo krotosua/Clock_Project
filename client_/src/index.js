@@ -1,28 +1,19 @@
 import React, {createContext} from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import UserStore from './store/UserStore';
-import OrderStore from "./store/OrderStore";
-import CityStore from "./store/CityStore";
-import MasterStore from "./store/MasterStore";
-import SizeStore from "./store/SizeStore";
 import "./style.css"
+import {store} from "./store";
+import {Provider} from "react-redux";
 
 
 export const Context = createContext(null)
 
 ReactDOM.render(
-    <Context.Provider value={{
-        user: new UserStore(),
-        orders: new OrderStore(),
-        cities: new CityStore(),
-        masters: new MasterStore(),
-        size: new SizeStore()
-    }}>
-
+    <Provider store={store}>
         <App/>
 
-    </Context.Provider>,
+    </Provider>,
+
 
     document.getElementById('root')
 );

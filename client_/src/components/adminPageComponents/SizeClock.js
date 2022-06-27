@@ -1,48 +1,38 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {deleteSize, fetchSize} from "../../http/sizeAPI";
+import {deleteSize} from "../../http/sizeAPI";
 import CreateSize from "./modals/CreateSize";
 import EditSize from "./modals/EditSize";
-import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
 import {set} from 'date-fns'
+import {useDispatch, useSelector} from "react-redux";
+import {removeSizeAction} from "../../store/SizeStore";
+import {setPageOrderAction} from "../../store/OrderStore";
+import {getSizes} from "../../asyncActions/sizes";
 
-const SizeList = observer(({alertMessage, getValue}) => {
-    let {size} = useContext(Context)
+const SizeList = ({alertMessage, getValue}) => {
+    const size = useSelector(state => state.sizes)
+    const dispatch = useDispatch()
     const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
     const [sizeToEdit, setSizeToEdit] = useState(null);
     const [dateToEdit, setDateToEdit] = useState(null);
-    const getSize = async () => {
-        try {
-            const res = await fetchSize(size.page, 10)
-            if (res.status === 204) {
-                return size.setIsEmpty(true)
-            }
-            size.setIsEmpty(false)
-            size.setSize(res.data.rows)
-            size.setTotalCount(res.data.count)
-        } catch (e) {
-            size.setIsEmpty(true)
-        }
-    }
     useEffect(async () => {
-        await getSize()
+        dispatch(getSizes(size.page))
     }, [size.page])
 
 
     const removeSize = async (id) => {
         try {
             await deleteSize(id)
-            size.setSize(size.size.filter(obj => obj.id !== id));
+            dispatch(removeSizeAction(id))
+            dispatch(getSizes(size.page))
             alertMessage('Успешно удаленно', false)
-            await getSize()
         } catch (e) {
             alertMessage('Не удалось удалить', true)
         }
@@ -81,7 +71,7 @@ const SizeList = observer(({alertMessage, getValue}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {size.IsEmpty ? <h1>Список пуст</h1> : size.size.map((size, index) => {
+                {size.isEmpty ? <h1>Список пуст</h1> : size.sizes.map((size, index) => {
 
                     return (<ListItem
                         key={size.id}
@@ -132,13 +122,13 @@ const SizeList = observer(({alertMessage, getValue}) => {
                 })}
             </List>
             {createVisible ? <CreateSize open={createVisible}
-                                         getSize={() => getSize()}
+                                         getSize={() => dispatch(getSizes(size.page))}
                                          alertMessage={alertMessage}
                                          onClose={() => {
                                              setCreateVisible(false)
                                          }}/> : null}
             {editVisible ? <EditSize
-                getSize={() => getSize()}
+                getSize={() => dispatch(getSizes(size.page))}
                 open={editVisible}
                 onClose={() => setEditVisible(false)}
                 idToEdit={idToEdit}
@@ -148,8 +138,8 @@ const SizeList = observer(({alertMessage, getValue}) => {
             /> : null}
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages context={size}/>
+            <Pages store={size} pagesFunction={setPageOrderAction}/>
         </Box>
     </Box>);
-})
+}
 export default SizeList;

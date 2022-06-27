@@ -1,11 +1,12 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, InputAdornment, TextField} from "@mui/material";
 import {updateCity} from "../../../http/cityAPI";
-import {Context} from "../../../index";
+import {useDispatch, useSelector} from "react-redux";
+import {setChangeCityAction} from "../../../store/CityStore";
 
 
 const style = {
@@ -20,7 +21,8 @@ const style = {
     p: 4,
 };
 const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
-    let {cities} = useContext(Context)
+    const dispatch = useDispatch()
+    const cities = useSelector(state => state.city)
     const [cityName, setCityName] = useState(cityToEdit.name)
     const [errCity, setErrCity] = useState(false)
     const [blurCityName, setBlurCityName] = useState(false)
@@ -35,8 +37,7 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
         }
         try {
             await updateCity(cityInfo)
-            change("name", cityName)
-            change("price", price)
+            dispatch(setChangeCityAction(cityInfo))
             close()
             alertMessage('Название изменено успешно', false)
         } catch (e) {
@@ -49,13 +50,6 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
         setBlurCityName(false)
         setCityName("")
         onClose()
-    }
-
-
-    const change = (prop, value) => { // изменение input поля
-        cities.setCities(cities.cities.map(city =>
-            city.id === cityToEdit.id ? {...city, [prop]: value} : city
-        ));
     }
 
     //--------------------Validation

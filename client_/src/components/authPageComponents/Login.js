@@ -22,15 +22,15 @@ import {
     REGISTRATION_ROUTE,
 } from "../../utils/consts";
 import Button from "@mui/material/Button";
-import React, {useContext, useState} from "react";
-import {observer} from "mobx-react-lite";
-import {login} from "../../http/userAPI";
-import {Context} from "../../index";
+import React, {useState} from "react";
 import {ROLE_LIST} from "../../store/UserStore";
+import {useDispatch, useSelector} from "react-redux";
+import {loginUser} from "../../asyncActions/users";
 
 
-const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
-    const {user} = useContext(Context)
+const Login = ({alertMessage, nextPage, getMasters, orderEmail}) => {
+    const dispatch = useDispatch()
+    const user = useSelector(state => state.user)
     const location = useLocation()
     const isOrder = location.pathname === ORDER_ROUTE;
     const [email, setEmail] = useState(orderEmail || '')
@@ -42,29 +42,23 @@ const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
     const navigate = useNavigate()
     const singIn = async () => {
         try {
-            let dataUser;
-            if (password.length >= 6 && reg.test(email) !== false) {
-                dataUser = await login(email, password)
-            } else {
+            if (password.length < 6 && reg.test(email) === false) {
                 setError(true)
                 return
             }
-            if (dataUser.isActivated === false && dataUser.role !== ROLE_LIST.ADMIN) {
+            const dataUser = await dispatch(loginUser(email, password))
+            if (user.isActivated === false && dataUser.role !== ROLE_LIST.ADMIN) {
                 alertMessage("Требуется подтвердить Email", true)
                 return
             }
-            user.setUser(dataUser)
-            user.setIsAuth(true)
-            user.setUserRole(dataUser.role)
-            user.setUserName(dataUser.name)
             if (isOrder) {
                 getMasters()
                 nextPage()
             } else {
                 dataUser.role === ROLE_LIST.CUSTOMER && dataUser.isActivated === true ?
-                    navigate(`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`) :
+                    navigate(`${CUSTOMER_ORDER_ROUTE}/${dataUser.id}`) :
                     user.userRole === ROLE_LIST.MASTER && dataUser.isActivated === true ?
-                        navigate(`${MASTER_ORDER_ROUTE}/${user.user.id}`) : navigate(ADMIN_ROUTE)
+                        navigate(`${MASTER_ORDER_ROUTE}/${dataUser.id}`) : navigate(ADMIN_ROUTE)
             }
         } catch (e) {
             setError(true)
@@ -175,6 +169,6 @@ const Login = observer(({alertMessage, nextPage, getMasters, orderEmail}) => {
                 </CardContent>
             </Card>
         </Container>)
-});
+}
 
 export default Login;

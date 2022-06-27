@@ -1,7 +1,8 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {Box, Button, FormControl, InputAdornment, Modal, TextField, Typography} from "@mui/material";
 import {createCity,} from "../../../http/cityAPI";
-import {Context} from "../../../index";
+import {useDispatch} from "react-redux";
+import {setIsEmptyOrderAction} from "../../../store/OrderStore";
 
 
 const style = {
@@ -16,12 +17,12 @@ const style = {
     p: 4,
 };
 const CreateCity = ({open, onClose, alertMessage, getCity}) => {
+    const dispatch = useDispatch()
     const [cityName, setCityName] = useState("")
     const [errCity, setErrCity] = useState(false)
     const [blurCityName, setBlurCityName] = useState(false)
     const [blurPrice, setBlurPrice] = useState(false)
     const [price, setPrice] = useState("")
-    let {cities} = useContext(Context)
     const addCity = async () => {
         const cityInfo = {
             name: cityName.trim(),
@@ -29,7 +30,7 @@ const CreateCity = ({open, onClose, alertMessage, getCity}) => {
         }
         try {
             await createCity(cityInfo)
-            cities.setIsEmpty(false)
+            dispatch(setIsEmptyOrderAction(false))
             alertMessage("Город успешно создан", false)
             await getCity()
             close()

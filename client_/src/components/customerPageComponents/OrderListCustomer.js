@@ -1,13 +1,13 @@
 import * as React from 'react';
-import {useContext, useState} from 'react';
+import {useState} from 'react';
 import {Box, Button, Divider, List, ListItem, ListItemText, Rating, Tooltip} from '@mui/material';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
 import MasterRating from "./MasterRating";
 import {STATUS_LIST} from "../../store/OrderStore";
+import {useSelector} from "react-redux";
 
-const OrderListCustomer = observer(({getOrders}) => {
-    let {orders, cities} = useContext(Context)
+const OrderListCustomer = ({getOrders, alertMessage}) => {
+    const cities = useSelector(state => state.city)
+    const orders = useSelector(state => state.orders)
     const [open, setOpen] = useState(false)
     const [dataForEdit, setDataForEdit] = useState({})
 
@@ -18,7 +18,7 @@ const OrderListCustomer = observer(({getOrders}) => {
             userId: order.userId,
         }
         setDataForEdit(data)
-        setOpen((true))
+        setOpen(true)
     }
 
     return (
@@ -66,7 +66,7 @@ const OrderListCustomer = observer(({getOrders}) => {
 
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
+                {orders.isEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
                     const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem
@@ -136,6 +136,7 @@ const OrderListCustomer = observer(({getOrders}) => {
             </List>
 
             {open ? <MasterRating open={open}
+                                  alertMessage={alertMessage}
                                   dataForEdit={dataForEdit}
                                   getOrders={getOrders}
                                   onClose={() => setOpen(false)}
@@ -143,5 +144,5 @@ const OrderListCustomer = observer(({getOrders}) => {
         </Box>
     )
         ;
-})
+}
 export default OrderListCustomer;

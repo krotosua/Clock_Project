@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -12,12 +12,12 @@ import {
     OutlinedInput,
     TextField
 } from "@mui/material";
-import {Context} from "../../../index";
 import SelectorMasterCity from "./SelectorMasterCity";
 import {registrationFromAdmin} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {useSelector} from "react-redux";
 
 
 const style = {
@@ -32,7 +32,7 @@ const style = {
     p: 4,
 };
 const CreateUser = (({open, onClose, alertMessage, getUsers}) => {
-    const {cities, user} = useContext(Context)
+    const cities = useSelector(state => state.city)
     const [email, setEmail] = useState("")
     const [error, setError] = useState(false)
     const [name, setName] = useState('')

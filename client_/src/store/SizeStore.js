@@ -1,58 +1,55 @@
-import {makeAutoObservable} from "mobx";
+const defaultState = {
+    sizes: [],
+    isEmpty: false,
+    selectedSize: {date: "00:00:00"},
+    page: 1,
+    totalCount: 0,
+    limit: 10
 
-export default class SizeStore {
-    constructor() {
-        this._size = []
-        this._isEmpty = false
-        this._selectedSize = {date: "00:00:00"}
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 10
-        makeAutoObservable(this)
-    }
-
-    setSize(sizes) {
-        this._size = sizes
-    }
-
-    setSelectedSize(type) {
-        this._selectedSize = type
-    }
-
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
-
-    setPage(page) {
-        this._page = page
-    }
-
-    setTotalCount(count) {
-        this._totalCount = count
-    }
+}
+const SET_SIZES = "SET_SIZES"
+const SET_SELECTED_SIZE = "SET_SELECTED_SIZE"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
+const SET_PAGE = "SET_PAGE"
+const SET_TOTAL_COUNT = "SET_TOTAL_COUNT"
+const REMOVE_SIZE = "REMOVE_SIZE"
+const CHANGE_SIZE = "CHANGE_SIZE"
+const RESET = "RESET"
 
 
-    get size() {
-        return this._size
-    }
+export const sizeReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_SIZES:
+            return {...state, sizes: action.payload}
+        case SET_SELECTED_SIZE: {
+            return {...state, selectedSize: action.payload}
+        }
+        case SET_IS_EMPTY: {
+            return {...state, isEmpty: action.payload}
+        }
+        case SET_PAGE: {
+            return {...state, page: action.payload}
+        }
+        case SET_TOTAL_COUNT: {
+            return {...state, totalCount: action.payload}
+        }
+        case REMOVE_SIZE:
+            return {...state, sizes: state.sizes.filter(size => size.id !== action.payload)}
 
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get selectedSize() {
-        return this._selectedSize
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
+        case CHANGE_SIZE:
+            return {
+                ...state,
+                sizes: state.sizes.map(size => size.id === action.payload.id ? size = action.payload : size)
+            }
+            
+        default:
+            return state
     }
 }
+export const setSizesAction = (payload) => ({type: SET_SIZES, payload})
+export const setIsEmptySizeAction = (payload) => ({type: SET_IS_EMPTY, payload})
+export const setSelectedSizeAction = (payload) => ({type: SET_SELECTED_SIZE, payload})
+export const setPageSizeAction = (payload) => ({type: SET_PAGE, payload})
+export const setTotalCountSizeAction = (payload) => ({type: SET_TOTAL_COUNT, payload})
+export const removeSizeAction = (payload) => ({type: REMOVE_SIZE, payload})
+export const changeSizeAction = (payload) => ({type: CHANGE_SIZE, payload})

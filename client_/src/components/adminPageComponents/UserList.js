@@ -1,41 +1,29 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, Button, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
 import Pages from "../Pages";
-import {activateUser, deleteUser, fetchUsers} from "../../http/userAPI";
+import {activateUser, deleteUser} from "../../http/userAPI";
 import EditUser from "./modals/EditUser";
 import CreateUser from "./modals/CreateUser";
-import {ROLE_LIST} from "../../store/UserStore";
+import {activationUserAction, removeUserAction, ROLE_LIST} from "../../store/UserStore";
+import {useDispatch, useSelector} from "react-redux";
+import {setPageOrderAction} from "../../store/OrderStore";
+import {getUsers} from "../../asyncActions/users";
 
 
-const UserList = observer(({alertMessage}) => {
-
-    let {user} = useContext(Context)
+const UserList = ({alertMessage}) => {
+    const user = useSelector(state => state.user)
+    const dispatch = useDispatch()
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
-    const getUsers = async () => {
-        try {
-            const res = await fetchUsers(user.page, 10)
-            if (res.status === 204) {
-                return user.setIsEmpty(true)
-            }
-            user.setIsEmpty(false)
-            user.setUsersList(res.data.rows)
-            user.setTotalCount(res.data.count)
-        } catch (e) {
-            user.setIsEmpty(true)
-        }
-    }
     useEffect(async () => {
-        await getUsers()
-
+        dispatch(getUsers(user.page))
     }, [user.page])
+
     const changeActiveted = async (user) => {
         const changeInfo = {
             id: user.id,
@@ -43,8 +31,8 @@ const UserList = observer(({alertMessage}) => {
         }
         try {
             await activateUser(changeInfo)
+            dispatch(activationUserAction(changeInfo))
             alertMessage('Данные мастера успешно изменены', false)
-            return user.isActivated = !user.isActivated
         } catch (e) {
             alertMessage('Не удалось изменить данные мастера', true)
         }
@@ -53,9 +41,9 @@ const UserList = observer(({alertMessage}) => {
     const removeUser = async (id) => {
         try {
             await deleteUser(id)
-            user.setUsersList(user.usersList.filter(user => user.id !== id));
+            dispatch(removeUserAction(id))
+            dispatch(getUsers(user.page))
             alertMessage('Успешно удаленно', false)
-            await getUsers()
         } catch (e) {
             alertMessage('Не удалось удалить, так как у пользователя остались заказы', true)
         }
@@ -95,7 +83,7 @@ const UserList = observer(({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {user.IsEmpty ? <h1>Список пуст</h1> : user.usersList.map((user, index) => {
+                {user.isEmpty ? <h1>Список пуст</h1> : user.users.map((user, index) => {
                     return (<ListItem
                             key={user.id}
                             divider
@@ -163,20 +151,20 @@ const UserList = observer(({alertMessage}) => {
                     onClose={() => {
                         setEditVisible(false)
                     }}
-                    getUsers={() => getUsers()}
+                    getUsers={() => dispatch(getUsers(user.page))}
                     alertMessage={alertMessage}
                 /> : null}
             {createVisible ?
                 <CreateUser
-                    getUsers={() => getUsers()}
+                    getUsers={() => dispatch(getUsers(user.page))}
                     open={createVisible}
                     onClose={() => setCreateVisible(false)}
                     alertMessage={alertMessage}/> : null}
 
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages context={user}/>
+            <Pages store={user} pagesFunction={setPageOrderAction}/>
         </Box>
     </Box>);
-})
+}
 export default UserList;

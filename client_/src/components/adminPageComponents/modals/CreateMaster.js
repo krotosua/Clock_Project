@@ -1,16 +1,16 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, FormHelperText, InputAdornment, OutlinedInput, TextField} from "@mui/material";
-import {Context} from "../../../index";
-import {observer} from "mobx-react-lite";
 import SelectorMasterCity from "./SelectorMasterCity";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {registrationFromAdmin} from "../../../http/userAPI";
+import {useDispatch, useSelector} from "react-redux";
+import {setSelectedCityAction} from "../../../store/CityStore";
 
 const style = {
     position: 'absolute',
@@ -23,8 +23,9 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateMaster = observer(({open, onClose, alertMessage, getMasters}) => {
-    let {cities, masters} = useContext(Context)
+const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
+    const cities = useSelector(state => state.city)
+    const dispatch = useDispatch()
     const [masterName, setMasterName] = useState("")
     const [masterRating, setMasterRating] = useState("")
     const [blurMasterName, setBlurMasterName] = useState(false)
@@ -57,18 +58,14 @@ const CreateMaster = observer(({open, onClose, alertMessage, getMasters}) => {
         }
     }
     const close = () => {
-        setMasterName("")
-        setMasterRating("")
-        setErrMaster(false)
-        setBlurMasterName(false)
-        cities.setSelectedCity("")
+        dispatch(setSelectedCityAction([]))
         onClose()
     }
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword)
     };
     //--------------------Validation
-    const validButton = masterRating > 5 || masterRating < 0 || !masterName
+    const validButton = masterRating > 5 || masterRating < 0 || !masterName || cities.selectedCity.length === 0
     const validName = blurMasterName && masterName.length === 0
     const validRating = masterRating > 5 || masterRating < 0
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
@@ -206,6 +203,6 @@ const CreateMaster = observer(({open, onClose, alertMessage, getMasters}) => {
             </Box>
         </Modal>
     </div>);
-});
+}
 
 export default CreateMaster;

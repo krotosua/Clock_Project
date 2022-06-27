@@ -1,7 +1,8 @@
 import * as React from 'react';
-import {Select, FormControl, MenuItem, InputLabel, Box, FormHelperText} from '@mui/material';
-import {Context} from "../../index";
-import {useContext, useState} from "react";
+import {useState} from 'react';
+import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
+import {useDispatch, useSelector} from "react-redux";
+import {setSelectedSizeAction} from "../../store/SizeStore";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -13,27 +14,19 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize({
-                                         sizeClock,
-                                         sizeToEdit,
-                                         closeList,
-                                         editOpen,
-                                         cleanMaster,
-                                         setSizeClock
-                                     }) {
-    const {size} = useContext(Context)
-    const [clock, setClock] = useState(sizeClock || '');
+export default function SelectorSize({sizeToEdit, closeList, editOpen, cleanMaster}) {
+    const dispatch = useDispatch()
+    const size = useSelector(state => state.sizes)
+    const [clock, setClock] = useState(size.selectedSize.id ?? '');
 
     const handleEditChange = (event) => {
         setClock(event.target.value);
-        cleanMaster()
         sizeToEdit()
         closeList()
     };
     const handleChange = (event) => {
         setClock(event.target.value);
         cleanMaster()
-        setSizeClock()
     };
 
 
@@ -48,10 +41,10 @@ export default function SelectorSize({
                     onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
-                    {size.size.map((clock, index) => <MenuItem
+                    {size.sizes.map((clock, index) => <MenuItem
                         key={index}
                         value={clock.id}
-                        onClick={() => size.setSelectedSize(clock)}
+                        onClick={() => dispatch(setSelectedSizeAction(clock))}
                     >
                         {clock.name}
                     </MenuItem>)}

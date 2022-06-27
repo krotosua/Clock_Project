@@ -4,6 +4,8 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import {TimePicker} from "@mui/lab";
 import {updateSize} from "../../../http/sizeAPI";
+import {useDispatch} from "react-redux";
+import {changeSizeAction} from "../../../store/SizeStore";
 
 
 const style = {
@@ -18,7 +20,7 @@ const style = {
     p: 4,
 };
 const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit, getSize}) => {
-
+    const dispatch = useDispatch()
     const [sizeName, setSizeName] = useState(sizeToEdit.name)
     const [sizeTime, setSizeTime] = useState(dateToEdit)
     const [errSize, setErrSize] = useState(false)
@@ -34,7 +36,7 @@ const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit
         }
         try {
             await updateSize(changeInfo)
-            getSize()
+            dispatch(changeSizeAction(changeInfo))
             close()
             alertMessage('Название изменено успешно', false)
         } catch (e) {

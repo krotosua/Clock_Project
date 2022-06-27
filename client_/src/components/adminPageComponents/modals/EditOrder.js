@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Box,
     Button,
@@ -16,7 +16,6 @@ import {
     Tooltip,
     Typography
 } from "@mui/material";
-import {Context} from "../../../index";
 import {updateOrder} from "../../../http/orderAPI";
 import SelectorSize from "../../orderPageComponents/SelectorSize";
 import SelectorCity from "../../SelectorCity";
@@ -25,9 +24,17 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
 import {DatePicker, TimePicker} from "@mui/lab";
 import {fetchMastersForOrder} from "../../../http/masterAPI";
-import {observer} from "mobx-react-lite";
 import PagesOrder from "../../orderPageComponents/Pages";
 import {addHours, getHours, isSameDay, isSameHour, isToday, set} from "date-fns";
+import {useDispatch, useSelector} from "react-redux";
+import {
+    setIsEmptyMasterAction,
+    setMasterAction,
+    setPageMasterAction,
+    setTotalCountMasterAction
+} from "../../../store/MasterStore";
+import {setSelectedSizeAction} from "../../../store/SizeStore";
+import {setSelectedCityAction} from "../../../store/CityStore";
 
 
 const style = {
@@ -41,15 +48,18 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditOrder = observer(({
-                                open, onClose, alertMessage,
-                                idToEdit,
-                                dateToEdit,
-                                timeToEdit,
-                                orderToEdit,
-                                getOrders
-                            }) => {
-    let {cities, size, masters, orders} = useContext(Context)
+const EditOrder = ({
+                       open, onClose, alertMessage,
+                       idToEdit,
+                       dateToEdit,
+                       timeToEdit,
+                       orderToEdit,
+                       getOrders
+                   }) => {
+    const dispatch = useDispatch()
+    const cities = useSelector(state => state.city)
+    const size = useSelector(state => state.sizes)
+    const masters = useSelector(state => state.masters)
     const [error, setError] = useState(false)
     const [errorTimePicker, setErrorTimePicker] = useState(false)
     const [errorDatePicket, setErrorDatePicker] = useState(false)
@@ -68,37 +78,39 @@ const EditOrder = observer(({
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [changedMaster, setChangedMaster] = useState(false)
-    const [price, setPrice] = useState(orderToEdit.price)
     const getMasters = async () => {
         setLoading(true)
         try {
-            const res = await fetchMastersForOrder(cityChosen, set(new Date(date), {
-                hours: getHours(time),
-                minutes: 0,
-                seconds: 0
-            }), sizeClock, masters.page, 3)
+            console.log(cityChosen)
+            const res = await fetchMastersForOrder(cities.selectedCity.id, set(new Date(date), {
+                    hours: getHours(time),
+                    minutes: 0,
+                    seconds: 0
+                }),
+                size.selectedSize.id, masters.page, 3)
             if (res.status === 204) {
-                setFreeMasters([])
+                dispatch(setMasterAction([]))
+                dispatch(setIsEmptyMasterAction(true))
                 return
             }
-            setFreeMasters(res.data.rows)
-            masters.setMasters(res.data.rows);
-            masters.setTotalCount(res.data.count);
+            dispatch(setMasterAction(res.data.rows))
+            dispatch(setTotalCountMasterAction(res.data.count))
+            dispatch(setIsEmptyMasterAction(false))
         } catch (e) {
-            masters.setIsEmpty(true);
+            dispatch(setIsEmptyMasterAction(true))
         } finally {
             setLoading(false)
         }
     }
     useEffect(() => {
-        size.setSelectedSize(size.size.find(clock => clock.id === orderToEdit.sizeClockId))
+        dispatch(setSelectedCityAction(cities.cities.find(city => city.id === orderToEdit.cityId)))
+        dispatch(setSelectedSizeAction(size.sizes.find(clock => clock.id === orderToEdit.sizeClockId)))
     }, [])
     useEffect(async () => {
         if (openList) {
             await getMasters()
         }
     }, [masters.page, openList])
-
 
     const changeOrder = async () => {
         if (checkInfo) {
@@ -120,7 +132,7 @@ const EditOrder = observer(({
             masterId: chosenMaster,
             sizeClockId: Number(sizeClock),
             changedMaster: changedMaster,
-            price
+            price: size.selectedSize.date.slice(0, 2) * cities.selectedCity.price
         }
         try {
             await updateOrder(changeInfo)
@@ -159,9 +171,16 @@ const EditOrder = observer(({
 
     const close = () => {
         setError(false)
-        masters.setMasters([]);
-        masters.setPage(1);
+        dispatch(setMasterAction([]))
+        dispatch(setPageMasterAction(1))
         onClose()
+    }
+    const closeList = () => {
+        dispatch(setPageMasterAction(1))
+        setOpenList(false)
+        setFreeMasters([])
+        setChangedMaster(true)
+        setChosenMaster(null)
     }
     //--------------------Validation
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
@@ -171,7 +190,7 @@ const EditOrder = observer(({
         || name.length < 3 || errorTimePicker || errorDatePicket
     const validName = blurName && name.length < 3
     const validEmail = blurEmail && reg.test(email) === false
-    const checkOpenList = freeMasters.length === 0 && openList === true
+    const checkOpenList = masters.isEmpty && openList === true
     const checkButtonList = errorTimePicker || errorDatePicket
     return (
         <div>
@@ -218,28 +237,15 @@ const EditOrder = observer(({
                         >
                             <SelectorSize sizeClock={sizeClock}
                                           editOpen={open}
-                                          cleanMaster={() => setChosenMaster(null)}
-                                          closeList={() => {
-                                              setOpenList(false)
-                                              setFreeMasters([])
-                                              setChangedMaster(true)
-                                              setPrice(size.selectedSize.date.slice(0, 2) * cities.cities
-                                                  .find(city => city.id === cities.selectedCity).price)
-                                          }}
+                                          closeList={closeList}
                                           sizeToEdit={() => setSizeClock(size.selectedSize.id)}/>
                             <SelectorCity cityChosen={cityChosen}
                                           editOpen={open}
-                                          closeList={() => {
-                                              setOpenList(false)
-                                              setFreeMasters([])
-                                              setChangedMaster(true)
-                                              setPrice(size.selectedSize.date.slice(0, 2) * cities.cities
-                                                  .find(city => city.id === cities.selectedCity).price)
-                                          }}
-                                          cleanMaster={() => setChosenMaster(null)}
-                                          cityToEdit={() => setCityChosen(cities.selectedCity)}/>
+                                          closeList={closeList}
+                                          cityToEdit={() => setCityChosen(cities.selectedCity.id)}/>
                         </Box>
-                        <Box> Стоимость услуги: <b>{price}</b></Box>
+                        <Box sx={{mb: 2}}> Стоимость
+                            услуги: <b>{size.selectedSize.date.slice(0, 2) * cities.selectedCity.price}</b></Box>
                         <LocalizationProvider sx={{cursor: "pointer"}} dateAdapter={AdapterDateFns}
                                               locale={ruLocale}>
                             <DatePicker
@@ -343,7 +349,7 @@ const EditOrder = observer(({
                                             value={chosenMaster}
                                             onChange={choseMaster}
                                         >
-                                            {(openList ? freeMasters.map((master, index) => {
+                                            {(openList ? masters.masters.map((master, index) => {
                                                     return (
                                                         <ListItem key={master.id}
                                                                   divider
@@ -381,8 +387,8 @@ const EditOrder = observer(({
                                             )}
 
                                         </RadioGroup>
-                                        {openList == true ? <Box sx={{display: "flex", justifyContent: "center"}}>
-                                            <PagesOrder context={masters}/>
+                                        {openList === true ? <Box sx={{display: "flex", justifyContent: "center"}}>
+                                            <PagesOrder store={masters} pagesFunction={setPageMasterAction}/>
                                         </Box> : ""}
 
                                     </List>
@@ -409,6 +415,6 @@ const EditOrder = observer(({
             </Modal>
         </div>
     );
-});
+}
 
 export default EditOrder;

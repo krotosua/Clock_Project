@@ -1,7 +1,8 @@
 import * as React from 'react';
-import {Box, InputLabel, MenuItem, FormControl, Select, FormHelperText} from '@mui/material';
-import {useContext, useState} from "react";
-import {Context} from "../index";
+import {useState} from 'react';
+import {Box, FormControl, FormHelperText, InputLabel, MenuItem, Select} from '@mui/material';
+import {useDispatch, useSelector} from "react-redux";
+import {setSelectedCityAction} from "../store/CityStore";
 
 
 const ITEM_HEIGHT = 48;
@@ -15,33 +16,19 @@ const MenuProps = {
     },
 };
 
-export default function SelectorCity({
-                                         Edit,
-                                         cityChosen,
-                                         cityToEdit,
-                                         cleanMaster,
-                                         error,
-                                         closeList,
-                                         editOpen,
-                                         setCityChosen
-                                     }) {
-    let {cities} = useContext(Context)
-    const [city, setCity] = useState(Edit || cityChosen || "");
-
+export default function SelectorCity({Edit, cityToEdit, cleanMaster, error, closeList, editOpen}) {
+    const cities = useSelector(state => state.city)
+    const [city, setCity] = useState(Edit ?? cities.selectedCity.id ?? "");
+    const dispatch = useDispatch()
     const handleEditChange = (event) => {
         setCity(event.target.value);
-        cities.setSelectedCity(event.target.value)
         closeList()
-        cleanMaster()
         cityToEdit()
     };
     const handleChange = (event) => {
         setCity(event.target.value);
-        cities.setSelectedCity(event.target.value)
-        setCityChosen()
         cleanMaster()
     };
-
     return (
         <Box sx={{minWidth: 120}}>
             <FormControl fullWidth>
@@ -58,7 +45,7 @@ export default function SelectorCity({
                         <MenuItem
                             key={index}
                             value={city.id}
-
+                            onClick={() => dispatch(setSelectedCityAction(city))}
                         >
                             {city.name}
                         </MenuItem>

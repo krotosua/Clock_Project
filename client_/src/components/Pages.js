@@ -1,15 +1,16 @@
 import * as React from 'react';
+import {useState} from 'react';
 import {Pagination, Stack} from '@mui/material';
-import {observer} from "mobx-react-lite";
-import {useState} from "react";
+import {useDispatch} from "react-redux";
 
 
-const Pages = observer(({context}) => {
-    const [currentPage, setCurrentPage] = useState(context.page);
-    const pageCount = Math.ceil(context.totalCount / context.limit)
+const Pages = ({store, pagesFunction}) => {
+    const dispatch = useDispatch()
+    const [currentPage, setCurrentPage] = useState(store.page);
+    const pageCount = Math.ceil(store.totalCount / store.limit)
     const handleChange = (event, value) => {
         setCurrentPage(value);
-        context.setPage(value)
+        dispatch(pagesFunction(value))
     };
 
 
@@ -22,5 +23,5 @@ const Pages = observer(({context}) => {
         </Stack>
 
     );
-})
+}
 export default Pages

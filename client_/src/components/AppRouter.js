@@ -1,12 +1,11 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {Navigate, Route, Routes} from "react-router-dom"
 import {adminRoutes, customerRoutes, masterRoutes, publicRoutes} from "../routes";
-import {Context} from "../index";
-import {observer} from "mobx-react-lite";
 import {ROLE_LIST} from "../store/UserStore";
+import {useSelector} from "react-redux";
 
-const AppRouter = observer(() => {
-    const {user} = useContext(Context)
+const AppRouter = () => {
+    const user = useSelector(state => state.user)
     return (<Routes>
         {user.userRole === ROLE_LIST.ADMIN && adminRoutes.map(({path, Component}) => <Route key={path} path={path}
                                                                                             element={<Component/>}
@@ -29,6 +28,6 @@ const AppRouter = observer(() => {
             element={<Navigate to="/"/>}
         />
     </Routes>);
-});
+};
 
 export default AppRouter;
