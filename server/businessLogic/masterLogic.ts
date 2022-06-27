@@ -9,6 +9,7 @@ import {CreateRatingDTO} from "../dto/rating.dto";
 import {addHours} from 'date-fns'
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
+
 const {and, lt, lte, not, is, or, gt, gte, notIn} = Op;
 
 class MasterLogic {

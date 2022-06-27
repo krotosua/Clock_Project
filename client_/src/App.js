@@ -45,7 +45,7 @@ const App = () => {
                 <CssBaseline/>
                 <Container sx={{
                     bgcolor: '#fff', mt: 6,
-                    height: document.documentElement.clientHeight - 30
+                    minHeight: document.documentElement.clientHeight - 52
                 }}>
                     <AppRouter/>
                 </Container>

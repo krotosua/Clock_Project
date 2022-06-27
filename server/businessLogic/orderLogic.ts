@@ -4,7 +4,7 @@ import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, statusList, UpdateMasterDTO} from "../dto/order.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
-
+import {v5 as uuidv5} from 'uuid';
 
 class OrderLogic {
     async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {
@@ -160,7 +160,24 @@ class OrderLogic {
             const orderUpdate: UpdateDB<Order> = await Order.update({
                 status: status,
             }, {where: {id: orderId}})
+            if (status === "DONE") {
+                const mailInfo: Order | null = await Order.findOne({
+                    where: {id: orderId},
+                    attributes: ["masterId", "id"],
+                    include: [{
+                        model: User,
+                        attributes: ["email"],
+                    }]
+                })
+                if (!mailInfo || !mailInfo.user) {
+                    next(ApiError.badRequest("Wrong request"));
+                    return
+                }
 
+                const activationLink = uuidv5(`${process.env.API_URL}api/orders/rating/:masterId=${mailInfo.masterId}`, uuidv5.URL)
+                // const email: string = mailInfo.user.email
+                // MailService.sendOrderDone(email, orderId, next)
+            }
             return orderUpdate
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))

@@ -81,6 +81,7 @@ interface OrderAttributes {
     masterId?: number;
     cityId: number;
     userId?: number;
+    user?: User;
 }
 
 export interface CityInput extends Optional<CityAttributes, 'id'> {
@@ -159,6 +160,7 @@ class Order extends Model<OrderAttributes, OrderInput>
     declare masterId?: number;
     declare cityId: number;
     declare userId?: number;
+    declare user?: User;
 }
 
 export interface RatingInput extends Optional<RatingAttributes, 'id'> {
