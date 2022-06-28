@@ -40,12 +40,13 @@ const MasterList = ({alertMessage}) => {
     const [totalCount, setTotalCount] = useState()
     const [limit, setLimit] = useState(10)
     const [loading, setLoading] = useState(true)
-
+    const [openCityList, setOpenCityList] = useState({})
+    const citiesLimit = 2
 
     useEffect(async () => {
-        await getMasters(page, limit)
+        await getMasters()
     }, [page])
-    const getMasters = async (page, limit) => {
+    const getMasters = async () => {
         try {
             const res = await fetchMasters(null, page, limit)
             if (res.status === 204) {

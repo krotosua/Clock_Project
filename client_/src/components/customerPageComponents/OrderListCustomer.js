@@ -8,27 +8,14 @@ import {useSelector} from "react-redux";
 const OrderListCustomer = ({getOrders, alertMessage, ordersList}) => {
     const cities = useSelector(state => state.cities)
     const [open, setOpen] = useState(false)
-    const [dataForEdit, setDataForEdit] = useState({})
-
-    function createData(order) {
-        let data = {
-            orderId: order.id,
-            masterId: order.masterId,
-            userId: order.userId,
-        }
-        setDataForEdit(data)
-        setOpen(true)
-    }
+    const [order, setOrder] = useState({})
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
-
-
             <List disablePadding>
                 <ListItem
                     key={1}
                     divider
-
                 >
                     <ListItemText sx={{width: 10}}
                                   primary="№"
@@ -103,7 +90,6 @@ const OrderListCustomer = ({getOrders, alertMessage, ordersList}) => {
                                               order.status === STATUS_LIST.REJECTED ? "Отказ" : "Ожидание"}
                         />
                         <ListItemText sx={{width: 10}}
-
                                       primary={order.rating !== null ? <Box>
                                               <Rating
                                                   readOnly
@@ -121,7 +107,8 @@ const OrderListCustomer = ({getOrders, alertMessage, ordersList}) => {
                                                       variant="outlined"
                                                       disabled={order.status !== STATUS_LIST.DONE}
                                                       onClick={() => {
-                                                          createData(order)
+                                                          setOrder(order)
+                                                          setOpen(true)
                                                       }}>
                                                   Оценить
                                               </Button>
@@ -135,8 +122,8 @@ const OrderListCustomer = ({getOrders, alertMessage, ordersList}) => {
             </List>
 
             {open ? <MasterRating open={open}
+                                  uuid={order.ratingLink}
                                   alertMessage={alertMessage}
-                                  dataForEdit={dataForEdit}
                                   getOrders={getOrders}
                                   onClose={() => setOpen(false)}
             /> : null}

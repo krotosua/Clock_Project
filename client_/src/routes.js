@@ -1,16 +1,20 @@
 import Admin from "./pages/Admin";
 import {
+    ACTIVATED_ROUTE,
     ADMIN_CITY_LIST_ROUTE,
     ADMIN_MASTER_LIST_ROUTE,
     ADMIN_ORDER_LIST_ROUTE,
-    ADMIN_ROUTE, ADMIN_SIZES_ROUTE,
+    ADMIN_ROUTE,
+    ADMIN_SIZES_ROUTE,
     ADMIN_USERS_ROUTE,
+    CONGRATULATION_ROUTE,
+    CUSTOMER_ORDER_ROUTE,
     LOGIN_ROUTE,
-    ORDER_ROUTE,
-    REGISTRATION_ROUTE,
-    START_ROUTE,
     MASTER_ORDER_ROUTE,
-    CUSTOMER_ORDER_ROUTE, ACTIVATED_ROUTE, CONGRATULATION_ROUTE
+    ORDER_ROUTE,
+    RATING_ROUTE,
+    REGISTRATION_ROUTE,
+    START_ROUTE
 } from "./utils/consts";
 import Customer from "./pages/Customer";
 import Start from "./pages/Start";
@@ -18,6 +22,7 @@ import Order from "./pages/Order";
 import Auth from "./pages/Auth";
 import Master from "./pages/Master";
 import MessagePage from "./pages/MessagePage";
+import Review from "./pages/Review";
 
 
 export const adminRoutes = [{
@@ -83,6 +88,10 @@ export const publicRoutes = [
     {
         path: ACTIVATED_ROUTE,
         Component: MessagePage
+    },
+    {
+        path: RATING_ROUTE + '/:uuid',
+        Component: Review
     }
 
 ]

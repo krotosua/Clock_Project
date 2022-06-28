@@ -23,12 +23,10 @@ const ReviewModal = ({open, onClose, masterId}) => {
     useEffect(async () => {
         try {
             const res = await fetchReviews(masterId)
-
             if (res.data.count === 0) {
                 setLoading(false)
                 return
             }
-
             setLoading(false)
             setReviews(res.data.rows)
         } catch (e) {
@@ -60,7 +58,7 @@ const ReviewModal = ({open, onClose, masterId}) => {
                                         <Box key={review.id} sx={{mb: 1}}>
                                             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                                                 <Typography variant="h5" gutterBottom component="div">
-                                                    {review.user.customer.name}
+                                                    {review.user.customer !== null ? review.user.customer.name : "Клиент"}
                                                 </Typography>
                                                 <Box>{
                                                     <Rating name="read-only" value={review.rating}

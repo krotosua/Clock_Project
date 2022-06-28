@@ -86,7 +86,7 @@ export default new class MailService {
         })
     }
 
-    sendOrderDone(email: string, id: string, next: NextFunction) {
+    sendOrderDone(email: string, id: string, link: string, next: NextFunction) {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: email,
@@ -95,6 +95,7 @@ export default new class MailService {
             html:
                 `<div>
              <h3>Можете оставить оценку выполнения Вашего заказа по ссылке:</h3>
+              <a href="${link}">${link}</a>
          
 </div>`,
         }, err => {

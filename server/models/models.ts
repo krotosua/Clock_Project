@@ -82,6 +82,7 @@ interface OrderAttributes {
     cityId: number;
     userId?: number;
     user?: User;
+    ratingLink?: string | null
 }
 
 export interface CityInput extends Optional<CityAttributes, 'id'> {
@@ -161,6 +162,7 @@ class Order extends Model<OrderAttributes, OrderInput>
     declare cityId: number;
     declare userId?: number;
     declare user?: User;
+    declare ratingLink?: string | null
 }
 
 export interface RatingInput extends Optional<RatingAttributes, 'id'> {
@@ -361,7 +363,7 @@ Order.init({
         endTime: {type: DataTypes.DATE},
         status: {type: DataTypes.STRING, defaultValue: "WAITING"},
         price: {type: DataTypes.INTEGER},
-
+        ratingLink: {type: DataTypes.STRING}
     },
     {
         tableName: 'orders',
