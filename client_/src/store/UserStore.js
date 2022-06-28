@@ -5,9 +5,6 @@ const defaultState = {
     isEmpty: false,
     userRole: "",
     userName: "",
-    page: 1,
-    totalCount: 0,
-    limit: 10
 }
 export const ROLE_LIST = {
     ADMIN: "ADMIN",

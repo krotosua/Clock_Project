@@ -1,8 +1,7 @@
 import * as React from 'react';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
-import {useDispatch, useSelector} from "react-redux";
-import {setSelectedSizeAction} from "../../store/SizeStore";
+import {fetchSize} from "../../http/sizeAPI";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -14,14 +13,20 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize({sizeToEdit, closeList, editOpen, cleanMaster}) {
-    const dispatch = useDispatch()
-    const size = useSelector(state => state.sizes)
-    const [clock, setClock] = useState(size.selectedSize.id ?? '');
+export default function SelectorSize({setChosenSize, sizeToEdit, chosenSize, closeList, editOpen, cleanMaster}) {
+    const [clock, setClock] = useState(chosenSize.id ?? sizeToEdit ?? '');
+    const [clockList, setClockList] = useState([])
+    useEffect(async () => {
+        try {
+            const res = await fetchSize(null, null)
+            setClockList(res.data.rows)
+        } catch (e) {
+            setClockList([])
+        }
+    }, []);
 
     const handleEditChange = (event) => {
         setClock(event.target.value);
-        sizeToEdit()
         closeList()
     };
     const handleChange = (event) => {
@@ -41,10 +46,10 @@ export default function SelectorSize({sizeToEdit, closeList, editOpen, cleanMast
                     onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
-                    {size.sizes.map((clock, index) => <MenuItem
+                    {clockList.map((clock, index) => <MenuItem
                         key={index}
                         value={clock.id}
-                        onClick={() => dispatch(setSelectedSizeAction(clock))}
+                        onClick={() => setChosenSize(clock)}
                     >
                         {clock.name}
                     </MenuItem>)}

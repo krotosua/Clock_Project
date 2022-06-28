@@ -24,7 +24,7 @@ const style = {
     p: 4,
 };
 const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
-    const cities = useSelector(state => state.city)
+    const cities = useSelector(state => state.cities)
     const dispatch = useDispatch()
     const [masterName, setMasterName] = useState("")
     const [masterRating, setMasterRating] = useState("")

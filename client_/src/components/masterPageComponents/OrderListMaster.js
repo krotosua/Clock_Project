@@ -7,14 +7,11 @@ import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
 import {statusChangeOrder} from "../../http/orderAPI";
 import {STATUS_LIST} from "../../store/OrderStore";
-import {useDispatch, useSelector} from "react-redux";
-import {changeStatusOrderAction} from "../../store/OrderStore";
+import {useSelector} from "react-redux";
 
 
-const OrderListMaster = ({alertMessage}) => {
-    const dispatch = useDispatch()
-    const cities = useSelector(state => state.city)
-    const orders = useSelector(state => state.orders)
+const OrderListMaster = ({alertMessage, ordersList}) => {
+    const cities = useSelector(state => state.cities)
     const changeStatus = async (order, status) => {
         const changeInfo = {
             id: order.id,
@@ -22,8 +19,8 @@ const OrderListMaster = ({alertMessage}) => {
         }
         try {
             await statusChangeOrder(changeInfo)
+            order.status = status
             alertMessage('Статус заказа успешно изменен', false)
-            dispatch(changeStatusOrderAction(changeInfo))
         } catch (e) {
             alertMessage('Не удалось изменить статус заказа', true)
         }
@@ -65,7 +62,7 @@ const OrderListMaster = ({alertMessage}) => {
 
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.isEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
+                {ordersList === 0 ? <h1>Список пуст</h1> : ordersList.map((order, index) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
                     const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem

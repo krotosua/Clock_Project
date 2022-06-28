@@ -16,7 +16,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const CreateCity = ({open, onClose, alertMessage, getCity}) => {
+const CreateCity = ({open, onClose, alertMessage, getCities}) => {
     const dispatch = useDispatch()
     const [cityName, setCityName] = useState("")
     const [errCity, setErrCity] = useState(false)
@@ -32,7 +32,7 @@ const CreateCity = ({open, onClose, alertMessage, getCity}) => {
             await createCity(cityInfo)
             dispatch(setIsEmptyOrderAction(false))
             alertMessage("Город успешно создан", false)
-            await getCity()
+            await getCities()
             close()
         } catch (e) {
             setErrCity(true)

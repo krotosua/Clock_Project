@@ -3,11 +3,10 @@ import OrderListMaster from '../components/masterPageComponents/OrderListMaster'
 import {Box, CircularProgress} from "@mui/material";
 import {useParams} from "react-router-dom";
 import {observer} from "mobx-react-lite";
-import Pages from "../components/Pages";
+import TablsPagination from "../components/TablsPagination";
 import MyAlert from "../components/adminPageComponents/MyAlert";
 import {useDispatch, useSelector} from "react-redux";
-import {setPageOrderAction} from "../store/OrderStore";
-import {getMasterOrders} from "../asyncActions/orders";
+import {fetchMasterOrders} from "../http/orderAPI";
 
 const Master = observer(() => {
     const orders = useSelector(state => state.orders)
@@ -18,25 +17,34 @@ const Master = observer(() => {
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
     const [loading, setLoading] = useState(true)
+    const [ordersList, setOrdersList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState(0)
+    const [limit, setLimit] = useState(8)
     const alertMessage = (message, bool) => {
         setOpen(true)
         setMessage(message)
         setIsError(bool)
     }
-    const getOrders = async () => {
+    const getMasterOrders = async () => {
         try {
-            getMasterOrders(id, orders.page)
+            const res = await fetchMasterOrders(id, page, limit)
             setActivated(true)
+            if (res.status === 204) {
+                setOrdersList([])
+                return
+            }
+            setOrdersList(res.data.rows)
+            setTotalCount(res.data.count)
         } catch (e) {
-            setActivated(false)
+            setOrdersList([])
         } finally {
             setLoading(false)
         }
     }
     useEffect(async () => {
-        await getOrders()
-    }, [orders.page])
-
+        await getMasterOrders(id, page, limit)
+    }, [page])
     if (loading) {
         return (
             <Box sx={{
@@ -55,11 +63,13 @@ const Master = observer(() => {
                 <Box sx={{height: "750px", pt: 5, position: "relative"}}>
                     <h2>Список заказов</h2>
                     <Box sx={{height: "650px"}}>
-                        <OrderListMaster alertMessage={alertMessage}/>
+                        <OrderListMaster ordersList={ordersList}
+                                         alertMessage={alertMessage}/>
 
                     </Box>
                     <Box style={{display: "flex", justifyContent: "center"}}>
-                        <Pages store={orders} pagesFunction={setPageOrderAction}/>
+                        <TablsPagination page={page} totalCount={totalCount} limit={limit}
+                                         pagesFunction={(page) => setPage(page)}/>
                     </Box>
                 </Box>
                 :

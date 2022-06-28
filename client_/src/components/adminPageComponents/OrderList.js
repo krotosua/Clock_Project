@@ -2,6 +2,7 @@ import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {
     Box,
+    CircularProgress,
     Divider,
     FormControl,
     IconButton,
@@ -17,31 +18,27 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import Pages from "../Pages";
-import {deleteOrder, statusChangeOrder} from "../../http/orderAPI";
+import TablsPagination from "../TablsPagination";
+import {deleteOrder, fetchAlLOrders, statusChangeOrder} from "../../http/orderAPI";
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
-import {
-    changeStatusOrderAction,
-    removeOrderAction,
-    setIsEmptyOrderAction,
-    setPageOrderAction,
-    STATUS_LIST
-} from "../../store/OrderStore";
+import {STATUS_LIST} from "../../store/OrderStore";
 import {add, getHours, isPast, set, setHours} from 'date-fns'
-import {useDispatch, useSelector} from "react-redux";
-import {getOrders} from "../../asyncActions/orders";
+import {useSelector} from "react-redux";
 
 
 const OrderList = ({alertMessage}) => {
-    const dispatch = useDispatch()
-    const orders = useSelector(state => state.orders)
-    const cities = useSelector(state => state.city)
+    const cities = useSelector(state => state.cities)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
     const [orderToEdit, setOrderToEdit] = useState(null)
+    const [ordersList, setOrdersList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState(0)
+    const [limit, setLimit] = useState(8)
+    const [loading, setLoading] = useState(true)
     const handleChange = async (statusOrder, order) => {
         try {
             const changeInfo = {
@@ -49,30 +46,52 @@ const OrderList = ({alertMessage}) => {
                 status: statusOrder
             }
             await statusChangeOrder(changeInfo)
-            dispatch(changeStatusOrderAction(changeInfo))
+            order.status = statusOrder
             alertMessage("Статус заказа успешно изменен", false)
-            return order.status = statusOrder
         } catch (e) {
             alertMessage("Не удалось изменить статус заказа", true)
         }
     };
-
+    const getOrders = async (page, limit) => {
+        try {
+            const res = await fetchAlLOrders(page, limit)
+            if (res.status === 204) {
+                setOrdersList([])
+                return
+            }
+            setOrdersList(res.data.rows)
+            setTotalCount(res.data.count)
+        } catch (e) {
+            setOrdersList([])
+        } finally {
+            setLoading(false)
+        }
+    }
     const navigate = useNavigate()
     useEffect(async () => {
-        dispatch(getOrders(orders.page))
-    }, [orders.page])
+        await getOrders()
+    }, [page])
 
     const removeOrder = async (id) => {
         try {
             await deleteOrder(id)
-            dispatch(removeOrderAction(id))
             alertMessage('Успешно удаленно', false)
-            dispatch(setIsEmptyOrderAction(false))
-            dispatch(getOrders(orders.page))
+            await getOrders(page, limit)
         } catch (e) {
             alertMessage('Не удалось удалить', true)
-            dispatch(setIsEmptyOrderAction(true))
         }
+    }
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
     }
     const editOrder = (order, time) => {
         setOrderToEdit(order)
@@ -138,7 +157,7 @@ const OrderList = ({alertMessage}) => {
                     />
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.isEmpty ? <h1>Список пуст</h1> : orders.orders.map((order) => {
+                {ordersList.length === 0 ? <h1>Список пуст</h1> : ordersList.map((order) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
                     const city = cities.cities.find(city => city.id === order.cityId)
                     return (<ListItem
@@ -222,12 +241,12 @@ const OrderList = ({alertMessage}) => {
                 alertMessage={alertMessage}
                 idToEdit={idToEdit}
                 timeToEdit={timeToEdit}
-                getOrders={() => dispatch(getOrders(orders.page))}
+                getOrders={() => getOrders(page, limit)}
             /> : null}
 
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages store={orders} pagesFunction={setPageOrderAction}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
 }

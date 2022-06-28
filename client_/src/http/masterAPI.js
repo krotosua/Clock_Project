@@ -5,7 +5,7 @@ export const createMaster = async (master) => {
     await $authHost.post('api/masters/admin/', master)
 }
 
-export const fetchMasters = async (cityId, page, limit = 10) => {
+export const fetchMasters = async (cityId, page, limit) => {
     return await $host.get('api/masters/', {params: {cityId, page, limit}})
 }
 export const fetchMastersForOrder = async (cityId, time, sizeClock, page, limit) => {

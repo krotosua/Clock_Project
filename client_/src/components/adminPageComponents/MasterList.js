@@ -3,6 +3,7 @@ import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
+    CircularProgress,
     Divider,
     IconButton,
     List,
@@ -15,21 +16,17 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {activateMaster, deleteMaster} from "../../http/masterAPI";
+import {activateMaster, deleteMaster, fetchMasters} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
-import Pages from "../Pages";
+import TablsPagination from "../TablsPagination";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
-import {useDispatch, useSelector} from "react-redux";
-import {activationMasterAction, removeMasterAction, setPageMasterAction} from "../../store/MasterStore";
-import {getMasters} from '../../asyncActions/masters'
+import {useSelector} from "react-redux";
 
 
 const MasterList = ({alertMessage}) => {
-    const dispatch = useDispatch()
-    const cities = useSelector(state => state.city)
-    const masters = useSelector(state => state.masters)
+    const cities = useSelector(state => state.cities)
     const [createVisible, setCreateVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
@@ -38,11 +35,41 @@ const MasterList = ({alertMessage}) => {
     const [cityToEdit, setCityToEdit] = useState([]);
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
-    useEffect(() => {
-        dispatch(getMasters(masters.page))
-    }, [masters.page])
+    const [mastersList, setMastersList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState()
+    const [limit, setLimit] = useState(10)
+    const [loading, setLoading] = useState(true)
 
-
+    useEffect(async () => {
+        await getMasters(page, limit)
+    }, [page])
+    const getMasters = async (page, limit) => {
+        try {
+            const res = await fetchMasters(null, page, limit)
+            if (res.status === 204) {
+                setMastersList([])
+            }
+            setMastersList(res.data.rows)
+            setTotalCount(res.data.count)
+        } catch (e) {
+            setMastersList([])
+        } finally {
+            setLoading(false)
+        }
+    }
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
+    }
     const changeActiveted = async (master) => {
         let changeInfo = {
             id: master.id,
@@ -50,18 +77,16 @@ const MasterList = ({alertMessage}) => {
         }
         try {
             await activateMaster(changeInfo)
-            dispatch(activationMasterAction(changeInfo))
+            master.isActivated = !master.isActivated
             alertMessage('Данные мастера успешно изменены', false)
         } catch (e) {
             alertMessage('Не удалось изменить данные мастера', true)
         }
     }
 
-
     const removeMaster = async (id) => {
         try {
             await deleteMaster(id)
-            dispatch(removeMasterAction(id))
             alertMessage('Успешно удаленно', false)
             await getMasters()
         } catch (e) {
@@ -86,6 +111,7 @@ const MasterList = ({alertMessage}) => {
         setIdToEdit(master.id)
         setNameToEdit(master.name)
         setRatingToEdit(master.rating)
+        console.log(cities)
         changeCity = master.cities.map(item => item.id)
         setCityToEdit(cities.cities.filter(cities => changeCity.indexOf(cities.id) > -1))
     }
@@ -132,8 +158,8 @@ const MasterList = ({alertMessage}) => {
                 </ListItem>
 
                 <Divider orientation="vertical"/>
-                {masters.isEmpty ? <h1>Список пуст</h1> :
-                    masters.masters.map((master, index) => {
+                {mastersList.length === 0 ? <h1>Список пуст</h1> :
+                    mastersList.map((master, index) => {
                         return (
                             <ListItem
                                 key={master.id}
@@ -199,19 +225,19 @@ const MasterList = ({alertMessage}) => {
                                        alertMessage={alertMessage}
                                        nameToEdit={nameToEdit}
                                        ratingToEdit={ratingToEdit}
-                                       getMasters={() => dispatch(getMasters(masters.page))}
+                                       getMasters={() => getMasters(page)}
                                        cityChosen={cityToEdit}/> : null}
             {openReview ? <ReviewModal open={openReview}
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
             <CreateMaster open={createVisible}
-                          getMasters={() => dispatch(getMasters(masters.page))}
+                          getMasters={() => getMasters(page)}
                           alertMessage={alertMessage}
                           onClose={() => setCreateVisible(false)}/>
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages store={masters} pagesFunction={setPageMasterAction}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
 }

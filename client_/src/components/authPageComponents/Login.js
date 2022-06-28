@@ -57,7 +57,7 @@ const Login = ({alertMessage, nextPage, getMasters, orderEmail}) => {
             } else {
                 dataUser.role === ROLE_LIST.CUSTOMER && dataUser.isActivated === true ?
                     navigate(`${CUSTOMER_ORDER_ROUTE}/${dataUser.id}`) :
-                    user.userRole === ROLE_LIST.MASTER && dataUser.isActivated === true ?
+                    dataUser.role === ROLE_LIST.MASTER && dataUser.isActivated === true ?
                         navigate(`${MASTER_ORDER_ROUTE}/${dataUser.id}`) : navigate(ADMIN_ROUTE)
             }
         } catch (e) {

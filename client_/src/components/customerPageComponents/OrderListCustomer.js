@@ -5,9 +5,8 @@ import MasterRating from "./MasterRating";
 import {STATUS_LIST} from "../../store/OrderStore";
 import {useSelector} from "react-redux";
 
-const OrderListCustomer = ({getOrders, alertMessage}) => {
-    const cities = useSelector(state => state.city)
-    const orders = useSelector(state => state.orders)
+const OrderListCustomer = ({getOrders, alertMessage, ordersList}) => {
+    const cities = useSelector(state => state.cities)
     const [open, setOpen] = useState(false)
     const [dataForEdit, setDataForEdit] = useState({})
 
@@ -66,7 +65,7 @@ const OrderListCustomer = ({getOrders, alertMessage}) => {
 
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.isEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
+                {ordersList === 0 ? <h1>Список пуст</h1> : ordersList.map((order, index) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
                     const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem

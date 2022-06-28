@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Container, Divider, Link, List, ListItemButton, ListItemText, styled} from "@mui/material";
 import CityList from "../components/adminPageComponents/CityList"
 import MasterList from "../components/adminPageComponents/MasterList";
@@ -18,6 +18,8 @@ import CreateCity from "../components/adminPageComponents/modals/CreateCity";
 import CreateMaster from "../components/adminPageComponents/modals/CreateMaster";
 import CreateSize from "../components/adminPageComponents/modals/CreateSize";
 import MyAlert from "../components/adminPageComponents/MyAlert";
+import {getCities} from "../asyncActions/cities";
+import {useDispatch} from "react-redux";
 
 
 const SelectButton = styled(ListItemButton)`
@@ -28,6 +30,7 @@ const SelectButton = styled(ListItemButton)`
 const Admin = () => {
     const location = useLocation();
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const cityList = location.pathname === ADMIN_CITY_LIST_ROUTE;
     const masterList = location.pathname === ADMIN_MASTER_LIST_ROUTE;
     const sizeList = location.pathname === ADMIN_SIZES_ROUTE;
@@ -45,6 +48,10 @@ const Admin = () => {
         setMessage(message)
         setIsError(bool)
     }
+    useEffect(async () => {
+        await dispatch(getCities(null, null))
+    }, []);
+
 
     const preventDefault = (event) => event.preventDefault();
 

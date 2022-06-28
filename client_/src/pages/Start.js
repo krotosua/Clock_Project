@@ -7,10 +7,6 @@ import {Link, useNavigate} from "react-router-dom";
 import {ORDER_ROUTE} from "../utils/consts";
 import {check} from "../http/userAPI";
 import {setIsAuthUserAction, setUserAction, setUserNameAction, setUserRoleAction} from "../store/UserStore";
-import {fetchCity} from "../http/cityAPI";
-import {setCitiesAction, setEmptyCityAction, setTotalCountCitiesAction} from "../store/CityStore";
-import {fetchSize} from "../http/sizeAPI";
-import {setIsEmptySizeAction, setSizesAction, setTotalCountSizeAction} from "../store/SizeStore";
 import {useDispatch} from "react-redux";
 
 const Start = () => {
@@ -28,28 +24,6 @@ const Start = () => {
             } catch {
                 localStorage.setItem('token', "")
             }
-        }
-        try {
-            const cityRes = await fetchCity()
-            if (cityRes.status === 204) {
-                dispatch(setEmptyCityAction(true))
-            } else {
-                dispatch(setEmptyCityAction(false))
-                dispatch(setCitiesAction(cityRes.data.rows))
-                dispatch(setTotalCountCitiesAction(cityRes.data.count))
-            }
-            const sizeRes = await fetchSize()
-            if (sizeRes.status === 204) {
-                dispatch(setIsEmptySizeAction(true))
-            }
-            dispatch(setIsEmptySizeAction(false))
-            dispatch(setSizesAction(sizeRes.data.rows))
-            dispatch(setTotalCountSizeAction(sizeRes.data.count))
-
-
-        } catch (e) {
-            dispatch(setEmptyCityAction(true))
-            dispatch(setIsEmptySizeAction(true))
         }
     }, [])
     return (

@@ -7,7 +7,6 @@ import {useDispatch} from "react-redux";
 import {setEmptyCityAction} from "./store/CityStore";
 import {setIsEmptySizeAction} from "./store/SizeStore";
 import {getCities} from "./asyncActions/cities";
-import {getSizes} from "./asyncActions/sizes";
 import {checkUser} from "./asyncActions/users";
 
 
@@ -15,10 +14,9 @@ const App = () => {
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(true)
     useEffect(async () => {
-        await dispatch(checkUser())
         try {
-            await dispatch(getCities(1))
-            await dispatch(getSizes(1))
+            await dispatch(checkUser())
+            await dispatch(getCities(null, null))
         } catch (e) {
             dispatch(setEmptyCityAction(true))
             dispatch(setIsEmptySizeAction(true))

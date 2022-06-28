@@ -25,7 +25,7 @@ export const checkEmail = async (email) => {
     return await $host.get('api/users/checkEmail/', {params: {email: email}})
 
 }
-export const fetchUsers = async (page, limit = 8) => {
+export const fetchUsers = async (page, limit) => {
     return await $authHost.get('api/users/', {params: {page, limit}})
 }
 export const deleteUser = async (id) => {

@@ -17,7 +17,7 @@ const MenuProps = {
 
 
 export default function SelectorMasterCity({cityChosen, error, open}) {
-    const cities = useSelector(state => state.city)
+    const cities = useSelector(state => state.cities)
     const dispatch = useDispatch()
     const [cityName, setCityName] = React.useState(cityChosen || []);
     const [blur, setBlur] = useState(false)

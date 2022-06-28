@@ -1,43 +1,76 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
+import {
+    Box,
+    CircularProgress,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {deleteSize} from "../../http/sizeAPI";
+import {deleteSize, fetchSize} from "../../http/sizeAPI";
 import CreateSize from "./modals/CreateSize";
 import EditSize from "./modals/EditSize";
-import Pages from "../Pages";
+import TablsPagination from "../TablsPagination";
 import {set} from 'date-fns'
-import {useDispatch, useSelector} from "react-redux";
-import {removeSizeAction} from "../../store/SizeStore";
-import {setPageOrderAction} from "../../store/OrderStore";
-import {getSizes} from "../../asyncActions/sizes";
 
 const SizeList = ({alertMessage, getValue}) => {
-    const size = useSelector(state => state.sizes)
-    const dispatch = useDispatch()
     const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
     const [sizeToEdit, setSizeToEdit] = useState(null);
     const [dateToEdit, setDateToEdit] = useState(null);
+    const [sizesList, setSizesList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState()
+    const [limit, setLimit] = useState(10)
+    const [loading, setLoading] = useState(true)
+    const getSizes = async () => {
+        try {
+            const res = await fetchSize(page, 10)
+            if (res.status === 204) {
+                setSizesList([])
+            }
+            setSizesList(res.data.rows)
+            setTotalCount(res.data.count)
+        } catch (e) {
+            setSizesList([])
+        } finally {
+            setLoading(false)
+        }
+    }
     useEffect(async () => {
-        dispatch(getSizes(size.page))
-    }, [size.page])
+        await getSizes()
+    }, [page])
 
 
     const removeSize = async (id) => {
         try {
             await deleteSize(id)
-            dispatch(removeSizeAction(id))
-            dispatch(getSizes(size.page))
+            await getSizes()
             alertMessage('Успешно удаленно', false)
         } catch (e) {
             alertMessage('Не удалось удалить', true)
         }
     }
-
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
+    }
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
             <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
@@ -71,7 +104,7 @@ const SizeList = ({alertMessage, getValue}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {size.isEmpty ? <h1>Список пуст</h1> : size.sizes.map((size, index) => {
+                {sizesList.length === 0 ? <h1>Список пуст</h1> : sizesList.map((size, index) => {
 
                     return (<ListItem
                         key={size.id}
@@ -122,13 +155,13 @@ const SizeList = ({alertMessage, getValue}) => {
                 })}
             </List>
             {createVisible ? <CreateSize open={createVisible}
-                                         getSize={() => dispatch(getSizes(size.page))}
+                                         getSize={() => getSizes()}
                                          alertMessage={alertMessage}
                                          onClose={() => {
                                              setCreateVisible(false)
                                          }}/> : null}
             {editVisible ? <EditSize
-                getSize={() => dispatch(getSizes(size.page))}
+                getSize={() => getSizes()}
                 open={editVisible}
                 onClose={() => setEditVisible(false)}
                 idToEdit={idToEdit}
@@ -138,7 +171,7 @@ const SizeList = ({alertMessage, getValue}) => {
             /> : null}
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages store={size} pagesFunction={setPageOrderAction}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
 }

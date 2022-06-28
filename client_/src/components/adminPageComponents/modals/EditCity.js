@@ -5,8 +5,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, InputAdornment, TextField} from "@mui/material";
 import {updateCity} from "../../../http/cityAPI";
-import {useDispatch, useSelector} from "react-redux";
-import {setChangeCityAction} from "../../../store/CityStore";
 
 
 const style = {
@@ -20,9 +18,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
-    const dispatch = useDispatch()
-    const cities = useSelector(state => state.city)
+const EditCity = ({open, onClose, cityToEdit, alertMessage, getCities}) => {
     const [cityName, setCityName] = useState(cityToEdit.name)
     const [errCity, setErrCity] = useState(false)
     const [blurCityName, setBlurCityName] = useState(false)
@@ -37,8 +33,8 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage,}) => {
         }
         try {
             await updateCity(cityInfo)
-            dispatch(setChangeCityAction(cityInfo))
             close()
+            await getCities()
             alertMessage('Название изменено успешно', false)
         } catch (e) {
             setErrCity(true)

@@ -7,7 +7,7 @@ import {userReducer} from "./UserStore";
 import {masterReducer} from "./MasterStore";
 
 export const rootReducer = combineReducers({
-    city: cityReducer,
+    cities: cityReducer,
     sizes: sizeReducer,
     user: userReducer,
     orders: orderReducer,

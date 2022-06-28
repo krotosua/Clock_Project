@@ -1,29 +1,12 @@
-import {check, fetchUsers, login} from "../http/userAPI";
+import {check, login} from "../http/userAPI";
 import {
     setIsAuthUserAction,
     setIsEmptyUserAction,
-    setTotalCountUserAction,
     setUserAction,
     setUserNameAction,
-    setUserRoleAction,
-    setUsersAction
+    setUserRoleAction
 } from "../store/UserStore";
 
-export const getUsers = (page) => {
-    return async dispatch => {
-        try {
-            const res = await fetchUsers(page, 10)
-            if (res.status === 204) {
-                dispatch(setIsEmptyUserAction(true))
-            }
-            dispatch(setIsEmptyUserAction(false))
-            dispatch(setUsersAction(res.data.rows))
-            dispatch(setTotalCountUserAction(res.data.count))
-        } catch (e) {
-            dispatch(setIsEmptyUserAction(true))
-        }
-    }
-}
 export const loginUser = (email, password) => {
     return async dispatch => {
         try {
@@ -40,8 +23,7 @@ export const loginUser = (email, password) => {
 }
 export const checkUser = () => {
     return async dispatch => {
-        if (localStorage.getItem('token') !== "" ||
-            localStorage.getItem('token')) {
+        if (localStorage.getItem('token')) {
             try {
                 const data = await check()
                 dispatch(setUserAction(data))
@@ -49,7 +31,7 @@ export const checkUser = () => {
                 dispatch(setIsAuthUserAction(true))
                 dispatch(setUserRoleAction(data.role))
             } catch {
-                localStorage.setItem('token', "")
+                localStorage.removeItem('token')
             }
         }
     }

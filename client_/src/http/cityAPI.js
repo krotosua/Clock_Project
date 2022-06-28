@@ -6,7 +6,7 @@ export const createCity = async (city) => {
 
 }
 
-export const fetchCity = async (page, limit = 10) => {
+export const fetchCities = async (page, limit) => {
     return await $host.get('api/cities/', {params: {page, limit}})
 
 }

@@ -1,8 +1,7 @@
 import * as React from 'react';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, FormControl, FormHelperText, InputLabel, MenuItem, Select} from '@mui/material';
-import {useDispatch, useSelector} from "react-redux";
-import {setSelectedCityAction} from "../store/CityStore";
+import {fetchCities} from "../http/cityAPI";
 
 
 const ITEM_HEIGHT = 48;
@@ -16,14 +15,20 @@ const MenuProps = {
     },
 };
 
-export default function SelectorCity({Edit, cityToEdit, cleanMaster, error, closeList, editOpen}) {
-    const cities = useSelector(state => state.city)
-    const [city, setCity] = useState(Edit ?? cities.selectedCity.id ?? "");
-    const dispatch = useDispatch()
+const SelectorCity = ({chosenCity, cityToEdit, cleanMaster, closeList, editOpen, setChosenCity}) => {
+    const [city, setCity] = useState(chosenCity.id ?? cityToEdit ?? "");
+    const [citiesList, setCitiesList] = useState([])
+    useEffect(async () => {
+        try {
+            const res = await fetchCities(null, null)
+            setCitiesList(res.data.rows)
+        } catch (e) {
+            setCitiesList([])
+        }
+    }, []);
     const handleEditChange = (event) => {
         setCity(event.target.value);
         closeList()
-        cityToEdit()
     };
     const handleChange = (event) => {
         setCity(event.target.value);
@@ -34,26 +39,27 @@ export default function SelectorCity({Edit, cityToEdit, cleanMaster, error, clos
             <FormControl fullWidth>
                 <InputLabel id="citySel">Выберите город</InputLabel>
                 <Select
-                    error={error && city === ""}
+                    error={city === ""}
                     labelId="citySel"
                     value={city}
                     label="Выберите город"
                     onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
-                    {cities.cities.map((city, index) =>
+                    {citiesList.map((city, index) =>
                         <MenuItem
                             key={index}
                             value={city.id}
-                            onClick={() => dispatch(setSelectedCityAction(city))}
+                            onClick={() => setChosenCity(city)}
                         >
                             {city.name}
                         </MenuItem>
                     )}
                 </Select>
-                {error && city === "" ?
+                {city === "" ?
                     <FormHelperText>Укажите город</FormHelperText> : ""}
             </FormControl>
         </Box>
     );
 }
+export default SelectorCity;

@@ -26,8 +26,8 @@ class CityLogic {
     async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<City[]> | void> {
         try {
             let pagination: Pagination = req.query;
-            pagination.page = pagination.page || 1;
-            pagination.limit = pagination.limit || 9;
+            pagination.page = pagination.page ?? null;
+            pagination.limit = pagination.limit ?? null;
             const offset = pagination.page * pagination.limit - pagination.limit;
             const cities: GetRowsDB<City> = await City.findAndCountAll({
                 order: [['name', 'ASC']],

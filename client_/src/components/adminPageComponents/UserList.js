@@ -1,28 +1,55 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Box, Button, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import Pages from "../Pages";
-import {activateUser, deleteUser} from "../../http/userAPI";
+import TablsPagination from "../TablsPagination";
+import {activateUser, deleteUser, fetchUsers} from "../../http/userAPI";
 import EditUser from "./modals/EditUser";
 import CreateUser from "./modals/CreateUser";
-import {activationUserAction, removeUserAction, ROLE_LIST} from "../../store/UserStore";
-import {useDispatch, useSelector} from "react-redux";
-import {setPageOrderAction} from "../../store/OrderStore";
-import {getUsers} from "../../asyncActions/users";
+import {ROLE_LIST} from "../../store/UserStore";
 
 
 const UserList = ({alertMessage}) => {
-    const user = useSelector(state => state.user)
-    const dispatch = useDispatch()
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
+    const [usersList, setUsersList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState()
+    const [limit, setLimit] = useState(10)
+    const [loading, setLoading] = useState(true)
+
+    const getUsers = async () => {
+        try {
+            const res = await fetchUsers(page, limit)
+            if (res.status === 204) {
+                setUsersList([])
+            }
+            setUsersList(res.data.rows)
+            setTotalCount(res.data.count)
+        } catch (e) {
+            setUsersList([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(async () => {
-        dispatch(getUsers(user.page))
-    }, [user.page])
+        await getUsers()
+    }, [page])
 
     const changeActiveted = async (user) => {
         const changeInfo = {
@@ -31,7 +58,7 @@ const UserList = ({alertMessage}) => {
         }
         try {
             await activateUser(changeInfo)
-            dispatch(activationUserAction(changeInfo))
+            user.isActivated = !user.isActivated
             alertMessage('Данные мастера успешно изменены', false)
         } catch (e) {
             alertMessage('Не удалось изменить данные мастера', true)
@@ -41,12 +68,23 @@ const UserList = ({alertMessage}) => {
     const removeUser = async (id) => {
         try {
             await deleteUser(id)
-            dispatch(removeUserAction(id))
-            dispatch(getUsers(user.page))
+            await getUsers()
             alertMessage('Успешно удаленно', false)
         } catch (e) {
             alertMessage('Не удалось удалить, так как у пользователя остались заказы', true)
         }
+    }
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
     }
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
@@ -83,7 +121,7 @@ const UserList = ({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {user.isEmpty ? <h1>Список пуст</h1> : user.users.map((user, index) => {
+                {usersList.length === 0 ? <h1>Список пуст</h1> : usersList.map((user, index) => {
                     return (<ListItem
                             key={user.id}
                             divider
@@ -151,19 +189,19 @@ const UserList = ({alertMessage}) => {
                     onClose={() => {
                         setEditVisible(false)
                     }}
-                    getUsers={() => dispatch(getUsers(user.page))}
+                    getUsers={() => getUsers(page)}
                     alertMessage={alertMessage}
                 /> : null}
             {createVisible ?
                 <CreateUser
-                    getUsers={() => dispatch(getUsers(user.page))}
+                    getUsers={() => getUsers(page)}
                     open={createVisible}
                     onClose={() => setCreateVisible(false)}
                     alertMessage={alertMessage}/> : null}
 
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages store={user} pagesFunction={setPageOrderAction}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
 }
