@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Box, CircularProgress, Divider, Modal, Rating, TextField, Typography} from "@mui/material";
+import {Box, CircularProgress, Divider, Modal, Rating, Typography} from "@mui/material";
 import {fetchReviews} from "../http/masterAPI";
 
 
@@ -23,10 +23,12 @@ const ReviewModal = ({open, onClose, masterId}) => {
     useEffect(async () => {
         try {
             const res = await fetchReviews(masterId)
+
             if (res.data.count === 0) {
                 setLoading(false)
                 return
             }
+
             setLoading(false)
             setReviews(res.data.rows)
         } catch (e) {
@@ -64,23 +66,18 @@ const ReviewModal = ({open, onClose, masterId}) => {
                                                     <Rating name="read-only" value={review.rating}
                                                             precision={0.5} readOnly/>}
                                                 </Box>
-
                                             </Box>
-                                            {review.review ? <TextField
-                                                fullWidth
-                                                InputProps={{
-                                                    readOnly: true,
-                                                }}
-                                                variant="standard"
-                                                id="review"
-                                                sx={{
-                                                    '& .MuiInputBase-input': {
-                                                        cursor: "default"
-                                                    }
-                                                }}
-                                                multiline
-                                                value={review.review}
-                                            /> : null}
+                                            {review.review ?
+                                                <Box style={{
+                                                    whiteSpace: "pre-line",
+                                                    maxHeight: 100,
+                                                    overflowY: "auto",
+                                                    overflowX: "hidden",
+                                                    wordBreak: "break-word"
+                                                }}>
+                                                    `{review.review}`
+                                                </Box>
+                                                : null}
                                             <Divider sx={{mt: 1}}/>
                                         </Box>
                                     )

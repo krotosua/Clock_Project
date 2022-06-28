@@ -86,17 +86,18 @@ class MasterController {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const result = await sequelize.transaction(async () => {
-                return await masterLogic.ratingUpdate(req, res, next)
-            })
-            return res.status(201).json(result)
+            await masterLogic.ratingUpdate(req, res, next)
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
         }
     }
 
     async getRatingReviews(req: Request<{ masterId: number }> & ReqQuery<{ page: number, limit: number }>,
-                           res: Response, next: NextFunction): Promise<void> {
+                           res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError>>> {
+        const errors: Result<ValidationError> = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
         await masterLogic.getRatingReviews(req, res, next)
     }
 

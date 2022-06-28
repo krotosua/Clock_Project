@@ -82,7 +82,7 @@ const CreateCity = ({open, onClose, alertMessage, getCities}) => {
                                 error={errCity || blurPrice && price <= 0}
                                 type="number"
                                 sx={{mt: 1}}
-                                id="city"
+                                id="price"
                                 label="Цена за час работы мастера"
                                 variant="outlined"
                                 value={price}

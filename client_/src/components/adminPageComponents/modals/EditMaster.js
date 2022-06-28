@@ -22,6 +22,7 @@ const style = {
     p: 4,
 };
 const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen, getMasters}) => {
+
     const cities = useSelector(state => state.city)
     const dispatch = useDispatch()
     const [masterName, setMasterName] = useState(nameToEdit)
@@ -93,10 +94,9 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                 value={masterRating}
                                 type="number"
                                 InputProps={{
-
                                     inputProps: {
                                         max: 5, min: 0
-                                    }
+                                    }, inputMode: 'numeric', pattern: '[0-9]*'
                                 }}
                                 onChange={e => setMasterRating(Number(e.target.value))}
                             />

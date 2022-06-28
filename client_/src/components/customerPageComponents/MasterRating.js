@@ -34,7 +34,7 @@ const getLabelText = (value) => {
 const MasterRating = ({open, onClose, dataForEdit, getOrders, alertMessage}) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(-1);
-    const [review, setReview] = useState()
+    const [review, setReview] = useState("")
     const sendRating = async () => {
         const post = {
             rating: rating,
@@ -95,18 +95,21 @@ const MasterRating = ({open, onClose, dataForEdit, getOrders, alertMessage}) => 
                         </Box>
                         <TextField
                             fullWidth
+                            error={1000 < review.length}
                             rows={4}
                             id="review"
                             label="Оставьте свой комментарий"
+                            helperText={`Символов осталось: ${1000 - review.length}`}
                             multiline
                             value={review}
-                            onChange={(e) => setReview(e.target.value)}
+                            onChange={(e) => 1000 > review.length
+                            || e.nativeEvent.inputType === "deleteContentBackward" ? setReview(e.target.value) : null}
                         />
                     </Box>
                     <Box
                         sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
                     >
-                        <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
+                        <Button color="success" disabled={1000 < review.length} sx={{flexGrow: 1}} variant="outlined"
                                 onClick={sendRating}
                         > Отправить отзыв</Button>
                         <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
