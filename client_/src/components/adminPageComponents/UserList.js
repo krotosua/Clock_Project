@@ -1,41 +1,56 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
-import {Box, Button, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
+import {useEffect, useState} from 'react';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
-import Pages from "../Pages";
+import TablsPagination from "../TablsPagination";
 import {activateUser, deleteUser, fetchUsers} from "../../http/userAPI";
 import EditUser from "./modals/EditUser";
 import CreateUser from "./modals/CreateUser";
 import {ROLE_LIST} from "../../store/UserStore";
 
 
-const UserList = observer(({alertMessage}) => {
-
-    let {user} = useContext(Context)
+const UserList = ({alertMessage}) => {
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
+    const [usersList, setUsersList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState()
+    const [limit, setLimit] = useState(10)
+    const [loading, setLoading] = useState(true)
+
     const getUsers = async () => {
         try {
-            const res = await fetchUsers(user.page, 10)
+            const res = await fetchUsers(page, limit)
             if (res.status === 204) {
-                return user.setIsEmpty(true)
+                setUsersList([])
             }
-            user.setIsEmpty(false)
-            user.setUsersList(res.data.rows)
-            user.setTotalCount(res.data.count)
+            setUsersList(res.data.rows)
+            setTotalCount(res.data.count)
         } catch (e) {
-            user.setIsEmpty(true)
+            setUsersList([])
+        } finally {
+            setLoading(false)
         }
     }
+
     useEffect(async () => {
         await getUsers()
+    }, [page])
 
-    }, [user.page])
     const changeActiveted = async (user) => {
         const changeInfo = {
             id: user.id,
@@ -43,8 +58,8 @@ const UserList = observer(({alertMessage}) => {
         }
         try {
             await activateUser(changeInfo)
+            user.isActivated = !user.isActivated
             alertMessage('Данные мастера успешно изменены', false)
-            return user.isActivated = !user.isActivated
         } catch (e) {
             alertMessage('Не удалось изменить данные мастера', true)
         }
@@ -53,12 +68,23 @@ const UserList = observer(({alertMessage}) => {
     const removeUser = async (id) => {
         try {
             await deleteUser(id)
-            user.setUsersList(user.usersList.filter(user => user.id !== id));
-            alertMessage('Успешно удаленно', false)
             await getUsers()
+            alertMessage('Успешно удаленно', false)
         } catch (e) {
             alertMessage('Не удалось удалить, так как у пользователя остались заказы', true)
         }
+    }
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
     }
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
@@ -95,7 +121,7 @@ const UserList = observer(({alertMessage}) => {
                 </ListItem>
                 <Divider orientation="vertical"/>
 
-                {user.IsEmpty ? <h1>Список пуст</h1> : user.usersList.map((user, index) => {
+                {usersList.length === 0 ? <h1>Список пуст</h1> : usersList.map((user, index) => {
                     return (<ListItem
                             key={user.id}
                             divider
@@ -163,20 +189,20 @@ const UserList = observer(({alertMessage}) => {
                     onClose={() => {
                         setEditVisible(false)
                     }}
-                    getUsers={() => getUsers()}
+                    getUsers={() => getUsers(page)}
                     alertMessage={alertMessage}
                 /> : null}
             {createVisible ?
                 <CreateUser
-                    getUsers={() => getUsers()}
+                    getUsers={() => getUsers(page)}
                     open={createVisible}
                     onClose={() => setCreateVisible(false)}
                     alertMessage={alertMessage}/> : null}
 
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages context={user}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
-})
+}
 export default UserList;

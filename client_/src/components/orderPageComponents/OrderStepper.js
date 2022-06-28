@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {
     Box,
     Button,
@@ -23,28 +23,30 @@ import {
 } from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
 import {fetchMastersForOrder} from "../../http/masterAPI";
-import {observer} from "mobx-react-lite";
 import {createOrder} from "../../http/orderAPI";
 import {checkEmail} from "../../http/userAPI";
 import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import SelectorSize from "./SelectorSize";
 import SelectorCity from "../SelectorCity";
-import {Context} from "../../index";
 import {DatePicker, LocalizationProvider, TimePicker} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from 'date-fns/locale/ru'
-import PagesOrder from "./Pages";
 import Login from "../authPageComponents/Login";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
-import {ROLE_LIST} from "../../store/UserStore";
+import {ROLE_LIST, setUserNameAction} from "../../store/UserStore";
 import {addHours, getHours, isToday, set} from 'date-fns'
+import {useDispatch, useSelector} from "react-redux";
+import TablsPagination from "../TablsPagination";
 
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
 
-const OrderStepper = observer(({alertMessage}) => {
-    const {cities, size, masters, user} = useContext(Context);
+const OrderStepper = ({alertMessage}) => {
+    const dispatch = useDispatch()
+    const size = useSelector(state => state.sizes)
+    const masters = useSelector(state => state.masters)
+    const user = useSelector(state => state.user)
     const [activeStep, setActiveStep] = useState(0);
     const [name, setName] = useState("");
     const [changeName, setChangeName] = useState(null)
@@ -54,8 +56,8 @@ const OrderStepper = observer(({alertMessage}) => {
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(addHours(set(new Date(), {minutes: 0, seconds: 0}), 1));
     const [chosenMaster, setChosenMaster] = useState(null);
-    const [sizeClock, setSizeClock] = useState(null);
-    const [cityChosen, setCityChosen] = useState(null);
+    const [chosenCity, setChosenCity] = useState({id: null});
+    const [chosenSize, setChosenSize] = useState({id: null});
     const [freeMasters, setFreeMasters] = useState([]);
     const [error, setError] = useState(false)
     const [errorTimePicker, setErrorTimePicker] = useState(false)
@@ -69,40 +71,38 @@ const OrderStepper = observer(({alertMessage}) => {
     const [isAuth, setIsAuth] = useState(false)
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
+    const [limit, setLimit] = useState(3)
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState(0)
     const navigate = useNavigate();
-
     const handleClose = () => {
         setAnchorEl(null);
     };
     const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
-
     const getMasters = async () => {
         setLoading(true)
         try {
-            const res = await fetchMastersForOrder(cities.selectedCity, set(new Date(date), {
+            const res = await fetchMastersForOrder(chosenCity.id, set(new Date(date), {
                     hours: getHours(time),
                     minutes: 0,
                     seconds: 0
                 }),
-                size.selectedSize.id, masters.page, 3)
+                chosenSize.id, page, limit)
             if (res.status === 204) {
                 setFreeMasters([])
                 setLoading(false)
                 return
             }
             setFreeMasters(res.data.rows)
-            masters.setMasters(res.data.rows);
-            masters.setTotalCount(res.data.count);
+            setTotalCount(res.data.count);
             setLoading(false)
         } catch (e) {
-            return masters.setIsEmpty(true);
+            setFreeMasters([])
         } finally {
             setLoading(false)
         }
-
     }
-
     const handleNext = async (event) => {
         if (user.isAuth || regCustomer !== null) {
             if (user.userName !== name && changeName === null) {
@@ -124,33 +124,30 @@ const OrderStepper = observer(({alertMessage}) => {
                     time: set(new Date(date), {hours: getHours(time), minutes: 0, seconds: 0}),
                     email,
                     changeName,
-                    cityId: cityChosen,
+                    cityId: chosenCity.id,
                     masterId: chosenMaster,
-                    sizeClockId: size.selectedSize.id,
+                    sizeClockId: chosenSize.id,
                     regCustomer,
-                    price: size.selectedSize.date.slice(0, 2) * cities.cities
-                        .find(city => city.id === cities.selectedCity).price
+                    price: chosenSize.date.slice(0, 2) * chosenCity.price
                 }
                 try {
                     await createOrder(orderInfo)
-                    cities.setSelectedCity(null)
-                    size.setSelectedSize({date: "00:00:00"})
-                    masters.setMasters([])
                     if (changeName) {
-                        user.setUserName(name)
+                        dispatch(setUserNameAction(name))
                     }
                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 } catch (e) {
                     alertMessage('Мастер занят', true)
                     setActiveStep(1)
                     setLoading(true)
-                    getMasters()
+                    await getMasters()
                 }
             }
         } else {
             setLoading(true)
+            setAnchorEl(event.currentTarget)
             try {
-                const res = checkEmail(email)
+                const res = await checkEmail(email)
                 if (res.status === 204) {
                     setEmailExists(false)
                 } else if (res.status === 200) {
@@ -159,8 +156,8 @@ const OrderStepper = observer(({alertMessage}) => {
             } finally {
                 setLoading(false)
             }
-            setAnchorEl(event.currentTarget)
         }
+
     };
     const getReviews = (id) => {
         setMasterId(id)
@@ -177,8 +174,8 @@ const OrderStepper = observer(({alertMessage}) => {
 
     const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     const checkInfo = !name || !email
-        || !date || !time || !cities.selectedCity
-        || !size.selectedSize.id || reg.test(email) === false
+        || !date || !time || !chosenCity.id
+        || !chosenSize.id || reg.test(email) === false
         || name.length < 3 || errorTimePicker || errorDatePicket
 
     useEffect(() => {
@@ -193,28 +190,26 @@ const OrderStepper = observer(({alertMessage}) => {
         if (activeStep === 1) {
             setLoading(true)
             try {
-                const res = await fetchMastersForOrder(cities.selectedCity,
+                const res = await fetchMastersForOrder(chosenCity.id,
                     set(new Date(date), {
                         hours: getHours(time),
                         minutes: 0,
                         seconds: 0
                     }),
-                    size.selectedSize.id,
-                    masters.page, 3)
+                    chosenSize.id,
+                    page, limit)
                 if (res.status === 204) {
                     setFreeMasters([])
                     return
                 }
                 setFreeMasters(res.data.rows)
-                masters.setMasters(res.data.rows);
-                masters.setTotalCount(res.data.count);
             } catch {
-                masters.setIsEmpty(true);
+                setFreeMasters([])
             } finally {
                 setLoading(false)
             }
         }
-    }, [masters.page])
+    }, [page])
 
 
     return (
@@ -277,17 +272,16 @@ const OrderStepper = observer(({alertMessage}) => {
                         <Box
                             sx={{display: "grid", gridTemplateColumns: "repeat(2, 1fr)", my: 2}}
                         >
-                            <SelectorCity cityChosen={cityChosen}
-                                          cleanMaster={() => setChosenMaster(null)}
-                                          setCityChosen={() => setCityChosen(cities.selectedCity)}
-                            />
-                            <SelectorSize sizeClock={sizeClock}
-                                          cleanMaster={() => setChosenMaster(null)}
-                                          setSizeClock={() => setSizeClock(size.selectedSize.id)}/>
+                            <SelectorCity cleanMaster={() => setChosenMaster(null)}
+                                          chosenCity={chosenCity}
+                                          setChosenCity={(city) => setChosenCity(city)}/>
+                            <SelectorSize cleanMaster={() => setChosenMaster(null)}
+                                          chosenSize={chosenSize}
+                                          setChosenSize={(size) => setChosenSize(size)}/>
                         </Box>
                         <Box sx={{my: 2}}>Стоимость
-                            услуги: <b>{size.selectedSize.date !== "00:00:00" && cities.selectedCity ? size.selectedSize.date.slice(0, 2) * cities.cities
-                                .find(city => city.id === cities.selectedCity).price + " грн" : null} </b></Box>
+                            услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ?
+                                chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b></Box>
                         <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                             <DatePicker
                                 mask='__.__.____'
@@ -466,16 +460,15 @@ const OrderStepper = observer(({alertMessage}) => {
                             <Box sx={{ml: 4}}>
                                 <Box sx={{mb: 1}}> Ваше имя: <b>{name}</b> </Box>
                                 <Box sx={{mb: 1}}> Ваш email:<b>{email}</b> </Box>
-                                <Box sx={{mb: 1}}>Выбранный размер часов:<b>{size.selectedSize.name}</b></Box>
+                                <Box sx={{mb: 1}}>Выбранный размер часов:<b>{chosenSize.name}</b></Box>
                                 <Box sx={{mb: 1}}> Город где сделан
-                                    заказ: <b>{cities.cities.find(city => city.id === cityChosen).name}</b></Box>
+                                    заказ: <b>{chosenCity.name}</b></Box>
                                 <Box sx={{mb: 1}}> Дата заказа и время
                                     заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
                                 <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
                                 <Box> Имя мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
                                 <Box sx={{my: 2}}>Стоимость
-                                    услуги: <b>{size.selectedSize.date !== "00:00:00" && cities.selectedCity ? size.selectedSize.date.slice(0, 2) * cities.cities
-                                        .find(city => city.id === cities.selectedCity).price + " грн" : null} </b></Box>
+                                    услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ? chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b></Box>
 
                             </Box>
 
@@ -522,7 +515,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                         <CircularProgress/>
                                     </Box>
                                 )
-                                : freeMasters.length === 0 ? (
+                                : masters.isEmpty ? (
                                     <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>
                                         Все мастера заняты
                                     </Typography>) : (
@@ -561,7 +554,7 @@ const OrderStepper = observer(({alertMessage}) => {
                                                             <ListItem key={master.id}
                                                                       divider
                                                                       style={{cursor: 'pointer'}}
-                                                                      selected={chosenMaster == master.id}
+                                                                      selected={chosenMaster === master.id}
                                                                       onClick={() => choseMaster(null, master.id)}
                                                                       secondaryAction={
                                                                           isFree ?
@@ -604,7 +597,8 @@ const OrderStepper = observer(({alertMessage}) => {
                                             </RadioGroup>
                                         </List>
                                         <Box sx={{display: "flex", justifyContent: "center"}}>
-                                            <PagesOrder context={masters}/>
+                                            <TablsPagination page={page} totalCount={totalCount} limit={limit}
+                                                             pagesFunction={(page) => setPage(page)}/>
 
                                         </Box>
                                         {loading ? <CircularProgress size={30}
@@ -656,5 +650,5 @@ const OrderStepper = observer(({alertMessage}) => {
                                            onClose={() => setOpenReview(false)}/> : null}
             </Box>
     );
-});
+}
 export default OrderStepper;

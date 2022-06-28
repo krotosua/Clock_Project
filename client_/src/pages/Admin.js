@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Container, Divider, Link, List, ListItemButton, ListItemText, styled} from "@mui/material";
 import CityList from "../components/adminPageComponents/CityList"
 import MasterList from "../components/adminPageComponents/MasterList";
@@ -16,9 +16,10 @@ import {
 } from "../utils/consts";
 import CreateCity from "../components/adminPageComponents/modals/CreateCity";
 import CreateMaster from "../components/adminPageComponents/modals/CreateMaster";
-import {observer} from "mobx-react-lite";
 import CreateSize from "../components/adminPageComponents/modals/CreateSize";
 import MyAlert from "../components/adminPageComponents/MyAlert";
+import {getCities} from "../asyncActions/cities";
+import {useDispatch} from "react-redux";
 
 
 const SelectButton = styled(ListItemButton)`
@@ -26,9 +27,10 @@ const SelectButton = styled(ListItemButton)`
     color: #03a9f4
   }
 `;
-const Admin = observer(() => {
+const Admin = () => {
     const location = useLocation();
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const cityList = location.pathname === ADMIN_CITY_LIST_ROUTE;
     const masterList = location.pathname === ADMIN_MASTER_LIST_ROUTE;
     const sizeList = location.pathname === ADMIN_SIZES_ROUTE;
@@ -46,6 +48,10 @@ const Admin = observer(() => {
         setMessage(message)
         setIsError(bool)
     }
+    useEffect(async () => {
+        await dispatch(getCities(null, null))
+    }, []);
+
 
     const preventDefault = (event) => event.preventDefault();
 
@@ -68,7 +74,7 @@ const Admin = observer(() => {
                           underline="none"
                           color="inherit">
                         <SelectButton
-                            selected={orderList || adminRoute ? true : false}
+                            selected={orderList || adminRoute}
                             onClick={() => navigate(ADMIN_ORDER_LIST_ROUTE)}>
                             <ListItemText primary="Заказы"/>
                         </SelectButton>
@@ -79,7 +85,7 @@ const Admin = observer(() => {
                           underline="none"
                           color="inherit">
                         <SelectButton
-                            selected={cityList ? true : false}
+                            selected={cityList}
                             onClick={() => navigate(ADMIN_CITY_LIST_ROUTE)}>
                             <ListItemText primary="Города"/>
                         </SelectButton>
@@ -90,7 +96,7 @@ const Admin = observer(() => {
                           underline="none"
                           color="inherit">
                         <SelectButton
-                            selected={masterList ? true : false}
+                            selected={masterList}
                             onClick={() => navigate(ADMIN_MASTER_LIST_ROUTE)}>
                             <ListItemText primary="Мастера"/>
                         </SelectButton>
@@ -101,7 +107,7 @@ const Admin = observer(() => {
                           underline="none"
                           color="inherit">
                         <SelectButton
-                            selected={sizeList ? true : false}
+                            selected={sizeList}
                             onClick={() => navigate(ADMIN_SIZES_ROUTE)}>
                             <ListItemText primary="Размеры часов"/>
                         </SelectButton>
@@ -113,7 +119,7 @@ const Admin = observer(() => {
                           underline="none"
                           color="inherit">
                         <SelectButton
-                            selected={usersList ? true : false}
+                            selected={usersList}
                             onClick={() => navigate(ADMIN_USERS_ROUTE)}>
                             <ListItemText primary="Пользователи"/>
                         </SelectButton>
@@ -150,6 +156,6 @@ const Admin = observer(() => {
         </Container>
 
     );
-});
+};
 
 export default Admin;

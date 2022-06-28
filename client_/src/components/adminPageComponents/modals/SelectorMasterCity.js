@@ -1,7 +1,8 @@
 import * as React from 'react';
-import {useContext, useState} from 'react';
+import {useState} from 'react';
 import {Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select} from '@mui/material';
-import {Context} from "../../../index";
+import {useDispatch, useSelector} from "react-redux";
+import {setSelectedCityAction} from "../../../store/CityStore";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -16,19 +17,18 @@ const MenuProps = {
 
 
 export default function SelectorMasterCity({cityChosen, error, open}) {
-    let {cities} = useContext(Context)
+    const cities = useSelector(state => state.cities)
+    const dispatch = useDispatch()
     const [cityName, setCityName] = React.useState(cityChosen || []);
     const [blur, setBlur] = useState(false)
     const handleChange = (event) => {
-        const {
-            target: {value},
-        } = event
+        const {target: {value}} = event
         setCityName(
             typeof value === 'string' ? value.split(',') : value,
         );
     };
     const handleClose = () => {
-        cities.setSelectedCity(cityName.map(city => (city.id)))
+        dispatch(setSelectedCityAction(cityName.map(city => (city.id))))
     }
 
     return (
@@ -41,7 +41,7 @@ export default function SelectorMasterCity({cityChosen, error, open}) {
                 <Select
                     labelId="multiple-checkbox-label"
                     id="multiple-checkbox"
-                    error={error && cityName.length == 0 || open ? cityName.length === 0 && blur : false}
+                    error={error && cityName.length === 0 || open ? cityName.length === 0 && blur : false}
                     multiple
                     value={cityName}
                     onChange={handleChange}

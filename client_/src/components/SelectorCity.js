@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {Box, InputLabel, MenuItem, FormControl, Select, FormHelperText} from '@mui/material';
-import {useContext, useState} from "react";
-import {Context} from "../index";
+import {useEffect, useState} from 'react';
+import {Box, FormControl, FormHelperText, InputLabel, MenuItem, Select} from '@mui/material';
+import {fetchCities} from "../http/cityAPI";
 
 
 const ITEM_HEIGHT = 48;
@@ -15,58 +15,51 @@ const MenuProps = {
     },
 };
 
-export default function SelectorCity({
-                                         Edit,
-                                         cityChosen,
-                                         cityToEdit,
-                                         cleanMaster,
-                                         error,
-                                         closeList,
-                                         editOpen,
-                                         setCityChosen
-                                     }) {
-    let {cities} = useContext(Context)
-    const [city, setCity] = useState(Edit || cityChosen || "");
-
+const SelectorCity = ({chosenCity, cityToEdit, cleanMaster, closeList, editOpen, setChosenCity}) => {
+    const [city, setCity] = useState(chosenCity.id ?? cityToEdit ?? "");
+    const [citiesList, setCitiesList] = useState([])
+    useEffect(async () => {
+        try {
+            const res = await fetchCities(null, null)
+            setCitiesList(res.data.rows)
+        } catch (e) {
+            setCitiesList([])
+        }
+    }, []);
     const handleEditChange = (event) => {
         setCity(event.target.value);
-        cities.setSelectedCity(event.target.value)
         closeList()
-        cleanMaster()
-        cityToEdit()
     };
     const handleChange = (event) => {
         setCity(event.target.value);
-        cities.setSelectedCity(event.target.value)
-        setCityChosen()
         cleanMaster()
     };
-
     return (
         <Box sx={{minWidth: 120}}>
             <FormControl fullWidth>
                 <InputLabel id="citySel">Выберите город</InputLabel>
                 <Select
-                    error={error && city === ""}
+                    error={city === ""}
                     labelId="citySel"
                     value={city}
                     label="Выберите город"
                     onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
-                    {cities.cities.map((city, index) =>
+                    {citiesList.map((city, index) =>
                         <MenuItem
                             key={index}
                             value={city.id}
-
+                            onClick={() => setChosenCity(city)}
                         >
                             {city.name}
                         </MenuItem>
                     )}
                 </Select>
-                {error && city === "" ?
+                {city === "" ?
                     <FormHelperText>Укажите город</FormHelperText> : ""}
             </FormControl>
         </Box>
     );
 }
+export default SelectorCity;

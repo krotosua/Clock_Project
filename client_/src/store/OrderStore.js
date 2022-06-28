@@ -1,5 +1,3 @@
-import {makeAutoObservable} from "mobx";
-
 export const STATUS_LIST = {
     WAITING: "WAITING",
     REJECTED: "REJECTED",
@@ -7,49 +5,26 @@ export const STATUS_LIST = {
     DONE: "DONE",
 }
 
-export default class OrderStore {
-    constructor() {
-        this._orders = []
-        this._isEmpty = false
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 8
-        makeAutoObservable(this)
-    }
+const defaultState = {
+    orders: [],
+    isEmpty: false,
+}
+const SET_ORDERS = "SET_ORDERS"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
+const CHANGE_STATUS = "CHANGE_STATUS"
 
-    setOrders(orders) {
-        this._orders = orders
-    }
+export const orderReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_ORDERS:
+            return {...state, orders: action.payload}
 
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
-
-    setPage(page) {
-        this._page = page
-    }
-
-    setTotalCount(count) {
-        this._totalCount = count
-    }
-
-    get orders() {
-        return this._orders
-    }
-
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
+        case SET_IS_EMPTY:
+            return {...state, isEmpty: action.payload}
+        
+        default:
+            return state
     }
 }
+
+export const setIsEmptyOrderAction = (payload) => ({type: SET_IS_EMPTY, payload})
+export const changeStatusOrderAction = (payload) => ({type: CHANGE_STATUS, payload})

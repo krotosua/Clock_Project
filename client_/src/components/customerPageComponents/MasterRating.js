@@ -31,7 +31,7 @@ const getLabelText = (value) => {
     return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
 }
 
-const MasterRating = ({open, onClose, dataForEdit, getOrders}) => {
+const MasterRating = ({open, onClose, dataForEdit, getOrders, alertMessage}) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(-1);
     const [review, setReview] = useState("")
@@ -46,9 +46,10 @@ const MasterRating = ({open, onClose, dataForEdit, getOrders}) => {
         try {
             await ratingMaster(post)
             getOrders()
+            alertMessage('Отзыв отправлен', false)
             close()
         } catch (e) {
-
+            alertMessage('Не удалось отправить отзыв', true)
         }
     }
 
@@ -88,7 +89,7 @@ const MasterRating = ({open, onClose, dataForEdit, getOrders}) => {
                                 }}
                                 emptyIcon={<StarIcon style={{opacity: 0.55}} fontSize="inherit"/>}
                             />
-                            {rating !== null && (
+                            {!rating && (
                                 <Box sx={{ml: 2, fontSize: 25}}>{labels[hover !== -1 ? hover : rating]}</Box>
                             )}
                         </Box>

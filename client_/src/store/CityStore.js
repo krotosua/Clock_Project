@@ -1,57 +1,27 @@
-import {makeAutoObservable} from "mobx";
+const defaultState = {
+    cities: [],
+    isEmpty: false,
+    selectedCity: [],
+}
+const SET_CITIES = "SET_CITIES"
+const SET_SELECTED_CITY = "SET_SELECTED_CITY"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
 
-export default class CityStore {
-    constructor() {
-        this._cities = []
-        this._isEmpty = false
-        this._selectedCity = 0
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 10
-        makeAutoObservable(this)
-    }
+export const cityReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_CITIES:
+            return {...state, cities: action.payload}
+        case SET_SELECTED_CITY:
+            return {...state, selectedCity: action.payload}
 
-    setCities(cities) {
-        this._cities = cities
-    }
+        case SET_IS_EMPTY:
+            return {...state, isEmpty: action.payload}
 
-    setSelectedCity(type) {
-        this._selectedCity = type
-    }
-
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
-
-    setPage(page) {
-        this._page = page
-    }
-
-    setTotalCount(count) {
-        this._totalCount = count
-    }
-
-    get cities() {
-        return this._cities
-    }
-
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get selectedCity() {
-        return this._selectedCity
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
+        default:
+            return state
     }
 }
+
+export const setCitiesAction = (payload) => ({type: SET_CITIES, payload})
+export const setSelectedCityAction = (payload) => ({type: SET_SELECTED_CITY, payload})
+export const setEmptyCityAction = (payload) => ({type: SET_IS_EMPTY, payload})

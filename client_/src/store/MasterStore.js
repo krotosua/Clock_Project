@@ -1,54 +1,23 @@
-import {makeAutoObservable} from "mobx";
-
-export default class MasterStore {
-    constructor() {
-
-        this._masters = []
-        this._isEmpty = false
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 10
-        makeAutoObservable(this)
-    }
-
-    setMasters(masters) {
-        this._masters = masters
-    }
-
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
-
-    setPage(page) {
-        this._page = page
-    }
-
-    setTotalCount(count) {
-        this._totalCount = count
-    }
-
-    setLimit(limit) {
-        this._limit = limit
-    }
-
-    get masters() {
-        return this._masters
-    }
-
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
-    }
-
+const defaultState = {
+    masters: [],
+    isEmpty: false,
 }
+const SET_MASTERS = "SET_MASTERS"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
+
+export const masterReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_MASTERS:
+            return {...state, masters: action.payload}
+
+        case SET_IS_EMPTY:
+            return {...state, isEmpty: action.payload}
+
+        default:
+            return state
+
+    }
+}
+
+export const setMasterAction = (payload) => ({type: SET_MASTERS, payload})
+export const setIsEmptyMasterAction = (payload) => ({type: SET_IS_EMPTY, payload})

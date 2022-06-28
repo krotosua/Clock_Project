@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {
     Box,
     Button,
@@ -12,7 +12,6 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import {Context} from "../../../index";
 import {updateUser} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
@@ -31,7 +30,6 @@ const style = {
     p: 4,
 };
 const EditUser = (({open, onClose, userToEdit, alertMessage, getUsers}) => {
-    const {user} = useContext(Context)
     const [userEmail, setUserEmail] = useState(userToEdit.email)
     const [blurEmail, setBlurEmail] = useState(false)
     const [editPassword, setEditPassword] = useState(false)
@@ -81,7 +79,7 @@ const EditUser = (({open, onClose, userToEdit, alertMessage, getUsers}) => {
                     <Box sx={{display: "flex", flexDirection: "column"}}>
                         <FormControl>
                             <TextField
-                                error={blurEmail && reg.test(userEmail) == false}
+                                error={blurEmail && reg.test(userEmail) === false}
                                 label="Изменить email пользователя"
                                 sx={{mt: 1}}
                                 id="masterName"

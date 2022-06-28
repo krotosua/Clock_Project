@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
 import {
     Box,
     Button,
@@ -20,15 +20,16 @@ import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import {CONGRATULATION_ROUTE, LOGIN_ROUTE,} from "../utils/consts";
 import {registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
-import {Context} from "../index";
 import SelectorMasterCity from "../components/adminPageComponents/modals/SelectorMasterCity";
 import MyAlert from "../components/adminPageComponents/MyAlert";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import Login from "../components/authPageComponents/Login";
+import {useDispatch, useSelector} from "react-redux";
 
 
 const Auth = observer(() => {
-    const {cities} = useContext(Context)
+    const dispatch = useDispatch()
+    const cities = useSelector(state => state.city)
     const location = useLocation();
     const navigate = useNavigate()
     const isLogin = location.pathname === LOGIN_ROUTE;
@@ -94,7 +95,7 @@ const Auth = observer(() => {
                     alignItems: "center",
                     height: window.innerHeight - 60,
                 }}
-                onKeyDown={(e) => e.keyCode == 13 ? singIn() : null}
+                onKeyDown={(e) => e.keyCode === 13 ? singIn() : null}
             >
                 <Card sx={{width: 800, p: 1}}>
 

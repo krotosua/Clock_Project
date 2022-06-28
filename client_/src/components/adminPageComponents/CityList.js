@@ -1,50 +1,74 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
-import {Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip, Typography,} from '@mui/material';
+import {useEffect, useState} from 'react';
+import {
+    Box,
+    CircularProgress,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
-import {deleteCity, fetchCity} from "../../http/cityAPI";
+import {deleteCity, fetchCities} from "../../http/cityAPI";
 import CreateCity from "./modals/CreateCity";
 import EditCity from "./modals/EditCity";
-import Pages from "../Pages";
+import TablsPagination from "../TablsPagination";
 
 
-const CityList = observer(({alertMessage}) => {
-    let {cities} = useContext(Context)
+const CityList = ({alertMessage}) => {
     const [cityVisible, setCityVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [cityToEdit, setCityToEdit] = useState(null);
+    const [citiesList, setCitiesList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState()
+    const [limit, setLimit] = useState(10)
+    const [loading, setLoading] = useState(true)
 
-    useEffect(async () => {
-        await getCity()
-    }, [cities.page])
-
-    const getCity = async () => {
+    const getCities = async (page, limit) => {
         try {
-            const res = await fetchCity(cities.page, 10)
+            const res = await fetchCities(page, limit)
             if (res.status === 204) {
-                return cities.setIsEmpty(true)
-            } else {
-                cities.setIsEmpty(false)
-                cities.setCities(res.data.rows)
-                cities.setTotalCount(res.data.count)
+                setCitiesList([])
+                return
             }
+            setTotalCount(res.data.count)
+            setCitiesList(res.data.rows)
         } catch (e) {
-            cities.setIsEmpty(true)
+            setCitiesList([])
+        } finally {
+            setLoading(false)
         }
     }
+    useEffect(async () => {
+        await getCities(page, limit)
+    }, [page])
+
     const removeCity = async (id) => {
         try {
             await deleteCity(id)
-            cities.setCities(cities.cities.filter(obj => obj.id !== id));
+            await getCities(page, limit)
             alertMessage('Успешно удаленно', false)
-            await getCity()
         } catch (e) {
             alertMessage('Не удалось удалить, так как в городе присутствуют мастера', true)
         }
+    }
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
     }
 
     return (<Box>
@@ -79,13 +103,10 @@ const CityList = observer(({alertMessage}) => {
                     />
                 </ListItem>
                 <Divider orientation="vertical"/>
-
-                {cities.IsEmpty ? <h1>Список пуст</h1> : cities.cities.map((city, index) => {
-
+                {citiesList.length === 0 ? <h1>Список пуст</h1> : citiesList.map((city, index) => {
                     return (<ListItem
                             key={city.id}
                             divider
-
                             secondaryAction={<Tooltip title={'Удалить город'}
                                                       placement="right"
                                                       arrow>
@@ -125,7 +146,6 @@ const CityList = observer(({alertMessage}) => {
 
                     )
                 })}
-
             </List>
 
             {editVisible ? <EditCity
@@ -133,19 +153,19 @@ const CityList = observer(({alertMessage}) => {
                 onClose={() => {
                     setEditVisible(false)
                 }}
+                getCities={() => getCities()}
                 cityToEdit={cityToEdit}
                 alertMessage={alertMessage}
             /> : null}
 
-            <CreateCity open={cityVisible}
-                        getCity={() => getCity()}
-                        onClose={() => setCityVisible(false)}
-                        alertMessage={alertMessage}/>
-
+            {cityVisible ? <CreateCity open={cityVisible}
+                                       getCities={() => getCities(page, limit)}
+                                       onClose={() => setCityVisible(false)}
+                                       alertMessage={alertMessage}/> : null}
         </Box>
         <Box style={{display: "flex", justifyContent: "center"}}>
-            <Pages context={cities}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
-})
+}
 export default CityList;

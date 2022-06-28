@@ -18,7 +18,6 @@ const style = {
     p: 4,
 };
 const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit, getSize}) => {
-
     const [sizeName, setSizeName] = useState(sizeToEdit.name)
     const [sizeTime, setSizeTime] = useState(dateToEdit)
     const [errSize, setErrSize] = useState(false)
@@ -34,7 +33,7 @@ const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit
         }
         try {
             await updateSize(changeInfo)
-            getSize()
+            await getSize()
             close()
             alertMessage('Название изменено успешно', false)
         } catch (e) {

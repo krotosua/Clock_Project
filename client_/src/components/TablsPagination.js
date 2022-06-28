@@ -1,19 +1,17 @@
 import * as React from 'react';
+import {useState} from 'react';
 import {Pagination, Stack} from '@mui/material';
-import {observer} from "mobx-react-lite";
-import {useState} from "react";
 
 
-const Pages = observer(({context}) => {
-    const [currentPage, setCurrentPage] = useState(context.page);
-    const pageCount = Math.ceil(context.totalCount / 3)
+const TablsPagination = ({page, pagesFunction, limit, totalCount}) => {
+    const [currentPage, setCurrentPage] = useState(page);
+    const pageCount = Math.ceil(totalCount / limit)
     const handleChange = (event, value) => {
         setCurrentPage(value);
-        context.setPage(value)
+        pagesFunction(value)
     };
-
-
-    return (<Stack spacing={2} sx={{my: 2}}>
+    return (
+        <Stack spacing={2} sx={{my: 2}}>
             <Pagination color='warning'
                         count={pageCount}
                         page={currentPage}
@@ -21,5 +19,5 @@ const Pages = observer(({context}) => {
         </Stack>
 
     );
-})
-export default Pages
+}
+export default TablsPagination

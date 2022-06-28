@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {Select, FormControl, MenuItem, InputLabel, Box, FormHelperText} from '@mui/material';
-import {Context} from "../../index";
-import {useContext, useState} from "react";
+import {useEffect, useState} from 'react';
+import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
+import {fetchSize} from "../../http/sizeAPI";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -13,27 +13,25 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize({
-                                         sizeClock,
-                                         sizeToEdit,
-                                         closeList,
-                                         editOpen,
-                                         cleanMaster,
-                                         setSizeClock
-                                     }) {
-    const {size} = useContext(Context)
-    const [clock, setClock] = useState(sizeClock || '');
+export default function SelectorSize({setChosenSize, sizeToEdit, chosenSize, closeList, editOpen, cleanMaster}) {
+    const [clock, setClock] = useState(chosenSize.id ?? sizeToEdit ?? '');
+    const [clockList, setClockList] = useState([])
+    useEffect(async () => {
+        try {
+            const res = await fetchSize(null, null)
+            setClockList(res.data.rows)
+        } catch (e) {
+            setClockList([])
+        }
+    }, []);
 
     const handleEditChange = (event) => {
         setClock(event.target.value);
-        cleanMaster()
-        sizeToEdit()
         closeList()
     };
     const handleChange = (event) => {
         setClock(event.target.value);
         cleanMaster()
-        setSizeClock()
     };
 
 
@@ -48,10 +46,10 @@ export default function SelectorSize({
                     onChange={editOpen ? handleEditChange : handleChange}
                     MenuProps={MenuProps}
                 >
-                    {size.size.map((clock, index) => <MenuItem
+                    {clockList.map((clock, index) => <MenuItem
                         key={index}
                         value={clock.id}
-                        onClick={() => size.setSelectedSize(clock)}
+                        onClick={() => setChosenSize(clock)}
                     >
                         {clock.name}
                     </MenuItem>)}

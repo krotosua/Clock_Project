@@ -1,58 +1,30 @@
-import {makeAutoObservable} from "mobx";
+const defaultState = {
+    sizes: [],
+    isEmpty: false,
+    selectedSize: {date: "00:00:00"},
 
-export default class SizeStore {
-    constructor() {
-        this._size = []
-        this._isEmpty = false
-        this._selectedSize = {date: "00:00:00"}
-        this._page = 1
-        this._totalCount = 0
-        this._limit = 10
-        makeAutoObservable(this)
-    }
-
-    setSize(sizes) {
-        this._size = sizes
-    }
-
-    setSelectedSize(type) {
-        this._selectedSize = type
-    }
-
-    setIsEmpty(bool) {
-        this._isEmpty = bool
-    }
-
-    setPage(page) {
-        this._page = page
-    }
-
-    setTotalCount(count) {
-        this._totalCount = count
-    }
+}
+const SET_SIZES = "SET_SIZES"
+const SET_SELECTED_SIZE = "SET_SELECTED_SIZE"
+const SET_IS_EMPTY = "SET_IS_EMPTY"
 
 
-    get size() {
-        return this._size
-    }
+export const sizeReducer = (state = defaultState, action) => {
+    switch (action.type) {
+        case SET_SIZES:
+            return {...state, sizes: action.payload}
+        case SET_SELECTED_SIZE: {
+            return {...state, selectedSize: action.payload}
+        }
+        case SET_IS_EMPTY: {
+            return {...state, isEmpty: action.payload}
+        }
 
-    get IsEmpty() {
-        return this._isEmpty
-    }
-
-    get selectedSize() {
-        return this._selectedSize
-    }
-
-    get totalCount() {
-        return this._totalCount
-    }
-
-    get page() {
-        return this._page
-    }
-
-    get limit() {
-        return this._limit
+        default:
+            return state
     }
 }
+export const setSizesAction = (payload) => ({type: SET_SIZES, payload})
+export const setIsEmptySizeAction = (payload) => ({type: SET_IS_EMPTY, payload})
+export const setSelectedSizeAction = (payload) => ({type: SET_SELECTED_SIZE, payload})
+

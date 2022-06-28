@@ -1,20 +1,17 @@
 import * as React from 'react';
-import {useContext} from 'react';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import {Context} from "../../index";
 import Divider from "@mui/material/Divider";
-import {observer} from "mobx-react-lite";
 import Button from "@mui/material/Button";
 import {statusChangeOrder} from "../../http/orderAPI";
 import {STATUS_LIST} from "../../store/OrderStore";
+import {useSelector} from "react-redux";
 
 
-const OrderListMaster = observer(({alertMessage}) => {
-    let {orders, cities} = useContext(Context)
-
+const OrderListMaster = ({alertMessage, ordersList}) => {
+    const cities = useSelector(state => state.cities)
     const changeStatus = async (order, status) => {
         const changeInfo = {
             id: order.id,
@@ -22,8 +19,8 @@ const OrderListMaster = observer(({alertMessage}) => {
         }
         try {
             await statusChangeOrder(changeInfo)
+            order.status = status
             alertMessage('Статус заказа успешно изменен', false)
-            return order.status = status
         } catch (e) {
             alertMessage('Не удалось изменить статус заказа', true)
         }
@@ -65,7 +62,7 @@ const OrderListMaster = observer(({alertMessage}) => {
 
                 </ListItem>
                 <Divider orientation="vertical"/>
-                {orders.IsEmpty ? <h1>Список пуст</h1> : orders.orders.map((order, index) => {
+                {ordersList === 0 ? <h1>Список пуст</h1> : ordersList.map((order, index) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
                     const endTime = new Date(order.endTime).toLocaleString("uk-UA")
                     return (<ListItem
@@ -114,5 +111,5 @@ const OrderListMaster = observer(({alertMessage}) => {
 
         </Box>
     );
-})
+}
 export default OrderListMaster;

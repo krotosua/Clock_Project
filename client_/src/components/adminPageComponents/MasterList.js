@@ -1,8 +1,9 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
+    CircularProgress,
     Divider,
     IconButton,
     List,
@@ -15,18 +16,17 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import {Context} from "../../index";
-import {observer} from "mobx-react-lite";
 import {activateMaster, deleteMaster, fetchMasters} from "../../http/masterAPI";
 import CreateMaster from "./modals/CreateMaster";
 import EditMaster from "./modals/EditMaster";
-import Pages from "../Pages";
+import TablsPagination from "../TablsPagination";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
+import {useSelector} from "react-redux";
 
 
-const MasterList = observer(({alertMessage}) => {
-    let {masters, cities} = useContext(Context)
+const MasterList = ({alertMessage}) => {
+    const cities = useSelector(state => state.cities)
     const [createVisible, setCreateVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
@@ -35,27 +35,42 @@ const MasterList = observer(({alertMessage}) => {
     const [cityToEdit, setCityToEdit] = useState([]);
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
-    const [openCityList, setOpenCityList] = useState({})
-    const citiesLimit = 2
+    const [mastersList, setMastersList] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalCount, setTotalCount] = useState()
+    const [limit, setLimit] = useState(10)
+    const [loading, setLoading] = useState(true)
+
+
     useEffect(async () => {
-        await getMasters()
-    }, [masters.page])
-
-
-    const getMasters = async () => {
+        await getMasters(page, limit)
+    }, [page])
+    const getMasters = async (page, limit) => {
         try {
-            const res = await fetchMasters(null, masters.page, 10)
+            const res = await fetchMasters(null, page, limit)
             if (res.status === 204) {
-                return masters.setIsEmpty(true)
+                setMastersList([])
             }
-            masters.setIsEmpty(false)
-            masters.setMasters(res.data.rows)
-            masters.setTotalCount(res.data.count)
+            setMastersList(res.data.rows)
+            setTotalCount(res.data.count)
         } catch (e) {
-            return masters.setIsEmpty(true)
+            setMastersList([])
+        } finally {
+            setLoading(false)
         }
     }
-
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
+    }
     const changeActiveted = async (master) => {
         let changeInfo = {
             id: master.id,
@@ -63,18 +78,16 @@ const MasterList = observer(({alertMessage}) => {
         }
         try {
             await activateMaster(changeInfo)
+            master.isActivated = !master.isActivated
             alertMessage('Данные мастера успешно изменены', false)
-            return master.isActivated = !master.isActivated
         } catch (e) {
             alertMessage('Не удалось изменить данные мастера', true)
         }
     }
 
-
     const removeMaster = async (id) => {
         try {
             await deleteMaster(id)
-            masters.setMasters(masters.masters.filter(master => master.id !== id));
             alertMessage('Успешно удаленно', false)
             await getMasters()
         } catch (e) {
@@ -95,13 +108,13 @@ const MasterList = observer(({alertMessage}) => {
                 return cityList
             }, '')
     }
-
     const forEdit = (master) => {
         let changeCity = []
         setEditVisible(true)
         setIdToEdit(master.id)
         setNameToEdit(master.name)
         setRatingToEdit(master.rating)
+        console.log(cities)
         changeCity = master.cities.map(item => item.id)
         setCityToEdit(cities.cities.filter(cities => changeCity.indexOf(cities.id) > -1))
     }
@@ -148,8 +161,8 @@ const MasterList = observer(({alertMessage}) => {
                 </ListItem>
 
                 <Divider orientation="vertical"/>
-                {masters.IsEmpty ? <h1>Список пуст</h1> :
-                    masters.masters.map((master, index) => {
+                {mastersList.length === 0 ? <h1>Список пуст</h1> :
+                    mastersList.map((master, index) => {
                         return (
                             <ListItem
                                 key={master.id}
@@ -238,20 +251,20 @@ const MasterList = observer(({alertMessage}) => {
                                        alertMessage={alertMessage}
                                        nameToEdit={nameToEdit}
                                        ratingToEdit={ratingToEdit}
-                                       getMasters={() => getMasters()}
+                                       getMasters={() => getMasters(page)}
                                        cityChosen={cityToEdit}/> : null}
             {openReview ? <ReviewModal open={openReview}
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
             <CreateMaster open={createVisible}
-                          getMasters={() => getMasters()}
+                          getMasters={() => getMasters(page)}
                           alertMessage={alertMessage}
                           onClose={() => setCreateVisible(false)}/>
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Pages context={masters}/>
+            <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
         </Box>
     </Box>);
-})
+}
 export default MasterList;

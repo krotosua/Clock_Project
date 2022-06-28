@@ -3,11 +3,11 @@ import jwt_decode from "jwt-decode";
 
 export const registration = async (userData) => {
     await $host.post('api/users/registration/', userData)
-    return
+
 }
 export const registrationFromAdmin = async (userData) => {
     await $host.post('api/users/registrationAdmin/', userData)
-    return
+
 }
 
 export const login = async (email, password) => {
@@ -22,11 +22,10 @@ export const check = async () => {
     return jwt_decode(data.token)
 }
 export const checkEmail = async (email) => {
+    return await $host.get('api/users/checkEmail/', {params: {email: email}})
 
-    const result = await $host.get('api/users/checkEmail/', {params: {email: email}})
-    return result
 }
-export const fetchUsers = async (page, limit = 8) => {
+export const fetchUsers = async (page, limit) => {
     return await $authHost.get('api/users/', {params: {page, limit}})
 }
 export const deleteUser = async (id) => {
