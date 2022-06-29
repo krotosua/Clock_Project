@@ -2,7 +2,7 @@ import {Router} from 'express'
 import orderController from "../controllers/orderController"
 import checkRole from "../middleware/checkRoleMiddleware"
 import {body, param} from 'express-validator';
-import {Roles} from "../dto/global";
+import {ROLES} from "../dto/global";
 
 const orderRouter = Router()
 
@@ -17,15 +17,15 @@ orderRouter.post("/",
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
     orderController.create,)
 
-orderRouter.get('/:userId', checkRole(Roles.CUSTOMER),
+orderRouter.get('/:userId', checkRole(ROLES.CUSTOMER),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getUserOrders)
 
-orderRouter.get('/Master/:userId', checkRole(Roles.MASTER),
+orderRouter.get('/Master/:userId', checkRole(ROLES.MASTER),
     param("userId").not().isEmpty().isInt({gt: 0}),
     orderController.getMasterOrders)
 
-orderRouter.get('/', checkRole(Roles.ADMIN), orderController.getAllOrders)
+orderRouter.get('/', checkRole(ROLES.ADMIN), orderController.getAllOrders)
 
 orderRouter.put("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
@@ -36,7 +36,7 @@ orderRouter.put("/:orderId",
     body("cityId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("masterId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
-    checkRole(Roles.ADMIN), orderController.update)
+    checkRole(ROLES.ADMIN), orderController.update)
 
 orderRouter.put("/statusChange/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
@@ -45,7 +45,7 @@ orderRouter.put("/statusChange/:orderId",
 
 orderRouter.delete("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
-    checkRole(Roles.ADMIN),
+    checkRole(ROLES.ADMIN),
 
     orderController.deleteOne)
 

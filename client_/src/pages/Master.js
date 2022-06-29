@@ -44,7 +44,7 @@ const Master = observer(() => {
     }
     useEffect(async () => {
         await getMasterOrders(id, page, limit)
-    }, [page])
+    }, [page, limit])
     if (loading) {
         return (
             <Box sx={{

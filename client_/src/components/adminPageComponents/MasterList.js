@@ -32,20 +32,20 @@ const MasterList = ({alertMessage}) => {
     const [idToEdit, setIdToEdit] = useState(null);
     const [nameToEdit, setNameToEdit] = useState(null)
     const [ratingToEdit, setRatingToEdit] = useState(null)
-    const [cityToEdit, setCityToEdit] = useState([]);
+    const [cityToEdit, setCityToEdit] = useState(null);
     const [openReview, setOpenReview] = useState(false)
     const [masterId, setMasterId] = useState(null)
-    const [mastersList, setMastersList] = useState([])
+    const [mastersList, setMastersList] = useState(null)
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState()
     const [limit, setLimit] = useState(10)
     const [loading, setLoading] = useState(true)
-    const [openCityList, setOpenCityList] = useState({})
+    const [openCityList, setOpenCityList] = useState(null)
     const citiesLimit = 2
 
     useEffect(async () => {
         await getMasters()
-    }, [page])
+    }, [page, limit])
     const getMasters = async () => {
         try {
             const res = await fetchMasters(null, page, limit)

@@ -9,6 +9,7 @@ import {setIsEmptySizeAction} from "./store/SizeStore";
 import {getCities} from "./asyncActions/cities";
 import {checkUser} from "./asyncActions/users";
 
+const HEIGHT_NAV_BAR = 52
 
 const App = () => {
     const dispatch = useDispatch()
@@ -45,7 +46,7 @@ const App = () => {
                 <CssBaseline/>
                 <Container sx={{
                     bgcolor: '#fff', mt: 6,
-                    minHeight: document.documentElement.clientHeight - 52
+                    minHeight: document.documentElement.clientHeight - HEIGHT_NAV_BAR
                 }}>
                     <AppRouter/>
                 </Container>

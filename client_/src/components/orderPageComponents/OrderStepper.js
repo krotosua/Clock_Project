@@ -73,7 +73,7 @@ const OrderStepper = ({alertMessage}) => {
     const [masterId, setMasterId] = useState(null)
     const [limit, setLimit] = useState(3)
     const [page, setPage] = useState(1)
-    const [totalCount, setTotalCount] = useState(0)
+    const [totalCount, setTotalCount] = useState(null)
     const navigate = useNavigate();
     const handleClose = () => {
         setAnchorEl(null);

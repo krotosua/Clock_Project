@@ -161,9 +161,7 @@ class MasterLogic {
                     next(ApiError.badRequest("Wrong request"));
                     return
                 }
-                orderInfo.ratingLink = null
-                await orderInfo.save()
-                let newRating: number = req.body.rating;
+                const newRating: number = +req.body.rating;
                 await Rating.create({
                     rating: newRating,
                     review,
@@ -171,13 +169,13 @@ class MasterLogic {
                     masterId: orderInfo.masterId,
                     orderId: orderInfo.id
                 });
-                let allRating: GetRowsDB<Rating> = await Rating.findAndCountAll({
+                const allRating: GetRowsDB<Rating> = await Rating.findAndCountAll({
                     where: {masterId: orderInfo.masterId},
                     attributes: ["rating"]
                 })
-                newRating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count;
+                const averageRating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count;
                 const masterUpdate: UpdateDB<Master> = await Master.update({
-                    rating: newRating,
+                    rating: averageRating,
                 }, {where: {id: orderInfo.masterId}})
                 return masterUpdate;
             })
@@ -218,10 +216,12 @@ class MasterLogic {
             const {uuid} = req.params
             const check: Order | null = await Order.findOne({
                 where: {ratingLink: uuid},
-                attributes: ["id"]
+                attributes: ["id"],
+                include: [{
+                    model: Rating,
+                }]
             })
-
-            if (!check) {
+            if (check == null || check.rating) {
                 next(ApiError.badRequest("Wrong request"))
                 return
             }

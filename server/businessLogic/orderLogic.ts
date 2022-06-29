@@ -2,7 +2,7 @@ import {Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
-import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, statusList, UpdateMasterDTO} from "../dto/order.dto";
+import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, STATUS, statusList, UpdateMasterDTO} from "../dto/order.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 
@@ -159,9 +159,8 @@ class OrderLogic {
             }
             const orderUpdate: UpdateDB<Order> = await Order.update({
                 status: status,
-                ratingLink: null
             }, {where: {id: orderId}})
-            if (status === "DONE") {
+            if (status === STATUS.DONE) {
                 const mailInfo: Order | null = await Order.findOne({
                     where: {id: orderId},
                     attributes: ["masterId", "id", "ratingLink"],
@@ -173,6 +172,8 @@ class OrderLogic {
                 if (!mailInfo || !mailInfo.user) {
                     next(ApiError.badRequest("Wrong request"));
                     return
+                } else if (mailInfo.ratingLink) {
+                    return orderUpdate
                 }
                 const ratingLink: string = uuidv4()
                 mailInfo.ratingLink = ratingLink

@@ -34,7 +34,7 @@ const OrderList = ({alertMessage}) => {
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
     const [orderToEdit, setOrderToEdit] = useState(null)
-    const [ordersList, setOrdersList] = useState([])
+    const [ordersList, setOrdersList] = useState(null)
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
     const [limit, setLimit] = useState(8)
@@ -70,7 +70,7 @@ const OrderList = ({alertMessage}) => {
     const navigate = useNavigate()
     useEffect(async () => {
         await getOrders()
-    }, [page])
+    }, [page, limit])
 
     const removeOrder = async (id) => {
         try {

@@ -41,7 +41,7 @@ const Customer = () => {
     }
     useEffect(async () => {
         await getCustomerOrders()
-    }, [page])
+    }, [page, limit])
 
     if (loading) {
         return (

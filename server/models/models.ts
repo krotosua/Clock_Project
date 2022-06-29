@@ -8,6 +8,8 @@ import {
     Optional,
 } from "sequelize";
 import sequelizeConnection from "../db";
+import {STATUS} from "../dto/order.dto";
+import {ROLES} from "../dto/global";
 
 interface CityAttributes {
     id: number;
@@ -20,7 +22,7 @@ interface UserAttributes {
     id: number;
     email: string;
     password: string;
-    role: string;
+    role: ROLES
     isActivated?: boolean;
     activationLink?: string;
     master?: { name: string, orders?: Array<Order>, id?: number };
@@ -75,7 +77,7 @@ interface OrderAttributes {
     name: string;
     time: Date;
     endTime: Date;
-    status?: string | undefined;
+    status?: STATUS | undefined | string
     price: number;
     sizeClockId?: number;
     masterId?: number;
@@ -155,7 +157,7 @@ class Order extends Model<OrderAttributes, OrderInput>
     public name!: string;
     public time!: Date;
     public endTime!: Date;
-    public status?: string | undefined;
+    declare status?: STATUS | undefined | string
     public price!: number;
     declare sizeClockId?: number;
     declare masterId?: number;
@@ -163,6 +165,7 @@ class Order extends Model<OrderAttributes, OrderInput>
     declare userId?: number;
     declare user?: User;
     declare ratingLink?: string | null
+    declare rating: Rating | null
 }
 
 export interface RatingInput extends Optional<RatingAttributes, 'id'> {
@@ -207,7 +210,7 @@ class User extends Model<UserAttributes, UserInput>
     public id!: number;
     public email!: string;
     public password!: string;
-    public role!: string;
+    public role!: ROLES
     public isActivated?: boolean;
     public master?: { name: string, orders?: Array<Order>, id?: number };
     public customer?: { name: string };
@@ -267,7 +270,7 @@ User.init({
             type: DataTypes.STRING,
         },
         isActivated: {type: DataTypes.BOOLEAN, defaultValue: false},
-        role: {type: DataTypes.STRING, defaultValue: "CUSTOMER"},
+        role: {type: DataTypes.ENUM(ROLES.CUSTOMER, ROLES.MASTER, ROLES.ADMIN), defaultValue: ROLES.CUSTOMER},
         activationLink: {type: DataTypes.STRING}
     },
     {
@@ -361,7 +364,10 @@ Order.init({
         },
         time: {type: DataTypes.DATE,},
         endTime: {type: DataTypes.DATE},
-        status: {type: DataTypes.STRING, defaultValue: "WAITING"},
+        status: {
+            type: DataTypes.ENUM(STATUS.WAITING, STATUS.REJECTED, STATUS.ACCEPTED, STATUS.DONE),
+            defaultValue: STATUS.WAITING
+        },
         price: {type: DataTypes.INTEGER},
         ratingLink: {type: DataTypes.STRING}
     },

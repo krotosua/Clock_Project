@@ -26,9 +26,9 @@ const SizeList = ({alertMessage, getValue}) => {
     const [idToEdit, setIdToEdit] = useState(null);
     const [sizeToEdit, setSizeToEdit] = useState(null);
     const [dateToEdit, setDateToEdit] = useState(null);
-    const [sizesList, setSizesList] = useState([])
+    const [sizesList, setSizesList] = useState(null)
     const [page, setPage] = useState(1)
-    const [totalCount, setTotalCount] = useState()
+    const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
     const [loading, setLoading] = useState(true)
     const getSizes = async () => {
@@ -47,7 +47,7 @@ const SizeList = ({alertMessage, getValue}) => {
     }
     useEffect(async () => {
         await getSizes()
-    }, [page])
+    }, [page, limit])
 
 
     const removeSize = async (id) => {

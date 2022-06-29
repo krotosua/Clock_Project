@@ -37,7 +37,7 @@ const getLabelText = (value) => {
 const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
     const user = useSelector(state => state.user)
     const [rating, setRating] = useState(0);
-    const [hover, setHover] = useState(-1);
+    const [hoverRatingLabels, setHoverRatingLabels] = useState(null);
     const location = useLocation();
     const customer = location.pathname === `${CUSTOMER_ORDER_ROUTE}/${user.user.id}`
 
@@ -94,12 +94,15 @@ const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
                                     setRating(newValue);
                                 }}
                                 onChangeActive={(event, newHover) => {
-                                    setHover(newHover);
+                                    setHoverRatingLabels(newHover);
                                 }}
                                 emptyIcon={<StarIcon style={{opacity: 0.55}} fontSize="inherit"/>}
                             />
-                            {!rating && (
-                                <Box sx={{ml: 2, fontSize: 25}}>{labels[hover !== -1 ? hover : rating]}</Box>
+                            {!rating || (
+                                <Box sx={{
+                                    ml: 2,
+                                    fontSize: 25
+                                }}>{labels[hoverRatingLabels !== -1 ? hoverRatingLabels : rating]}</Box>
                             )}
                         </Box>
                         <TextField

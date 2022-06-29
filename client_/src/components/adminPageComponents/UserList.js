@@ -26,9 +26,9 @@ const UserList = ({alertMessage}) => {
     const [editVisible, setEditVisible] = useState(false)
     const [createVisible, setCreateVisible] = useState(false)
     const [userToEdit, setUserToEdit] = useState(null);
-    const [usersList, setUsersList] = useState([])
+    const [usersList, setUsersList] = useState(null)
     const [page, setPage] = useState(1)
-    const [totalCount, setTotalCount] = useState()
+    const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
     const [loading, setLoading] = useState(true)
 
@@ -49,7 +49,7 @@ const UserList = ({alertMessage}) => {
 
     useEffect(async () => {
         await getUsers()
-    }, [page])
+    }, [page, limit])
 
     const changeActiveted = async (user) => {
         const changeInfo = {
