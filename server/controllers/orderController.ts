@@ -115,12 +115,12 @@ class OrderController {
             return res.status(400).json({errors: errors.array()});
         }
         try {
-            const orders: void | UpdateDB<Order> = await orderLogic.statusChange(req, res, next)
-            if (!orders) {
+            const order = await orderLogic.statusChange(req, res, next)
+            if (!order) {
                 next(ApiError.badRequest("Empty"))
                 return
             }
-            return res.status(201).json(orders)
+            return res.status(201).json(order)
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return

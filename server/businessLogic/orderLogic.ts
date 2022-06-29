@@ -2,9 +2,9 @@ import {Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
-import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, statusList, UpdateMasterDTO} from "../dto/order.dto";
+import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, STATUS, statusList, UpdateMasterDTO} from "../dto/order.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
-
+import {v4 as uuidv4} from 'uuid';
 
 class OrderLogic {
     async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {
@@ -160,7 +160,27 @@ class OrderLogic {
             const orderUpdate: UpdateDB<Order> = await Order.update({
                 status: status,
             }, {where: {id: orderId}})
-
+            if (status === STATUS.DONE) {
+                const mailInfo: Order | null = await Order.findOne({
+                    where: {id: orderId},
+                    attributes: ["masterId", "id", "ratingLink"],
+                    include: [{
+                        model: User,
+                        attributes: ["email"],
+                    }]
+                })
+                if (!mailInfo || !mailInfo.user) {
+                    next(ApiError.badRequest("Wrong request"));
+                    return
+                } else if (mailInfo.ratingLink) {
+                    return orderUpdate
+                }
+                const ratingLink: string = uuidv4()
+                mailInfo.ratingLink = ratingLink
+                await mailInfo.save()
+                const email: string = mailInfo.user.email
+                MailService.sendOrderDone(email, orderId, `${process.env.RATING_URL}/${ratingLink}`, next)
+            }
             return orderUpdate
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))

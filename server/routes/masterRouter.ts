@@ -2,7 +2,7 @@ import {Router} from 'express'
 import masterController from "../controllers/masterController"
 import checkRole from "../middleware/checkRoleMiddleware"
 import {body, param, query} from 'express-validator';
-import {Roles} from "../dto/global";
+import {ROLES} from "../dto/global";
 
 const masterRouter = Router()
 
@@ -11,7 +11,7 @@ masterRouter.post("/",
     body("name").not().isEmpty().isString().trim().escape(),
     body("rating").not().isEmpty().not().isString().isInt({gt: -1, lt: 6}),
     body("cityId").not().isEmpty().isArray(),
-    checkRole(Roles.ADMIN),
+    checkRole(ROLES.ADMIN),
     masterController.create)
 
 masterRouter.get('/', masterController.getAll)
@@ -27,25 +27,28 @@ masterRouter.put('/:masterId',
     body("name").not().isEmpty().isString().trim().escape(),
     body("rating").not().isEmpty().not().isString().isFloat({gt: -1, lt: 6}),
     body("cityId").not().isEmpty().isArray(),
-    checkRole(Roles.ADMIN), masterController.update)
+    checkRole(ROLES.ADMIN), masterController.update)
 
 masterRouter.put('/activate/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     body("isActivated").not().isEmpty().isBoolean(),
-    checkRole(Roles.ADMIN), masterController.activate)
+    checkRole(ROLES.ADMIN), masterController.activate)
 
-masterRouter.put('/Rating/:masterId',
-    param("masterId").not().isEmpty().isInt({gt: 0}),
+masterRouter.put('/rating/:uuid',
+    param("uuid").isUUID(4),
     body("rating").not().isEmpty().not().isString().isFloat({gt: -1, lt: 6}),
     body("review").isString().isLength({min: 0, max: 1000}),
-    checkRole(Roles.CUSTOMER), masterController.ratingUpdate)
+    masterController.ratingUpdate)
 masterRouter.get('/rating/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
     masterController.getRatingReviews)
+masterRouter.get('/rating/link/:uuid',
+    param("uuid").isUUID(4),
+    masterController.checkLink)
 
 masterRouter.delete('/:masterId',
     param("masterId").not().isEmpty().isInt({gt: 0}),
-    checkRole(Roles.ADMIN), masterController.deleteOne)
+    checkRole(ROLES.ADMIN), masterController.deleteOne)
 
 
 export default masterRouter

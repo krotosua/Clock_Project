@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Box, FormControl, FormHelperText, InputLabel, MenuItem, Select} from '@mui/material';
+import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
 import {fetchCities} from "../http/cityAPI";
 
 
@@ -39,7 +39,6 @@ const SelectorCity = ({chosenCity, cityToEdit, cleanMaster, closeList, editOpen,
             <FormControl fullWidth>
                 <InputLabel id="citySel">Выберите город</InputLabel>
                 <Select
-                    error={city === ""}
                     labelId="citySel"
                     value={city}
                     label="Выберите город"
@@ -56,8 +55,6 @@ const SelectorCity = ({chosenCity, cityToEdit, cleanMaster, closeList, editOpen,
                         </MenuItem>
                     )}
                 </Select>
-                {city === "" ?
-                    <FormHelperText>Укажите город</FormHelperText> : ""}
             </FormControl>
         </Box>
     );

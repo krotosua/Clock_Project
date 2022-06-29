@@ -19,10 +19,10 @@ const style = {
 const CreateCity = ({open, onClose, alertMessage, getCities}) => {
     const dispatch = useDispatch()
     const [cityName, setCityName] = useState("")
+    const [price, setPrice] = useState("")
     const [errCity, setErrCity] = useState(false)
     const [blurCityName, setBlurCityName] = useState(false)
     const [blurPrice, setBlurPrice] = useState(false)
-    const [price, setPrice] = useState("")
     const addCity = async () => {
         const cityInfo = {
             name: cityName.trim(),

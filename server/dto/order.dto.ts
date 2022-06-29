@@ -11,6 +11,13 @@ export type CreateOrderDTO = {
     changedMaster?: boolean
 }
 
+export enum STATUS {
+    WAITING = "WAITING",
+    REJECTED = "REJECTED",
+    ACCEPTED = "ACCEPTED",
+    DONE = "DONE",
+}
+
 export type ResultOrderDTO = {
     order: Order,
     city: City,

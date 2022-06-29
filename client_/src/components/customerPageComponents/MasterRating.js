@@ -2,6 +2,9 @@ import React, {useState} from 'react';
 import {Box, Button, Modal, Rating, TextField, Typography} from "@mui/material";
 import StarIcon from '@mui/icons-material/Star';
 import {ratingMaster} from "../../http/masterAPI";
+import {CUSTOMER_ORDER_ROUTE} from "../../utils/consts";
+import {useLocation} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const labels = {
     0.5: "😡",
@@ -31,25 +34,31 @@ const getLabelText = (value) => {
     return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
 }
 
-const MasterRating = ({open, onClose, dataForEdit, getOrders, alertMessage}) => {
+const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
+    const user = useSelector(state => state.user)
     const [rating, setRating] = useState(0);
-    const [hover, setHover] = useState(-1);
+    const [hoverRatingLabels, setHoverRatingLabels] = useState(null);
+    const location = useLocation();
+    const customer = location.pathname === `${CUSTOMER_ORDER_ROUTE}/${user.user.id}`
+
     const [review, setReview] = useState("")
     const sendRating = async () => {
         const post = {
             rating: rating,
             review: review,
-            orderId: dataForEdit.orderId,
-            masterId: dataForEdit.masterId,
-            userId: dataForEdit.userId,
+            uuid: uuid,
         }
         try {
             await ratingMaster(post)
-            getOrders()
-            alertMessage('Отзыв отправлен', false)
+            if (customer) {
+                getOrders()
+                alertMessage("Отзыв успешно отправлен", false)
+            }
             close()
         } catch (e) {
-            alertMessage('Не удалось отправить отзыв', true)
+            if (customer) {
+                alertMessage("Не удалось отправить отзыв", true)
+            }
         }
     }
 
@@ -85,12 +94,15 @@ const MasterRating = ({open, onClose, dataForEdit, getOrders, alertMessage}) => 
                                     setRating(newValue);
                                 }}
                                 onChangeActive={(event, newHover) => {
-                                    setHover(newHover);
+                                    setHoverRatingLabels(newHover);
                                 }}
                                 emptyIcon={<StarIcon style={{opacity: 0.55}} fontSize="inherit"/>}
                             />
-                            {!rating && (
-                                <Box sx={{ml: 2, fontSize: 25}}>{labels[hover !== -1 ? hover : rating]}</Box>
+                            {!rating || (
+                                <Box sx={{
+                                    ml: 2,
+                                    fontSize: 25
+                                }}>{labels[hoverRatingLabels !== -1 ? hoverRatingLabels : rating]}</Box>
                             )}
                         </Box>
                         <TextField

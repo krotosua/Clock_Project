@@ -28,14 +28,13 @@ import {add, getHours, isPast, set, setHours} from 'date-fns'
 import {useSelector} from "react-redux";
 
 
-
 const OrderList = ({alertMessage}) => {
     const cities = useSelector(state => state.cities)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
     const [orderToEdit, setOrderToEdit] = useState(null)
-    const [ordersList, setOrdersList] = useState([])
+    const [ordersList, setOrdersList] = useState(null)
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
     const [limit, setLimit] = useState(8)
@@ -53,7 +52,7 @@ const OrderList = ({alertMessage}) => {
             alertMessage("Не удалось изменить статус заказа", true)
         }
     };
-    const getOrders = async (page, limit) => {
+    const getOrders = async () => {
         try {
             const res = await fetchAlLOrders(page, limit)
             if (res.status === 204) {
@@ -71,7 +70,7 @@ const OrderList = ({alertMessage}) => {
     const navigate = useNavigate()
     useEffect(async () => {
         await getOrders()
-    }, [page])
+    }, [page, limit])
 
     const removeOrder = async (id) => {
         try {

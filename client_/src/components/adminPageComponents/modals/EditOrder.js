@@ -70,7 +70,7 @@ const EditOrder = ({
     const [openDate, setOpenDate] = useState(false)
     const [openTime, setOpenTime] = useState(false)
     const [changedMaster, setChangedMaster] = useState(false)
-    const [mastersList, setMastersList] = useState([])
+    const [mastersList, setMastersList] = useState(null)
     const [totalCount, setTotalCount] = useState(0)
     const [limit, setLimit] = useState(3)
     const [page, setPage] = useState(1)
@@ -104,7 +104,7 @@ const EditOrder = ({
         if (openList) {
             await getMasters()
         }
-    }, [page, openList])
+    }, [page, limit, openList])
 
     const changeOrder = async () => {
         if (checkInfo) {

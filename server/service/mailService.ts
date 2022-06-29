@@ -83,9 +83,27 @@ export default new class MailService {
             if (err) {
                 return next(ApiError.badRequest(err.message))
             }
-
         })
+    }
 
+    sendOrderDone(email: string, id: string, link: string, next: NextFunction) {
+        this.transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to: email,
+            subject: `Оцените заказ №${id}`,
+            text: "",
+            html:
+                `<div>
+             <h3>Можете оставить оценку выполнения Вашего заказа по ссылке:</h3>
+              <a href="${link}">${link}</a>
+         
+</div>`,
+        }, err => {
+            if (err) {
+                next(ApiError.badRequest(err.message))
+                return
+            }
+        })
     }
 
     updateMail(email: string, password: string | undefined, next: NextFunction) {

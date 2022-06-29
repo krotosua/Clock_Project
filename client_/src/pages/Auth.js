@@ -24,11 +24,10 @@ import SelectorMasterCity from "../components/adminPageComponents/modals/Selecto
 import MyAlert from "../components/adminPageComponents/MyAlert";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import Login from "../components/authPageComponents/Login";
-import {useDispatch, useSelector} from "react-redux";
+import {useSelector} from "react-redux";
 
 
 const Auth = observer(() => {
-    const dispatch = useDispatch()
     const cities = useSelector(state => state.city)
     const location = useLocation();
     const navigate = useNavigate()

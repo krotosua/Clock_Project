@@ -25,10 +25,11 @@ export const activateMaster = async (master) => {
 
 }
 export const ratingMaster = async (post) => {
-    await $authHost.put('api/masters/rating/' + post.masterId, post)
-
-
+    await $host.put('api/masters/rating/' + post.uuid, post)
+}
+export const checkLink = async (uuid) => {
+    await $host.get('api/masters/rating/link/' + uuid)
 }
 export const fetchReviews = async (masterId) => {
-    return await $authHost.get('api/masters/rating/' + masterId)
+    return await $host.get('api/masters/rating/' + masterId)
 }

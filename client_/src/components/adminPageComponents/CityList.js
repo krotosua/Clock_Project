@@ -24,9 +24,9 @@ const CityList = ({alertMessage}) => {
     const [cityVisible, setCityVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [cityToEdit, setCityToEdit] = useState(null);
-    const [citiesList, setCitiesList] = useState([])
+    const [citiesList, setCitiesList] = useState(null)
     const [page, setPage] = useState(1)
-    const [totalCount, setTotalCount] = useState()
+    const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
     const [loading, setLoading] = useState(true)
 
@@ -47,7 +47,7 @@ const CityList = ({alertMessage}) => {
     }
     useEffect(async () => {
         await getCities(page, limit)
-    }, [page])
+    }, [page, limit])
 
     const removeCity = async (id) => {
         try {

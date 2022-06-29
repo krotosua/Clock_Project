@@ -9,6 +9,7 @@ import {CreateRatingDTO} from "../dto/rating.dto";
 import {addHours} from 'date-fns'
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 
+
 const {and, lt, lte, not, is, or, gt, gte, notIn} = Op;
 
 class MasterLogic {
@@ -32,7 +33,7 @@ class MasterLogic {
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master> = await Master.findAndCountAll({
                 distinct: true,
-                order: [['id', 'DESC']],
+                order: [['rating', 'DESC']],
                 attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
                     model: City, through: {
@@ -72,6 +73,7 @@ class MasterLogic {
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master>;
             const orders = await Order.findAll({
+
                 where: {
                     [not]: [{
                         [or]: [{
@@ -85,7 +87,7 @@ class MasterLogic {
                 group: "masterId"
             })
             masters = await Master.findAndCountAll({
-                order: [['id', 'DESC']],
+                order: [['rating', 'DESC']],
                 distinct: true,
                 where: {
                     isActivated: {[is]: true},
@@ -149,23 +151,32 @@ class MasterLogic {
     async ratingUpdate(req: Request, res: Response, next: NextFunction): Promise<void | Response<UpdateDB<Master> | void>> {
         try {
             const result: UpdateDB<Master> | void = await sequelize.transaction(async () => {
-                const masterId: number = Number(req.params.masterId);
-                const {orderId, userId, review}: CreateRatingDTO = req.body;
-                let newRating: number = req.body.rating;
-                const existsRating: Rating | null = await Rating.findOne({where: {orderId: orderId}});
-                if (existsRating) {
+                const uuid: string = req.params.uuid;
+                const {review}: CreateRatingDTO = req.body;
+                const orderInfo = await Order.findOne({
+                    where: {ratingLink: uuid},
+                    attributes: ["id", "masterId", "userId", "ratingLink"]
+                })
+                if (!orderInfo) {
                     next(ApiError.badRequest("Wrong request"));
                     return
                 }
-                await Rating.create({rating: newRating, review, userId, masterId, orderId});
-                let allRating: GetRowsDB<Rating> = await Rating.findAndCountAll({
-                    where: {masterId: masterId},
+                const newRating: number = +req.body.rating;
+                await Rating.create({
+                    rating: newRating,
+                    review,
+                    userId: orderInfo.userId,
+                    masterId: orderInfo.masterId,
+                    orderId: orderInfo.id
+                });
+                const allRating: GetRowsDB<Rating> = await Rating.findAndCountAll({
+                    where: {masterId: orderInfo.masterId},
                     attributes: ["rating"]
                 })
-                newRating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count;
+                const averageRating = allRating.rows.reduce((sum, current) => sum + current.rating, 0) / allRating.count;
                 const masterUpdate: UpdateDB<Master> = await Master.update({
-                    rating: newRating,
-                }, {where: {id: masterId}})
+                    rating: averageRating,
+                }, {where: {id: orderInfo.masterId}})
                 return masterUpdate;
             })
             return res.status(201).json(result);
@@ -175,14 +186,13 @@ class MasterLogic {
         }
     }
 
-    async getRatingReviews(req: Request<{ masterId: number }> & ReqQuery<{ page: number, limit: number }>,
-                           res: Response, next: NextFunction) {
+    async getRatingReviews(req: Request<{ masterId: number }>,
+                           res: Response, next: NextFunction): Promise<void | Response<{ rows: Rating[], count: number }>> {
         try {
             const {masterId} = req.params
-            let {limit, page} = req.query
-            page = page || 1
-            limit = limit || 5
-            const offset = page * limit - limit
+            const page: number = 1
+            const limit: number = 5
+            const offset: number = page * limit - limit
             const ratingReviews: { rows: Rating[], count: number } = await Rating.findAndCountAll({
                 where: {masterId: masterId},
                 order: [['id', 'DESC']],
@@ -193,9 +203,29 @@ class MasterLogic {
                         model: Customer,
                         attributes: ["name"]
                     }]
-                }]
+                }], limit, offset
             })
             return res.status(200).json(ratingReviews)
+        } catch (e) {
+            return next(ApiError.badRequest("Wrong request"))
+        }
+    }
+
+    async checkLink(req: Request<{ uuid: string }>, res: Response, next: NextFunction) {
+        try {
+            const {uuid} = req.params
+            const check: Order | null = await Order.findOne({
+                where: {ratingLink: uuid},
+                attributes: ["id"],
+                include: [{
+                    model: Rating,
+                }]
+            })
+            if (check == null || check.rating) {
+                next(ApiError.badRequest("Wrong request"))
+                return
+            }
+            return res.status(200).json(check)
         } catch (e) {
             return next(ApiError.badRequest("Wrong request"))
         }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Link, useLocation, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import {Button, Container, Typography} from "@mui/material";
@@ -7,6 +7,7 @@ import {ACTIVATED_ROUTE, CONGRATULATION_ROUTE, LOGIN_ROUTE, START_ROUTE} from ".
 
 const MessagePage = () => {
     const location = useLocation();
+    const {uuid} = useParams()
     const activated = location.pathname === ACTIVATED_ROUTE;
     const congratulated = location.pathname === CONGRATULATION_ROUTE;
     const navigate = useNavigate()
@@ -74,7 +75,7 @@ const MessagePage = () => {
                             </Typography>
                             <Link to={START_ROUTE}
                                   style={{textDecoration: 'none', color: 'black'}}>
-                                <Button size="large" variant="outlined"  onClick={() => navigate(START_ROUTE)}>
+                                <Button size="large" variant="outlined" onClick={() => navigate(START_ROUTE)}>
                                     Вернуться на стартовую страницу
                                 </Button>
                             </Link>
