@@ -115,7 +115,6 @@ const MasterList = ({alertMessage}) => {
         setIdToEdit(master.id)
         setNameToEdit(master.name)
         setRatingToEdit(master.rating)
-        console.log(cities)
         changeCity = master.cities.map(item => item.id)
         setCityToEdit(cities.cities.filter(cities => changeCity.indexOf(cities.id) > -1))
     }

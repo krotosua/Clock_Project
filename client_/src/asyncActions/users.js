@@ -18,6 +18,11 @@ export const loginUser = (email, password) => {
             return dataUser
         } catch (e) {
             dispatch(setIsEmptyUserAction(true))
+            if (e.message === "Request failed with status code 401") {
+                throw new Error("401")
+            } else if (e.message === "Request failed with status code 404") {
+                throw new Error("404")
+            }
         }
     }
 }

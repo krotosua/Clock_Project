@@ -1,10 +1,11 @@
-import React, {useState} from 'react';
+import React from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, InputAdornment, TextField} from "@mui/material";
 import {updateCity} from "../../../http/cityAPI";
+import {useForm} from "react-hook-form";
 
 
 const style = {
@@ -19,96 +20,93 @@ const style = {
     p: 4,
 };
 const EditCity = ({open, onClose, cityToEdit, alertMessage, getCities}) => {
-    const [cityName, setCityName] = useState(cityToEdit.name)
-    const [errCity, setErrCity] = useState(false)
-    const [blurCityName, setBlurCityName] = useState(false)
-    const [blurPrice, setBlurPrice] = useState(false)
-    const [price, setPrice] = useState(cityToEdit.price)
-
-    const changeCity = async () => {
+    const {register, handleSubmit, trigger, setError, formState: {errors}} = useForm();
+    const changeCity = async ({nameCity, price}) => {
         const cityInfo = {
             id: cityToEdit.id,
-            name: cityName.trim(),
+            name: nameCity.trim(),
             price: price
         }
         try {
             await updateCity(cityInfo)
-            close()
             await getCities()
             alertMessage('Название изменено успешно', false)
+            close()
         } catch (e) {
-            setErrCity(true)
+            setError("nameCity", {
+                type: "manual",
+                message: "Город с таким названием существует"
+            })
             alertMessage('Не удалось изменить название', true)
         }
     }
     const close = () => {
-        setErrCity(false)
-        setBlurCityName(false)
-        setCityName("")
         onClose()
     }
 
-    //--------------------Validation
-    const validName = blurCityName && cityName.length === 0
     return (
         <div>
             <Modal
                 open={open}
                 onClose={close}
             >
-                <Box sx={style}>
-                    <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Изменить название города {cityToEdit.name}
-                    </Typography>
-                    <Box sx={{display: "flex", flexDirection: "column"}}>
-                        <FormControl>
-                            <TextField
-                                error={errCity || validName}
-                                helperText={validName ? "Введите название города" :
-                                    errCity ? "Город с таким именем уже существует" : false}
-                                sx={{mt: 1}}
-                                id="city"
-                                label="Введите город"
-                                variant="outlined"
-                                value={cityName}
-                                onFocus={() => setBlurCityName(false)}
-                                onBlur={() => setBlurCityName(true)}
-                                onChange={e => {
-                                    setCityName(e.target.value)
-                                    setErrCity(false)
-                                }}
-                            />
-                            <TextField
-                                error={errCity || blurPrice && price <= 0}
-                                type="number"
-                                sx={{mt: 1}}
-                                id="city"
-                                label="Цена за час работы мастера"
-                                variant="outlined"
-                                value={price}
-                                onFocus={() => setBlurPrice(false)}
-                                onBlur={() => setBlurPrice(true)}
-                                onChange={e => {
-                                    setPrice(Number(e.target.value))
-                                }}
-                                InputProps={{
-                                    endAdornment: <InputAdornment position="end">Грн</InputAdornment>,
-                                }}
-                            />
-                        </FormControl>
-                        <Box
-                            sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
-                        >
-                            <Button color="success" sx={{flexGrow: 1,}}
-                                    disabled={!cityName || errCity || !price}
+                <form onSubmit={handleSubmit(changeCity)}>
+                    <Box sx={style}>
+                        <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                            Добавить название города
+                        </Typography>
+                        <Box sx={{display: "flex", flexDirection: "column"}}>
+                            <FormControl>
+                                <TextField
+                                    {...register("nameCity", {
+                                        required: "Введите имя Города",
+                                        shouldFocusError: false,
+                                    })}
+                                    error={Boolean(errors.nameCity)}
+                                    helperText={errors.nameCity?.message}
+                                    sx={{mt: 1}}
+                                    defaultValue={cityToEdit.name}
+                                    id="nameCity"
+                                    name='nameCity'
+                                    label="Введите город"
                                     variant="outlined"
-                                    onClick={changeCity}> Изменить</Button>
-                            <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={close}> Закрыть</Button>
+                                    onBlur={() => trigger("nameCity")}
+                                />
+                                <TextField
+                                    {...register("price", {
+                                        required: "Укажите цену",
+                                        shouldFocusError: false,
+                                        min: {
+                                            value: 1,
+                                            message: "Минимальная цена 1"
+                                        }
+                                    })}
+                                    sx={{mt: 1}}
+                                    defaultValue={cityToEdit.price}
+                                    error={Boolean(errors.price)}
+                                    type="number"
+                                    id="price"
+                                    helperText={errors.price?.message}
+                                    label="Цена за час работы мастера"
+                                    variant="outlined"
+                                    onBlur={() => trigger("price")}
+                                    InputProps={{
+                                        endAdornment: <InputAdornment position="end">Грн</InputAdornment>,
+                                    }}
+                                />
+                            </FormControl>
+                            <Box
+                                sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                            >
+                                <Button color="success" type="submit" sx={{flexGrow: 1,}} variant="outlined"
+                                        disabled={Object.keys(errors).length !== 0}
+                                > Изменить</Button>
+                                <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
+                                        onClick={close}> Закрыть</Button>
+                            </Box>
                         </Box>
                     </Box>
-
-                </Box>
+                </form>
             </Modal>
         </div>
     );
