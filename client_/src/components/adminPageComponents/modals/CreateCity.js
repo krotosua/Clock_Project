@@ -53,8 +53,7 @@ const CreateCity = ({open, onClose, alertMessage, getCities}) => {
                             <FormControl>
                                 <TextField
                                     {...register("nameCity", {
-                                        required: "Введите имя Города",
-                                        shouldFocusError: false,
+                                        required: "Введите название города",
                                     })}
                                     error={Boolean(errors.nameCity)}
                                     helperText={errors.nameCity?.message}
@@ -68,7 +67,6 @@ const CreateCity = ({open, onClose, alertMessage, getCities}) => {
                                 <TextField
                                     {...register("price", {
                                         required: "Укажите цену",
-                                        shouldFocusError: false,
                                         min: {
                                             value: 1,
                                             message: "Минимальная цена 1"

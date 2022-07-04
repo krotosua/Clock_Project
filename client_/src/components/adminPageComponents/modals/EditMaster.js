@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import Modal from '@mui/material/Modal';
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -6,8 +6,7 @@ import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
 import {updateMaster} from "../../../http/masterAPI";
 import SelectorMasterCity from "./SelectorMasterCity";
-import {useDispatch, useSelector} from "react-redux";
-import {setSelectedCityAction} from "../../../store/CityStore";
+import {FormProvider, useForm} from "react-hook-form";
 
 
 const style = {
@@ -23,100 +22,105 @@ const style = {
 };
 const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingToEdit, cityChosen, getMasters}) => {
 
-    const cities = useSelector(state => state.city)
-    const dispatch = useDispatch()
-    const [masterName, setMasterName] = useState(nameToEdit)
-    const [masterRating, setMasterRating] = useState(ratingToEdit)
-    const [blurMasterName, setBlurMasterName] = useState(false)
-    const [errMaster, setErrMaster] = useState(false)
-
+    const {register, handleSubmit, trigger, setValue, getValues, formState: {errors}} = useForm();
     useEffect(() => {
-        dispatch(setSelectedCityAction(cityChosen.map(city => city.id)))
+        setValue("cityList", cityChosen)
     }, [])
-    const changeMaster = async () => {
+    const changeMaster = async ({masterName, rating, cityList}) => {
         const changeInfo = {
             id: idToEdit,
             name: masterName.trim(),
-            rating: masterRating,
-            cityId: cities.selectedCity
+            rating,
+            cityId: cityList.map(city => city.id)
         }
+        console.log(changeInfo)
+        return
         try {
             await updateMaster(changeInfo)
             await getMasters()
             close()
             alertMessage('Данные мастера успешно изменены', false)
         } catch (e) {
-            setErrMaster(true)
             alertMessage('Не удалось изменить данные мастера', true)
         }
     }
 
     const close = () => {
-        setErrMaster(false)
         onClose()
     }
-    //--------------------Validation
-    const validButton = masterRating > 5 || masterRating < 0 || !masterName
-    const validName = errMaster || blurMasterName && masterName.length === 0
-    const validRating = masterRating > 5 || masterRating < 0
+
     return (
-        <div>
-            <Modal
-                open={open}
-                onClose={close}
-            >
-                <Box sx={style}>
-                    <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        ИЗМЕНИТЬ ДАННЫЕ МАСТЕРА
-                    </Typography>
-                    <Box sx={{display: "flex", flexDirection: "column"}}>
-                        <FormControl>
-                            <TextField
-                                error={validName}
-                                helperText={validName ? "Введите имя мастера" : ""}
-                                sx={{mt: 1}}
-                                id="masterName"
-                                label={`Текущуее имя мастера: ${nameToEdit}`}
-                                variant="outlined"
-                                value={masterName}
-                                required
-                                onFocus={() => setBlurMasterName(false)}
-                                onBlur={() => setBlurMasterName(true)}
-                                onChange={e => setMasterName(e.target.value)}
-                            />
-                            <TextField
-                                sx={{my: 2}}
-                                id="masterRating"
-                                error={validRating}
-                                helperText='Введите рейтинг от 0 до 5'
-                                label={`Текущуее рейтинг мастера: ${ratingToEdit}`}
-                                variant="outlined"
-                                value={masterRating}
-                                type="number"
-                                InputProps={{
-                                    inputProps: {
-                                        max: 5, min: 0
-                                    }, inputMode: 'numeric', pattern: '[0-9]*'
-                                }}
-                                onChange={e => setMasterRating(Number(e.target.value))}
-                            />
-                            <SelectorMasterCity open={open} cityChosen={cityChosen} error={errMaster}/>
-                        </FormControl>
-                        <Box
-                            sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
-                        >
-                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                    onClick={changeMaster}
-                                    disabled={validButton}>
-                                Изменить
-                            </Button>
-                            <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={close}> Закрыть</Button>
+        <Modal
+            open={open}
+            onClose={close}
+        >
+            <div>
+                <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}>
+                    <form onSubmit={handleSubmit(changeMaster)}>
+                        <Box sx={style}>
+                            <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                                Добавить мастера
+                            </Typography>
+                            <Box sx={{display: "flex", flexDirection: "column"}}>
+                                <FormControl>
+                                    <TextField
+                                        {...register("masterName", {
+                                            required: "Введите имя мастера",
+                                            shouldFocusError: false,
+                                        })}
+                                        error={Boolean(errors.masterName)}
+                                        helperText={errors.masterName?.message}
+                                        sx={{my: 1}}
+                                        id="masterName"
+                                        defaultValue={nameToEdit}
+                                        label={`Укажите имя мастера`}
+                                        variant="outlined"
+                                        required
+                                        onBlur={() => trigger("masterName")}
+                                    />
+                                    <TextField
+                                        {...register("rating", {
+                                            validate: {
+                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть больше не меньше 0',
+                                                lessThanSix: value => parseInt(value) < 6 || 'Рейтинг должен быть не больше 5',
+                                            }
+                                        })}
+                                        sx={{mb: 1}}
+                                        id="rating"
+                                        error={Boolean(errors.rating)}
+                                        helperText={errors.rating?.message}
+                                        label={`Укажите рейтинг от 0 до 5`}
+                                        variant="outlined"
+                                        defaultValue={ratingToEdit}
+                                        name="rating"
+                                        type="number"
+                                        InputProps={{
+                                            inputProps: {
+                                                max: 5, min: 0
+                                            }
+                                        }}
+                                        onBlur={() => trigger("rating")}
+                                    />
+                                    <SelectorMasterCity cityChosen={cityChosen}/>
+                                </FormControl>
+                                <Box
+                                    sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                                >
+                                    <Button color="success" sx={{flexGrow: 1,}}
+                                            variant="outlined"
+                                            type="submit"
+                                            disabled={Object.keys(errors).length !== 0}>
+                                        Добавить
+                                    </Button>
+                                    <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
+                                            onClick={close}> Закрыть</Button>
+                                </Box>
+                            </Box>
                         </Box>
-                    </Box>
-                </Box>
-            </Modal>
-        </div>
+                    </form>
+                </FormProvider>
+            </div>
+        </Modal>
     );
 });
 

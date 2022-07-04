@@ -50,6 +50,7 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage, getCities}) => {
                 open={open}
                 onClose={close}
             >
+
                 <form onSubmit={handleSubmit(changeCity)}>
                     <Box sx={style}>
                         <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
@@ -59,7 +60,7 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage, getCities}) => {
                             <FormControl>
                                 <TextField
                                     {...register("nameCity", {
-                                        required: "Введите имя Города",
+                                        required: "Введите название города",
                                         shouldFocusError: false,
                                     })}
                                     error={Boolean(errors.nameCity)}
@@ -107,6 +108,7 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage, getCities}) => {
                         </Box>
                     </Box>
                 </form>
+
             </Modal>
         </div>
     );

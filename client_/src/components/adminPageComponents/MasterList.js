@@ -239,8 +239,6 @@ const MasterList = ({alertMessage}) => {
                                 >
                                     <EditIcon/>
                                 </IconButton>
-
-
                             </ListItem>
                         )
                     })}
@@ -257,10 +255,10 @@ const MasterList = ({alertMessage}) => {
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
-            <CreateMaster open={createVisible}
-                          getMasters={() => getMasters(page)}
-                          alertMessage={alertMessage}
-                          onClose={() => setCreateVisible(false)}/>
+            {createVisible ? <CreateMaster open={createVisible}
+                                           getMasters={() => getMasters(page)}
+                                           alertMessage={alertMessage}
+                                           onClose={() => setCreateVisible(false)}/> : null}
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>

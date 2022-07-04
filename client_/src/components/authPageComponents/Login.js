@@ -26,8 +26,9 @@ import React, {useState} from "react";
 import {ROLE_LIST} from "../../store/UserStore";
 import {useDispatch, useSelector} from "react-redux";
 import {loginUser} from "../../asyncActions/users";
-import {useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import warning from "react-redux/es/utils/warning";
+import {ERROR_401, ERROR_404} from "../../utils/constErrors";
 
 
 const Login = ({alertMessage, nextPage, getMasters, orderEmail}) => {
@@ -37,7 +38,7 @@ const Login = ({alertMessage, nextPage, getMasters, orderEmail}) => {
     const isOrder = location.pathname === ORDER_ROUTE;
     const [showPassword, setShowPassword] = useState(false)
     const navigate = useNavigate()
-    const {register, handleSubmit, trigger, setError, formState: {errors}} = useForm();
+    const {register, handleSubmit, trigger, setError, control, formState: {errors}} = useForm({mode: 'onTouched'});
     const singIn = async (data) => {
         try {
             const {email, password} = data
@@ -56,12 +57,12 @@ const Login = ({alertMessage, nextPage, getMasters, orderEmail}) => {
                         navigate(`${MASTER_ORDER_ROUTE}/${dataUser.id}`) : navigate(ADMIN_ROUTE)
             }
         } catch (e) {
-            if (e.message === "401") {
+            if (e.message === ERROR_401) {
                 setError("password", {
                     type: "manual",
                     message: "Неверный пароль"
                 })
-            } else if (e.message === "404") {
+            } else if (e.message === ERROR_404) {
                 setError("email", {
                     type: "manual",
                     message: "Такого email не существует"
@@ -97,25 +98,34 @@ const Login = ({alertMessage, nextPage, getMasters, orderEmail}) => {
                                 justifyContent: "center",
                             }}
                         >
-                            <TextField
-                                {...register("email", {
+                            <Controller
+                                name={"email"}
+                                rules={{
                                     required: "Введите email",
                                     shouldFocusError: false,
                                     pattern: {
                                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                                         message: "Введите email формата: clock@clock.com"
                                     }
-                                })}
-                                error={Boolean(errors.email)}
-                                sx={{mb: 2}}
-                                id="Email"
-                                label="Email"
-                                variant="outlined"
-                                helperText={errors.email?.message}
+                                }}
                                 defaultValue={orderEmail ?? ""}
-                                type={"email"}
-                                name={"email"}
-                                onBlur={() => trigger("email")}
+                                render={({field: {onChange, value, onBlur}, fieldState: {error}}) => {
+                                    return (
+                                        <TextField
+                                            error={!!error}
+                                            sx={{mb: 2}}
+                                            id="Email"
+                                            label="Email"
+                                            variant="outlined"
+                                            helperText={error?.message}
+                                            onChange={onChange}
+                                            value={value}
+                                            type={"email"}
+                                            onBlur={() => trigger("email")}
+                                        />
+                                    );
+                                }}
+                                control={control}
                             />
                             <FormControl error={Boolean(errors.password)} variant="outlined">
                                 <InputLabel htmlFor="password">Пароль</InputLabel>

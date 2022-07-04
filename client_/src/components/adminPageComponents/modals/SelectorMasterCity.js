@@ -1,8 +1,17 @@
 import * as React from 'react';
-import {useState} from 'react';
-import {Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select} from '@mui/material';
-import {useDispatch, useSelector} from "react-redux";
-import {setSelectedCityAction} from "../../../store/CityStore";
+import {useEffect, useState} from 'react';
+import {
+    Checkbox,
+    FormControl,
+    FormHelperText,
+    InputLabel,
+    ListItemText,
+    MenuItem,
+    OutlinedInput,
+    Select
+} from '@mui/material';
+import {fetchCities} from "../../../http/cityAPI";
+import {useFormContext} from "react-hook-form";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -16,43 +25,54 @@ const MenuProps = {
 };
 
 
-export default function SelectorMasterCity({cityChosen, error, open}) {
-    const cities = useSelector(state => state.cities)
-    const dispatch = useDispatch()
-    const [cityName, setCityName] = React.useState(cityChosen || []);
-    const [blur, setBlur] = useState(false)
+export default function SelectorMasterCity({cityChosen}) {
+    const [citiesList, setCitiesList] = useState([])
+    const [cityName, setCityName] = React.useState([]);
+    const {register, errors, trigger, setValue} = useFormContext();
     const handleChange = (event) => {
         const {target: {value}} = event
         setCityName(
             typeof value === 'string' ? value.split(',') : value,
         );
+        setValue("cityList", typeof value === 'string' ? value.split(',') : value,)
+        trigger("cityList")
     };
-    const handleClose = () => {
-        dispatch(setSelectedCityAction(cityName.map(city => (city.id))))
-    }
-
+    useEffect(async () => {
+        try {
+            const res = await fetchCities(null, null)
+            if (res.status === 204) {
+                setCitiesList([])
+                return
+            }
+            setCitiesList(res.data.rows)
+            if (cityChosen) {
+                setCityName(cityChosen.map(city => res.data.rows.find(cityes => city.id === cityes.id)))
+            }
+        } catch (e) {
+            setCitiesList([])
+        }
+    }, []);
     return (
         <div>
-            <FormControl sx={{width: 300}}>
-                <InputLabel error={error && cityName.length === 0}
-                            id="multiple-checkbox-label">
-                    Города где работает мастер
+            <FormControl error={Boolean(errors.cityList)} sx={{width: 300}}>
+                <InputLabel
+                    id="multiple-cities">
+                    Выберите город(а) работы мастера
                 </InputLabel>
                 <Select
-                    labelId="multiple-checkbox-label"
-                    id="multiple-checkbox"
-                    error={error && cityName.length === 0 || open ? cityName.length === 0 && blur : false}
+                    {...register("cityList", {
+                        required: "Укажите город(a)",
+                    })}
+                    labelId="multiple-cities"
+                    id="multiple-cities"
                     multiple
                     value={cityName}
                     onChange={handleChange}
-                    onClose={handleClose}
-                    onFocus={() => setBlur(false)}
-                    onBlur={() => setBlur(true)}
-                    input={<OutlinedInput label="Города где работает мастер"/>}
+                    input={<OutlinedInput label="Выберите город(а) работы мастера"/>}
                     renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
                     MenuProps={MenuProps}
                 >
-                    {cities.cities.map((city, index) => {
+                    {citiesList.map((city, index) => {
                         return (
                             <MenuItem key={index} value={city}>
                                 <Checkbox
@@ -65,6 +85,7 @@ export default function SelectorMasterCity({cityChosen, error, open}) {
                         )
                     })}
                 </Select>
+                <FormHelperText>{errors.cityList?.message}</FormHelperText>
             </FormControl>
         </div>
     );

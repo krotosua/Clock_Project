@@ -16,6 +16,7 @@ class MasterLogic {
     async create(req: Request, res: Response, next: NextFunction): Promise<Master | void> {
         try {
             const masterInfo: CreateMasterDTO = req.body;
+            console.log(masterInfo)
             const newMaster: Master = await Master.create(masterInfo);
             await newMaster.addCities(masterInfo.cityId);
             return newMaster;
