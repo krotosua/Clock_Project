@@ -26,7 +26,7 @@
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.14.1",
-    "sequelize-cli": "^6.4.1",
+    "sequelize-typescript-model-migration": "^1.0.13",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
@@ -38,6 +38,8 @@
     "@types/nodemailer": "^6.4.4",
     "@types/uuid": "^8.3.4",
     "nodemon": "^2.0.15",
+    "sequelize-cli": "^6.4.1",
+    "sequelize-typescript-migration": "^0.0.1-beta.3",
     "ts-node": "^10.8.1",
     "tslib": "^2.4.0",
     "typescript": "^4.7.3"
