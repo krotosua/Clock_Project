@@ -13,6 +13,11 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    whiteSpace: "pre-line",
+    maxHeight: 800,
+    overflowY: "auto",
+    overflowX: "hidden",
+    wordBreak: "break-word"
 };
 const ReviewModal = ({open, onClose, masterId}) => {
     const [reviews, setReviews] = useState([])
@@ -66,13 +71,7 @@ const ReviewModal = ({open, onClose, masterId}) => {
                                                 </Box>
                                             </Box>
                                             {review.review ?
-                                                <Box style={{
-                                                    whiteSpace: "pre-line",
-                                                    maxHeight: 100,
-                                                    overflowY: "auto",
-                                                    overflowX: "hidden",
-                                                    wordBreak: "break-word"
-                                                }}>
+                                                <Box>
                                                     `{review.review}`
                                                 </Box>
                                                 : null}
