@@ -1,5 +1,4 @@
 'use strict';
-const {DataTypes} = require("sequelize");
 const sequelizeConnection = require("../dist/db");
 const {ROLES} = require("../dist/dto/global");
 const {STATUS} = require("../dist/dto/order.dto");
