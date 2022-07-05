@@ -9,8 +9,10 @@ import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {registrationFromAdmin} from "../../../http/userAPI";
-import {useDispatch, useSelector} from "react-redux";
+import {useDispatch} from "react-redux";
 import {setSelectedCityAction} from "../../../store/CityStore";
+import {FormProvider, useForm} from "react-hook-form";
+import {ERROR_400} from "../../../utils/constErrors";
 
 const style = {
     position: 'absolute',
@@ -24,36 +26,39 @@ const style = {
     p: 4,
 };
 const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
-    const cities = useSelector(state => state.cities)
     const dispatch = useDispatch()
-    const [masterName, setMasterName] = useState("")
-    const [masterRating, setMasterRating] = useState("")
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [passwordCheck, setPasswordCheck] = useState('')
-    const [blurMasterName, setBlurMasterName] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showPasswordCheck, setShowPasswordCheck] = useState(false)
-    const [error, setError] = useState(false)
-    const [blurPassword, setBlurPassword] = useState(false)
-    const [blurPasswordCheck, setBlurPasswordCheck] = useState(false)
-    const [blurEmail, setBlurEmail] = useState(false)
-    const [errMaster, setErrMaster] = useState(false)
-    const addMaster = async () => {
+    const {
+        register,
+        handleSubmit,
+        trigger,
+        setValue,
+        setError,
+        getValues,
+        formState: {errors, dirtyFields}
+    } = useForm();
+    const addMaster = async ({email, password, masterName, rating, cityList}) => {
         const masterData = {
             email,
             password,
             isMaster: true,
             name: masterName,
-            cityId: cities.selectedCity
+            rating: Number(rating),
+            cityId: cityList.map(city => city.id)
         }
         try {
             await registrationFromAdmin(masterData)
-            close()
             await getMasters()
+            close()
             alertMessage("Мастер успешно добавлен", false)
         } catch (e) {
-            setErrMaster(true)
+            if (e.message === ERROR_400) {
+                setError("email", {
+                    type: "manual",
+                    message: "Такой email уже занят"
+                })
+            }
             alertMessage("Не удалось добавить мастера", true)
         }
     }
@@ -64,145 +69,173 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword)
     };
-    //--------------------Validation
-    const validButton = masterRating > 5 || masterRating < 0 || !masterName || cities.selectedCity.length === 0
-    const validName = blurMasterName && masterName.length === 0
-    const validRating = masterRating > 5 || masterRating < 0
-    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    return (<div>
-
+    return (
         <Modal
             open={open}
             onClose={close}
         >
-            <Box sx={style}>
+            <div>
+                <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}>
+                    <form onSubmit={handleSubmit(addMaster)}>
+                        <Box sx={style}>
+                            <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                                Добавить мастера
+                            </Typography>
+                            <Box sx={{display: "flex", flexDirection: "column"}}>
+                                <FormControl>
+                                    <TextField
+                                        {...register("masterName", {
+                                            required: "Введите имя мастера",
+                                            shouldFocusError: false,
+                                        })}
+                                        error={Boolean(errors.masterName)}
+                                        helperText={errors.masterName?.message}
+                                        sx={{my: 1}}
+                                        id="masterName"
+                                        label={`Укажите имя мастера`}
+                                        variant="outlined"
+                                        required
+                                        onBlur={() => trigger("masterName")}
+                                    />
+                                    <TextField
+                                        {...register("email", {
+                                            required: "Введите email",
+                                            shouldFocusError: false,
+                                            pattern: {
+                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                                message: "Введите email формата: clock@clock.com"
+                                            }
+                                        })}
+                                        error={Boolean(errors.email)}
+                                        sx={{mb: 1}}
+                                        id="Email"
+                                        label="Email"
+                                        variant="outlined"
+                                        helperText={errors.email?.message}
+                                        type={"email"}
+                                        name={"email"}
+                                        required
+                                        onBlur={() => trigger("email")}
+                                    />
+                                    <FormControl
+                                        error={Boolean(errors.password || errors.passwordCheck?.type === "isSame")}
+                                        variant="outlined">
+                                        <InputLabel required htmlFor="password">Пароль</InputLabel>
+                                        <OutlinedInput
+                                            {...register("password", {
+                                                required: "Введите пароль",
+                                                minLength: {
+                                                    value: 6,
+                                                    message: "Пароль должен вмещать 6 и более символов"
+                                                },
+                                            })}
+                                            autoComplete="new-password"
+                                            id="password"
+                                            label="Пароль"
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="password"
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        onClick={handleClickShowPassword}
+                                                        edge="end"
+                                                    >
+                                                        {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
+                                            onBlur={() => {
+                                                trigger("password")
+                                                trigger("passwordCheck")
+                                            }}
+                                        />
+                                        <FormHelperText>{errors.password?.message}</FormHelperText>
+                                    </FormControl>
+                                    <FormControl sx={{my: 1}} error={Boolean(errors.passwordCheck)}
+                                                 variant="outlined">
+                                        <InputLabel required htmlFor="passwordCheck">Повторите
+                                            пароль</InputLabel>
+                                        <OutlinedInput
+                                            {...register("passwordCheck", {
+                                                required: "Повторите пароль",
+                                                minLength: {
+                                                    value: 6,
+                                                    message: "Пароль должен вмещать 6 и более символов"
+                                                },
+                                                validate: {
+                                                    isSame: value => dirtyFields?.passwordCheck && dirtyFields?.password ? value === getValues("password") || "Пароли не одинаковые" : null
+                                                }
+                                            })}
 
-                <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                    Добавить мастера
-                </Typography>
-                <Box sx={{display: "flex", flexDirection: "column"}}>
-                    <FormControl>
-                        <TextField
-                            error={validName}
-                            helperText={validName ? "Введите имя мастера" : ""}
-                            sx={{my: 1}}
-                            id="masterName"
-                            label={`Укажите имя мастера`}
-                            variant="outlined"
-                            value={masterName}
-                            required
-                            onFocus={() => setBlurMasterName(false)}
-                            onBlur={() => setBlurMasterName(true)}
-                            onChange={e => setMasterName(e.target.value)}
-                        />
-                        <TextField
-                            error={error || blurEmail && reg.test(email) === false}
-                            sx={{mb: 1}}
-                            id="Email"
-                            label="Email"
-                            variant="outlined"
-                            type={"email"}
-                            value={email}
-                            helperText={blurEmail && reg.test(email) === false ? "Введите email формата: clock@clock.com" : error ? "Пользователь с таким email уже существует" : error ? "Неверный email или пароль" : ""}
-                            onFocus={() => setBlurEmail(false)}
-                            onBlur={() => setBlurEmail(true)}
-                            onChange={(e => {
-                                setEmail(e.target.value)
-                                setError(null)
-                            })}
-                        />
-
-
-                        <FormControl variant="outlined">
-                            <InputLabel htmlFor="Password">Пароль</InputLabel>
-                            <OutlinedInput
-                                error={error || blurPassword && password.length < 6 || blurPasswordCheck ? password !== passwordCheck : false}
-                                id="Password"
-                                label="Пароль"
-                                type={showPassword ? 'text' : 'password'}
-
-                                value={password}
-                                onChange={(e => {
-                                    setPassword(e.target.value)
-                                    setError(false)
-                                })}
-                                endAdornment={<InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={handleClickShowPassword}
-                                        edge="end"
-                                    >
-                                        {showPassword ? <VisibilityOff/> : <Visibility/>}
-                                    </IconButton>
-                                </InputAdornment>}
-                                onFocus={() => setBlurPassword(false)}
-                                onBlur={() => setBlurPassword(true)}
-                            />
-                            <FormHelperText>{blurPassword && password.length < 6 ? "Длина пароля должна быть не менее 6 символов" : ""}</FormHelperText>
-                        </FormControl>
-                        <FormControl sx={{my: 1}} variant="outlined">
-                            <InputLabel htmlFor="Check Password">Подтвердить пароль</InputLabel>
-                            <OutlinedInput
-                                error={error || blurPasswordCheck && password !== passwordCheck}
-                                id="Check Password"
-                                label="Подтвердить пароль"
-                                type={showPasswordCheck ? 'text' : 'password'}
-                                value={passwordCheck}
-                                onChange={(e => {
-                                    setPasswordCheck(e.target.value)
-                                    setError(false)
-                                })}
-                                endAdornment={<InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={() => setShowPasswordCheck(!showPasswordCheck)}
-                                        edge="end"
-                                    >
-                                        {showPasswordCheck ? <VisibilityOff/> : <Visibility/>}
-                                    </IconButton>
-                                </InputAdornment>}
-                                onFocus={() => setBlurPasswordCheck(false)}
-                                onBlur={() => setBlurPasswordCheck(true)}
-                            />
-                            <FormHelperText
-                                error={true}>{blurPasswordCheck && password !== passwordCheck ? "Пароли не совпадают" : ""}</FormHelperText>
-
-                        </FormControl>
-                        <TextField
-                            sx={{mb: 1}}
-                            id="masterRating"
-                            error={validRating}
-                            helperText={validRating ? 'Введите рейтинг от 0 до 5' : false}
-                            label={`Укажите рейтинг от 0 до 5`}
-                            variant="outlined"
-                            value={masterRating}
-                            type="number"
-                            InputProps={{
-                                inputProps: {
-                                    max: 5, min: 0
-                                }
-                            }}
-                            onChange={e => setMasterRating(Number(e.target.value))}
-                        />
-                        <SelectorMasterCity open={open} error={errMaster}/>
-
-                    </FormControl>
-                    <Box
-                        sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
-                    >
-                        <Button color="success" sx={{flexGrow: 1,}}
-                                variant="outlined"
-                                onClick={addMaster}
-                                disabled={validButton}>
-                            Добавить
-                        </Button>
-                        <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                onClick={close}> Закрыть</Button>
-                    </Box>
-                </Box>
-            </Box>
+                                            defaultValue=""
+                                            autoComplete="new-password"
+                                            id="passwordCheck"
+                                            label="Повторите пароль"
+                                            type={showPasswordCheck ? 'text' : 'password'}
+                                            name="passwordCheck"
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        onClick={() => setShowPasswordCheck(!showPasswordCheck)}
+                                                        edge="end"
+                                                    >
+                                                        {showPasswordCheck ? <VisibilityOff/> : <Visibility/>}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
+                                            onBlur={() => {
+                                                trigger("passwordCheck")
+                                                trigger("password")
+                                            }}
+                                        />
+                                        <FormHelperText>{errors.passwordCheck?.message}</FormHelperText>
+                                    </FormControl>
+                                    <TextField
+                                        {...register("rating", {
+                                            validate: {
+                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть больше не меньше 0',
+                                                lessThanSix: value => parseInt(value) < 6 || 'Рейтинг должен быть не больше 5',
+                                            }
+                                        })}
+                                        sx={{mb: 1}}
+                                        id="rating"
+                                        error={Boolean(errors.rating)}
+                                        helperText={errors.rating?.message}
+                                        label={`Укажите рейтинг от 0 до 5`}
+                                        variant="outlined"
+                                        defaultValue={0}
+                                        name="rating"
+                                        type="number"
+                                        InputProps={{
+                                            inputProps: {
+                                                max: 5, min: 0
+                                            }
+                                        }}
+                                        onBlur={() => trigger("rating")}
+                                    />
+                                    <SelectorMasterCity/>
+                                </FormControl>
+                                <Box
+                                    sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                                >
+                                    <Button color="success" sx={{flexGrow: 1,}}
+                                            variant="outlined"
+                                            type="submit"
+                                            disabled={Object.keys(errors).length !== 0}>
+                                        Добавить
+                                    </Button>
+                                    <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
+                                            onClick={close}> Закрыть</Button>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </form>
+                </FormProvider>
+            </div>
         </Modal>
-    </div>);
+    );
 }
 
 export default CreateMaster;

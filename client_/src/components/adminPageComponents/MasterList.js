@@ -115,7 +115,6 @@ const MasterList = ({alertMessage}) => {
         setIdToEdit(master.id)
         setNameToEdit(master.name)
         setRatingToEdit(master.rating)
-        console.log(cities)
         changeCity = master.cities.map(item => item.id)
         setCityToEdit(cities.cities.filter(cities => changeCity.indexOf(cities.id) > -1))
     }
@@ -240,8 +239,6 @@ const MasterList = ({alertMessage}) => {
                                 >
                                     <EditIcon/>
                                 </IconButton>
-
-
                             </ListItem>
                         )
                     })}
@@ -258,10 +255,10 @@ const MasterList = ({alertMessage}) => {
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
-            <CreateMaster open={createVisible}
-                          getMasters={() => getMasters(page)}
-                          alertMessage={alertMessage}
-                          onClose={() => setCreateVisible(false)}/>
+            {createVisible ? <CreateMaster open={createVisible}
+                                           getMasters={() => getMasters(page)}
+                                           alertMessage={alertMessage}
+                                           onClose={() => setCreateVisible(false)}/> : null}
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>

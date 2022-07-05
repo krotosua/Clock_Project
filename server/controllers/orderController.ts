@@ -15,7 +15,7 @@ import {addHours} from "date-fns";
 
 class OrderController {
 
-    async create(req: Request, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | Order>> {
+    async create(req: Request, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | User>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -61,7 +61,8 @@ class OrderController {
                 return data
             })
             await orderLogic.sendMessage(req, next, result)
-            return res.status(201).json(result!.order)
+            return res.status(201).json(result?.user.token
+                ?? result?.order)
         } catch (e) {
             return next(ApiError.badRequest("Wrong request"))
         }

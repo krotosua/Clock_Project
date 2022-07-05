@@ -6,6 +6,7 @@ import {
     setUserNameAction,
     setUserRoleAction
 } from "../store/UserStore";
+import {ERROR_401, ERROR_404} from "../utils/constErrors";
 
 export const loginUser = (email, password) => {
     return async dispatch => {
@@ -18,6 +19,11 @@ export const loginUser = (email, password) => {
             return dataUser
         } catch (e) {
             dispatch(setIsEmptyUserAction(true))
+            if (e.message === "Request failed with status code 401") {
+                throw new Error(ERROR_401)
+            } else if (e.message === "Request failed with status code 404") {
+                throw new Error(ERROR_404)
+            }
         }
     }
 }

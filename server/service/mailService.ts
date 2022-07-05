@@ -19,8 +19,6 @@ export default new class MailService {
                 rejectUnauthorized: false
             }
         })
-
-
     }
 
     sendMail(mailInfo: { name: string, time: string, email: string, password: string, size: string, masterName: string, cityName: string, orderNumber: number },
@@ -90,10 +88,11 @@ export default new class MailService {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: email,
-            subject: `Оцените заказ №${id}`,
+            subject: `Заказ выполнен.Оцените заказ №${id}`,
             text: "",
             html:
                 `<div>
+             <h2>Ваш заказ выполнен.</h2>
              <h3>Можете оставить оценку выполнения Вашего заказа по ссылке:</h3>
               <a href="${link}">${link}</a>
          
@@ -110,7 +109,7 @@ export default new class MailService {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: email,
-            subject: 'Активация аккаунта на',
+            subject: 'Активация аккаунта',
             text: "",
             html:
                 `<div>

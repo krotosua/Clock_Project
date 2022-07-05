@@ -218,6 +218,7 @@ class User extends Model<UserAttributes, UserInput>
     public orders?: Array<Order>;
     declare customerId?: number;
     declare masterId?: number;
+    declare token?: string;
     declare getCustomer: HasManyGetAssociationsMixin<Customer>;
     declare getMaster: HasManyGetAssociationsMixin<Master>;
 }
