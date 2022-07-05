@@ -60,7 +60,6 @@ const Auth = observer(() => {
                 password,
                 isMaster,
                 name,
-                cityId: cities.selectedCity ?? undefined
             }
             if (password.length >= 6 && reg.test(email) !== false) {
                 await registration(dataUser)
