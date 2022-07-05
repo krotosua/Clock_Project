@@ -33,8 +33,6 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
             rating,
             cityId: cityList.map(city => city.id)
         }
-        console.log(changeInfo)
-        return
         try {
             await updateMaster(changeInfo)
             await getMasters()

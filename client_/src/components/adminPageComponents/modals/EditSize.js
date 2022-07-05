@@ -43,7 +43,6 @@ const EditSize = ({open, onClose, idToEdit, alertMessage, sizeToEdit, dateToEdit
             alertMessage('Не удалось изменить название', true)
         }
     }
-    console.log(errors)
 
     const close = () => {
         onClose()
