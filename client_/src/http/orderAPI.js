@@ -1,7 +1,7 @@
 import {$authHost, $host} from "./index";
 
 export const createOrder = async (body) => {
-    await $host.post('api/orders/', body)
+    return await $host.post('api/orders/', body)
 }
 
 export const fetchAlLOrders = async (page, limit) => {

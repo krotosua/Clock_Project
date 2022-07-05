@@ -1,9 +1,12 @@
-import React, {useState} from 'react';
-import {Box, Button, FormControl, Modal, TextField, Typography} from "@mui/material";
+import React from 'react';
+import {Box, Button, FormControl, FormHelperText, Modal, TextField, Typography} from "@mui/material";
 import {createSize} from "../../../http/sizeAPI";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import {TimePicker} from "@mui/lab";
+import {Controller, useForm} from "react-hook-form";
+import ruLocale from "date-fns/locale/ru";
+import {ERROR_400} from "../../../utils/constErrors";
 
 
 const style = {
@@ -18,20 +21,26 @@ const style = {
     p: 4,
 };
 const CreateSize = ({open, onClose, alertMessage, getSize}) => {
-    const [sizeName, setSizeName] = useState("")
-    const [sizeTime, setSizeTime] = useState(null)
-    const [errSize, setErrSize] = useState(false)
-    const [openTime, setOpenTime] = useState(false)
-    const [blurSizeName, setBlurSizeName] = useState(false)
-
-    const addSize = async () => {
-        if (!sizeName || !sizeTime) {
-            setErrSize(true)
-            return
+    const {
+        register,
+        watch,
+        trigger,
+        control,
+        handleSubmit,
+        setError,
+        setValue,
+        formState: {errors}
+    } = useForm({
+        defaultValues: {
+            time: new Date(new Date().setHours(1, 0, 0)),
+            openTime: false
         }
+    });
+
+    const addSize = async ({sizeName, time}) => {
         const infoSize = {
             name: sizeName.trim(),
-            date: sizeTime.toLocaleTimeString(),
+            date: time.toLocaleTimeString(),
         }
         try {
             await createSize(infoSize)
@@ -39,85 +48,107 @@ const CreateSize = ({open, onClose, alertMessage, getSize}) => {
             getSize()
             close()
         } catch (e) {
-            setErrSize(true)
+            if (e.message === ERROR_400) {
+                setError("sizeName", {
+                    type: "manual",
+                    message: "Имя уже занято"
+                })
+            }
             alertMessage("Не удалось добавить размер часов", true)
         }
     }
     const close = () => {
         onClose()
     }
-    //--------------------Validation
-    const validName = blurSizeName && sizeName.length === 0
-    const validButton = errSize || sizeName.length === 0 || !sizeTime
     return (
         <div>
             <Modal
                 open={open}
                 onClose={close}
             >
-                <Box sx={style}>
-                    <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                        Добавить новые размеры часов
-                    </Typography>
-                    <Box sx={{display: "flex", flexDirection: "column"}}>
-                        <FormControl>
-                            <TextField
-                                error={errSize || validName}
-                                helperText={validName ? "Введите название часов" :
-                                    errSize ? "Часы с таким именем уже существуют" : ""}
-                                sx={{mt: 2}}
-                                id="city"
-                                label="Введите название часов"
-                                variant="outlined"
-                                value={sizeName}
-                                onFocus={() => setBlurSizeName(false)}
-                                onBlur={() => setBlurSizeName(true)}
-                                onChange={e => {
-                                    setSizeName(e.target.value)
-                                    setErrSize(false)
-                                }}
-
-                            />
-                            <div>
-                                <LocalizationProvider sx={{my: 2}} dateAdapter={AdapterDateFns}>
-                                    <TimePicker
-                                        readOnly
-
-                                        label="Кол-во часов на ремонт"
-                                        open={openTime}
-                                        value={sizeTime}
-                                        minTime={new Date(0, 0, 0, 1)}
-                                        ampm={false}
-                                        views={["hours"]}
-                                        onChange={(newValue) => {
-                                            setSizeTime(newValue);
-                                            setOpenTime(false)
+                <form onSubmit={handleSubmit(addSize)}>
+                    <Box sx={style}>
+                        <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
+                            Добавить новые размеры часов
+                        </Typography>
+                        <Box sx={{display: "flex", flexDirection: "column"}}>
+                            <FormControl>
+                                <TextField
+                                    {...register("sizeName", {
+                                        required: "Введите название часов",
+                                        shouldFocusError: false,
+                                    })}
+                                    sx={{my: 2}}
+                                    error={Boolean(errors.sizeName)}
+                                    helperText={errors.sizeName?.message}
+                                    id="sizeName"
+                                    name="sizeName"
+                                    label="Введите название часов"
+                                    variant="outlined"
+                                    onBlur={() => trigger("sizeName")}
+                                />
+                                <div>
+                                    <Controller
+                                        name="time"
+                                        control={control}
+                                        render={({field: {onChange, value}, fieldState: {error}}) => (
+                                            <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
+                                                <TimePicker
+                                                    readOnly
+                                                    label="Выберите время"
+                                                    value={value || ""}
+                                                    open={watch("openTime", false)}
+                                                    onChange={(newValue) => {
+                                                        onChange(newValue)
+                                                        setValue("openTime", false)
+                                                    }}
+                                                    minTime={new Date(0, 0, 0, 1)}
+                                                    onError={() =>
+                                                        setError("time", {
+                                                            type: "manual",
+                                                            message: "Неверное время"
+                                                        })}
+                                                    onBlur={() => trigger("time")}
+                                                    ampm={false}
+                                                    views={["hours"]}
+                                                    renderInput={(params) =>
+                                                        <TextField
+                                                            sx={{
+                                                                '& .MuiInputBase-input': {
+                                                                    cursor: "pointer"
+                                                                }
+                                                            }}
+                                                            onClick={() => {
+                                                                setValue("openTime", true)
+                                                            }}
+                                                            {...params} />}
+                                                />
+                                            </LocalizationProvider>)}
+                                        rules={{
+                                            required: 'Укажите время'
                                         }}
-                                        renderInput={(params) =>
-                                            <TextField onClick={() => setOpenTime(true)}
-                                                       sx={{
-                                                           my: 2,
-                                                           '& .MuiInputBase-input': {
-                                                               cursor: "pointer"
-                                                           }
-                                                       }}
-                                                       {...params} />}
                                     />
-                                </LocalizationProvider>
-                            </div>
-                        </FormControl>
-                        <Box
-                            sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
-                        >
-                            <Button color="success" sx={{flexGrow: 1,}} variant="outlined"
-                                    disabled={validButton}
-                                    onClick={addSize}> Добавить</Button>
-                            <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
-                                    onClick={close}> Закрыть</Button>
+                                </div>
+                                <FormHelperText
+                                    sx={{mt: -2}}
+                                    error={Boolean(errors.time)}>{errors.time?.message}</FormHelperText>
+                            </FormControl>
+                            <Box
+                                sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                            >
+                                <Button color="success"
+                                        sx={{flexGrow: 1}}
+                                        variant="outlined"
+                                        type="submit"
+                                        disabled={Object.keys(errors).length !== 0}
+                                > Добавить</Button>
+                                <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
+                                        onClick={close}> Закрыть</Button>
+                            </Box>
                         </Box>
-                    </Box>
 
-                </Box>
+                    </Box>
+                </form>
             </Modal>
         </div>
     );

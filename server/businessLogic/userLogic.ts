@@ -48,7 +48,6 @@ class UserLogic {
                 const newUser: User | null = await User.create({email, role, password: hashPassword, activationLink})
                 if (isMaster) {
                     req.body.userId = newUser.id
-
                     await masterController.create(req, res, next)
                 } else {
                     await Customer.create({userId: newUser.id, name})
@@ -110,10 +109,13 @@ class UserLogic {
                 regCustomer,
                 changeName
             }: GetOrCreateUserDTO = req.body
-            const candidate: User | null = await User.findOne({where: {email}})
+            const candidate: User | null = await User.findOne({where: {email}, include: {all: true, nested: true}})
             if (candidate) {
                 if (changeName && candidate.password !== null) {
                     await Customer.update({name: name}, {where: {userId: candidate.id}})
+                    const customer: Customer | null = await Customer.findOne({where: {userId: candidate.id}})
+                    const token = generateJwt(candidate.id, candidate.email, candidate.role, candidate.isActivated, customer?.name)
+                    candidate.token = token
                 }
                 if (!regCustomer) {
                     return candidate

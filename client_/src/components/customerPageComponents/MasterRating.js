@@ -30,18 +30,16 @@ const style = {
     p: 4,
 };
 
-const getLabelText = (value) => {
-    return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
+const getLabelText = (rating) => {
+    return `${rating} Star${rating !== 1 ? 's' : ''}, ${labels[rating]}`;
 }
-
 const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
     const user = useSelector(state => state.user)
     const [rating, setRating] = useState(0);
-    const [hoverRatingLabels, setHoverRatingLabels] = useState(null);
+    const [review, setReview] = useState("")
+    const [hoverRatingLabels, setHoverRatingLabels] = useState(-1);
     const location = useLocation();
     const customer = location.pathname === `${CUSTOMER_ORDER_ROUTE}/${user.user.id}`
-
-    const [review, setReview] = useState("")
     const sendRating = async () => {
         const post = {
             rating: rating,
@@ -98,7 +96,7 @@ const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
                                 }}
                                 emptyIcon={<StarIcon style={{opacity: 0.55}} fontSize="inherit"/>}
                             />
-                            {!rating || (
+                            {rating !== null && (
                                 <Box sx={{
                                     ml: 2,
                                     fontSize: 25

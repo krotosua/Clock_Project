@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
+import {Box, FormControl, FormHelperText, InputLabel, MenuItem, Select} from '@mui/material';
 import {fetchSize} from "../../http/sizeAPI";
+import {Controller, useFormContext} from "react-hook-form";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -13,49 +14,57 @@ const MenuProps = {
     },
 };
 
-export default function SelectorSize({setChosenSize, sizeToEdit, chosenSize, closeList, editOpen, cleanMaster}) {
-    const [clock, setClock] = useState(chosenSize.id ?? sizeToEdit ?? '');
+export default function SelectorSize({setChosenSize, sizeToEdit, chosenSize, cleanMaster}) {
     const [clockList, setClockList] = useState([])
+    const {control, errors, trigger, setValue} = useFormContext();
     useEffect(async () => {
         try {
             const res = await fetchSize(null, null)
             setClockList(res.data.rows)
+            if (sizeToEdit) {
+                setChosenSize(res.data.rows.find(size => size.id === sizeToEdit))
+            }
         } catch (e) {
             setClockList([])
         }
     }, []);
-
-    const handleEditChange = (event) => {
-        setClock(event.target.value);
-        closeList()
-    };
-    const handleChange = (event) => {
-        setClock(event.target.value);
-        cleanMaster()
-    };
-
-
+    const handelChange = (onChange, e) => {
+        onChange(e)
+        if (sizeToEdit) {
+            setValue("openList", false)
+        }
+    }
     return (<Box sx={{minWidth: 120}}>
-            <FormControl fullWidth>
+            <Controller
+                name="size"
+                control={control}
+                render={({field: {onChange, value}, fieldState: {error}}) => (
+                    <FormControl error={!!error} fullWidth>
+                        <InputLabel id="size"> Выберите размер часов</InputLabel>
+                        <Select
+                            labelId="size"
+                            value={value || ""}
+                            required
+                            label={"Выберите размер часов"}
+                            onChange={(e) => handelChange(onChange, e)}
+                            MenuProps={MenuProps}
+                            onBlur={() => trigger("size")}
+                        >
+                            {clockList.map((clock, index) => <MenuItem
+                                key={index}
+                                value={clock.id ?? ""}
+                                onClick={() => setChosenSize(clock)}
+                            >
+                                {clock.name}
+                            </MenuItem>) ?? null}
 
-                <InputLabel id="size"> Выберите размер часов</InputLabel>
-                <Select
-                    labelId="size"
-                    value={clock}
-                    label={"Выберите размер часов"}
-                    onChange={editOpen ? handleEditChange : handleChange}
-                    MenuProps={MenuProps}
-                >
-                    {clockList.map((clock, index) => <MenuItem
-                        key={index}
-                        value={clock.id}
-                        onClick={() => setChosenSize(clock)}
-                    >
-                        {clock.name}
-                    </MenuItem>)}
-
-                </Select>
-            </FormControl>
+                        </Select>
+                        <FormHelperText>{error?.message}</FormHelperText>
+                    </FormControl>)}
+                rules={{
+                    required: 'Укажите размер часов'
+                }}
+            />
         </Box>
     );
 }
