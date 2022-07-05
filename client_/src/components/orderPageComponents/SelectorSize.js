@@ -20,6 +20,10 @@ export default function SelectorSize({setChosenSize, sizeToEdit, chosenSize, cle
     useEffect(async () => {
         try {
             const res = await fetchSize(null, null)
+            if (res.status === 204) {
+                setClockList([])
+                return
+            }
             setClockList(res.data.rows)
             if (sizeToEdit) {
                 setChosenSize(res.data.rows.find(size => size.id === sizeToEdit))

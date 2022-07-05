@@ -51,6 +51,7 @@ const MasterList = ({alertMessage}) => {
             const res = await fetchMasters(null, page, limit)
             if (res.status === 204) {
                 setMastersList([])
+                return
             }
             setMastersList(res.data.rows)
             setTotalCount(res.data.count)

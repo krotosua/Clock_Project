@@ -13,9 +13,20 @@ class OrderLogic {
             sizeClockId,
             masterId,
             cityId,
-            price
+            price,
+            isPaid
         }: CreateOrderDTO = req.body
-        return await Order.create({name, sizeClockId, userId, time, endTime, masterId, cityId, price})
+        return await Order.create({
+            name,
+            sizeClockId,
+            userId,
+            time,
+            endTime,
+            masterId,
+            cityId,
+            price,
+            status: isPaid ? STATUS.ACCEPTED : STATUS.WAITING
+        })
     }
 
     async getUserOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
@@ -181,6 +192,22 @@ class OrderLogic {
                 const email: string = mailInfo.user.email
                 MailService.sendOrderDone(email, orderId, `${process.env.RATING_URL}/${ratingLink}`, next)
             }
+            return orderUpdate
+        } catch (e) {
+            next(ApiError.badRequest((e as Error).message))
+            return
+        }
+    }
+
+    async payPalChange(req: Request, res: Response, next: NextFunction): Promise<void | UpdateDB<Order>> {
+        try {
+            const orderId: string = req.params.orderId
+            const payPalId: string = req.body.payPalId
+            const orderUpdate: UpdateDB<Order> = await Order.update({
+                status: STATUS.ACCEPTED,
+                payPalId: payPalId
+            }, {where: {id: orderId}})
+
             return orderUpdate
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))

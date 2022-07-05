@@ -9,6 +9,7 @@ export type CreateOrderDTO = {
     cityId: number;
     price: number;
     changedMaster?: boolean
+    isPaid?: boolean
 }
 
 export enum STATUS {

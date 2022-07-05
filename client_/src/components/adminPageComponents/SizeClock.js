@@ -36,6 +36,7 @@ const SizeList = ({alertMessage, getValue}) => {
             const res = await fetchSize(page, 10)
             if (res.status === 204) {
                 setSizesList([])
+                return
             }
             setSizesList(res.data.rows)
             setTotalCount(res.data.count)

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import Cards from "../components/startPageComponents/cards"
 import AboutCompany from "../components/startPageComponents/aboutCompany";
 import {Box, Button} from "@mui/material";
@@ -9,9 +9,11 @@ import {check} from "../http/userAPI";
 import {setIsAuthUserAction, setUserAction, setUserNameAction, setUserRoleAction} from "../store/UserStore";
 import {useDispatch} from "react-redux";
 
+
 const Start = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const [checkout, setCheckOut] = useState(false);
     useEffect(async () => {
         if (localStorage.getItem('token') !== "" ||
             localStorage.getItem('token')) {

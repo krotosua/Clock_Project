@@ -22,6 +22,10 @@ const SelectorCity = ({chosenCity, cityToEdit, cleanMaster, closeList, editOpen,
     useEffect(async () => {
         try {
             const res = await fetchCities(null, null)
+            if (res.status === 204) {
+                setCitiesList([])
+                return
+            }
             setCitiesList(res.data.rows)
             if (cityToEdit) {
                 setChosenCity(res.data.rows.find(size => size.id === cityToEdit))
