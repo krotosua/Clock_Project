@@ -704,7 +704,7 @@ const OrderStepper = ({alertMessage}) => {
                                                 <PayPalScriptProvider>
                                                     <PayPalButtons
                                                         options={{
-                                                            clientId: "ATEhzvlgbtMfiPusn13zj5jS29kY1k2tDUpswaPCGCaMK4ZlC9f0cddJn1c44jYLq1gh5FA5lSJWruGZ"
+                                                            clientId: process.env.PRODUCTION_CLIENT_ID
                                                         }}
                                                         createOrder={(data, actions) => {
                                                             return actions.order.create({
@@ -741,7 +741,7 @@ const OrderStepper = ({alertMessage}) => {
                                                 <Button variant="outlined"
                                                         fullWidth
                                                         navigate={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}>
-                                                    Продолжить без оплаты</Button>
+                                                    {openPayPal ? "Продолжить без оплаты" : "К заказам"}</Button>
                                             </Link> :
                                             <Link to={START_ROUTE}
                                                   style={{textDecoration: 'none', color: 'white'}}>
