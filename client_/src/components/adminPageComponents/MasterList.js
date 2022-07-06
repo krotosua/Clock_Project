@@ -5,11 +5,16 @@ import {
     Button,
     CircularProgress,
     Divider,
+    FormControl,
     IconButton,
+    InputLabel,
     List,
     ListItem,
+    ListItemButton,
     ListItemText,
+    MenuItem,
     Rating,
+    Select,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -23,6 +28,8 @@ import TablsPagination from "../TablsPagination";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
 import {useSelector} from "react-redux";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 
 const MasterList = ({alertMessage}) => {
@@ -39,18 +46,19 @@ const MasterList = ({alertMessage}) => {
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState()
     const [limit, setLimit] = useState(10)
+    const [ascending, setAscending] = useState(true)
+    const [sorting, setSorting] = useState("name")
     const [loading, setLoading] = useState(true)
     const [openCityList, setOpenCityList] = useState(null)
     const citiesLimit = 2
 
-    useEffect(async () => {
-        await getMasters()
-    }, [page, limit])
-    const getMasters = async () => {
+
+    const getMasters = async (page, limit, sorting, ascending) => {
         try {
-            const res = await fetchMasters(null, page, limit)
+            const res = await fetchMasters(null, page, limit, sorting, ascending)
             if (res.status === 204) {
                 setMastersList([])
+                return
             }
             setMastersList(res.data.rows)
             setTotalCount(res.data.count)
@@ -60,6 +68,9 @@ const MasterList = ({alertMessage}) => {
             setLoading(false)
         }
     }
+    useEffect(async () => {
+        await getMasters(page, limit, sorting, ascending)
+    }, [page, limit, sorting, ascending])
     if (loading) {
         return (
             <Box sx={{
@@ -122,13 +133,36 @@ const MasterList = ({alertMessage}) => {
         setMasterId(id)
         setOpenReview(true)
     }
+    const sortingList = (param) => {
+        if (sorting === param) {
+            setAscending(!ascending)
+            return
+        }
+        setAscending(true)
+        setSorting(param)
+    }
     return (<Box sx={{position: "relative"}}>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
-            <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
-                Мастера
-            </Typography>
+            <Box sx={{display: "flex", justifyContent: "space-between"}}>
+                <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
+                    Мастера
+                </Typography>
+                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
+                    <InputLabel id="limit">Лимит</InputLabel>
+                    <Select
+                        labelId="limit"
+                        id="limit"
+                        value={limit}
+                        onChange={(e) => setLimit(e.target.value)}
+                        label="Лимит"
+                    >
+                        <MenuItem value={10}>10</MenuItem>
+                        <MenuItem value={25}>25</MenuItem>
+                        <MenuItem value={50}>50</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
             <List disablePadding>
-
                 <ListItem
                     key={1}
                     divider
@@ -142,27 +176,59 @@ const MasterList = ({alertMessage}) => {
 
                             <AddIcon/>
                         </IconButton>
-                    </Tooltip>}
-                >
-                    <ListItemText sx={{width: 10}}
-                                  primary="№"/>
-                    <ListItemText sx={{width: 10}}
-                                  primary="ID пользователя"/>
-                    <ListItemText sx={{width: 10, textAlign: "center"}}
-                                  primary="Имя мастера"/>
-                    <ListItemText sx={{width: 10, textAlign: "center"}}
-                                  primary="Рейтинг"/>
-                    <ListItemText sx={{width: 10, textAlign: "center"}}
-                                  primary="Город"/>
-                    <ListItemText sx={{width: 10}}
-                                  primary="Комментарии"/>
-                    <ListItemText sx={{width: 10}}
-                                  primary="Статус"/>
+                    </Tooltip>}>
+                    <ListItemButton
+                        selected={sorting === "id"}
+                        sx={{ml: -2, maxWidth: 100}}
+                        onClick={() => sortingList("id")}>
+                        ID мастера
+                        {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "userId"}
+                        sx={{width: 120}}
+                        onClick={() => sortingList("userId")}>
+                        ID пользователя
+                        {ascending ? sorting === "userId" && <ExpandMoreIcon/> : sorting === "userId" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "name"}
+                        sx={{maxWidth: 100,}}
+                        onClick={() => sortingList("name")}>
+                        Имя мастера
+                        {ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
+                    </ListItemButton>
+
+                    <ListItemButton
+                        selected={sorting === "rating"}
+                        sx={{maxWidth: 100, mr: 2}}
+                        onClick={() => sortingList("rating")}
+                    >
+                        Рейтинг
+                        {ascending ? sorting === "rating" && <ExpandMoreIcon/> : sorting === "rating" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+
+                    <ListItemText sx={{minWidth: 100}}
+                                  primary="Город(а)"
+                    />
+                    <ListItemText sx={{minWidth: 100}}
+                                  primary="Комментарии"
+                    />
+                    <ListItemButton
+                        selected={sorting === "isActivated"}
+                        sx={{mr: 4, width: 100}}
+                        onClick={() => sortingList("isActivated")}>
+                        Статус
+                        {ascending ? sorting === "isActivated" && <ExpandMoreIcon/> : sorting === "isActivated" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
                 </ListItem>
 
                 <Divider orientation="vertical"/>
                 {mastersList.length === 0 ? <h1>Список пуст</h1> :
-                    mastersList.map((master, index) => {
+                    mastersList.map((master) => {
                         return (
                             <ListItem
                                 key={master.id}
@@ -176,7 +242,7 @@ const MasterList = ({alertMessage}) => {
                                         <DeleteIcon/>
                                     </IconButton>}>
                                 <ListItemText sx={{width: 10}}
-                                              primary={index + 1}
+                                              primary={master.id}
                                 />
                                 <ListItemText sx={{width: 10}}
                                               primary={master.user.id}/>
@@ -190,7 +256,6 @@ const MasterList = ({alertMessage}) => {
                                                           precision={0.2} readOnly/>}/>
                                 <ListItemText sx={{
                                     width: 10,
-                                    textAlign: "center",
                                     pl: openCityList === master ? 5 : 0,
                                     maxHeight: 150,
                                     overflowY: "auto",
@@ -222,7 +287,7 @@ const MasterList = ({alertMessage}) => {
                                                       <ReviewsIcon/>
                                                   </IconButton>
                                               }/>
-                                <ListItemText sx={{width: 10}}
+                                <ListItemText sx={{width: 10, mr: 5}}
                                               primary={
                                                   <Button color={master.isActivated ? "success" : "error"}
                                                           size="small"

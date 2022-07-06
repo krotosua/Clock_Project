@@ -25,15 +25,19 @@ class MasterLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
         try {
             let {limit, page}: Pagination = req.query;
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
             page = page || 1;
             limit = limit || 12;
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master> = await Master.findAndCountAll({
                 distinct: true,
-                order: [['rating', 'DESC']],
+                order: [[sorting, directionUp],
+                    [City, "name", 'ASC']
+                ],
                 attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
                     model: City, through: {
