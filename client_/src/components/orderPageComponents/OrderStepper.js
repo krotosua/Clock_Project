@@ -556,7 +556,7 @@ const OrderStepper = ({alertMessage}) => {
                                         <Button
                                             type={"submit"}
                                             disabled={!chosenMaster}>
-                                            Отправить заказ без оплаты
+                                            Отправить заказ
                                         </Button>
                                     </Box>
                                 </Box>) :
@@ -726,10 +726,12 @@ const OrderStepper = ({alertMessage}) => {
 
                                                         }}
                                                         onError={() => {
+                                                            setValue("errorPayPal", true)
                                                             alertMessage('Не удалось выполнить оплату', true)
                                                         }}
                                                     />
                                                 </PayPalScriptProvider>
+                                                {getValues("errorPayPal") && "Произошла ошибка при оплате"}
                                             </Box> :
                                             <Typography variant="h5" sx={{my: 2, textAlign: "center"}}>Заказ успешно
                                                 оплачен</Typography>}
@@ -739,7 +741,7 @@ const OrderStepper = ({alertMessage}) => {
                                                 <Button variant="outlined"
                                                         fullWidth
                                                         navigate={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}>
-                                                    К заказам</Button>
+                                                    Продолжить без оплаты</Button>
                                             </Link> :
                                             <Link to={START_ROUTE}
                                                   style={{textDecoration: 'none', color: 'white'}}>
