@@ -57,13 +57,17 @@ const Admin = () => {
 
     return (
         <Box sx={{
+            width: 1400,
+            background: "white",
             mt: 8,
+            ml: -20,
+            px: 1,
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(5, 1fr)',
             gridTemplateRows: 'auto',
-            gridTemplateAreas: `"menu main main main" 
-                                    "menu main main main"
-                                    "menu main main main"`
+            gridTemplateAreas: `"menu main main main main" 
+                                    "menu main main main main"
+                                    "menu main main main main"`
 
         }}>
             <List sx={{

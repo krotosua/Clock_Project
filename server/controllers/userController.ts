@@ -26,7 +26,7 @@ class UserController {
         await userLogic.checkEmail(req, res)
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void> {
         await userLogic.getAll(req, res, next)
     }
 

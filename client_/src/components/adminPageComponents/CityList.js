@@ -33,9 +33,9 @@ const CityList = ({alertMessage}) => {
     const [cityToEdit, setCityToEdit] = useState(null);
     const [citiesList, setCitiesList] = useState(null)
     const [page, setPage] = useState(1)
-    const [sorting, setSorting] = useState("name")
     const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
+    const [sorting, setSorting] = useState("name")
     const [ascending, setAscending] = useState(true)
     const [loading, setLoading] = useState(true)
 
@@ -62,7 +62,7 @@ const CityList = ({alertMessage}) => {
     const removeCity = async (id) => {
         try {
             await deleteCity(id)
-            await getCities(page, limit)
+            await getCities(page, limit, sorting, ascending)
             alertMessage('Успешно удаленно', false)
         } catch (e) {
             alertMessage('Не удалось удалить, так как в городе присутствуют мастера', true)
@@ -126,6 +126,7 @@ const CityList = ({alertMessage}) => {
                         </IconButton>
                     </Tooltip>}
                 >
+
                     <ListItemButton
                         selected={sorting === "id"}
                         onClick={() => sortingList("id")}
@@ -167,7 +168,7 @@ const CityList = ({alertMessage}) => {
                                 </IconButton>
                             </Tooltip>}
                         >
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={{width: 10,}}
                                           primary={city.id}
                             />
                             <ListItemText sx={{width: 10}}
@@ -201,13 +202,13 @@ const CityList = ({alertMessage}) => {
                 onClose={() => {
                     setEditVisible(false)
                 }}
-                getCities={() => getCities()}
+                getCities={() => getCities(page, limit, sorting, ascending)}
                 cityToEdit={cityToEdit}
                 alertMessage={alertMessage}
             /> : null}
 
             {cityVisible ? <CreateCity open={cityVisible}
-                                       getCities={() => getCities(page, limit)}
+                                       getCities={() => getCities(page, limit, sorting, ascending)}
                                        onClose={() => setCityVisible(false)}
                                        alertMessage={alertMessage}/> : null}
         </Box>

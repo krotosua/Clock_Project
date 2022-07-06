@@ -215,19 +215,22 @@ class UserLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<User> | { message: string }>> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<User> | { message: string }>> {
         try {
             let pagination: Pagination = req.query;
             pagination.page = pagination.page || 1;
             pagination.limit = pagination.limit || 9;
+            const sorting: string = req.query.sorting ?? "id"
+            const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            console.log(sorting, directionUp)
             const offset: number = pagination.page * pagination.limit - pagination.limit;
             const users: GetRowsDB<User> = await User.findAndCountAll(
                 {
-                    order: [['id', 'ASC']],
+                    order: [[sorting, directionUp]],
                     attributes: ["email", "id", "role", "isActivated"],
                     include: [{
                         model: Master
-                    },], limit: pagination.limit, offset
+                    }], limit: pagination.limit, offset
                 })
             if (!users.count) {
                 return res.status(204).json({message: "List is empty"});

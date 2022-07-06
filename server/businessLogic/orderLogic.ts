@@ -1,4 +1,4 @@
-import {Master, Order, Rating, SizeClock, User} from '../models/models'
+import {City, Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
@@ -89,14 +89,19 @@ class OrderLogic {
         }
     }
 
-    async getAllOrders(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
+    async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
             const pagination: Pagination = req.query
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const offset: number = pagination.page * pagination.limit - pagination.limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
-                order: [['id', 'DESC']],
+                order: [sorting === "masterName" ? [Master, "name", directionUp]
+                    : sorting === "date" ? [SizeClock, sorting, directionUp] :
+                        sorting === "cityName" ? [City, "name", directionUp] :
+                            sorting === "cityPrice" ? [City, "price", directionUp] : [sorting, directionUp]],
                 include: [{
                     model: Master,
                 }, {
@@ -106,8 +111,10 @@ class OrderLogic {
                 }, {
                     model: User,
                     attributes: ['email'],
-
-                }], limit: pagination.limit, offset
+                },
+                    {
+                        model: City,
+                    }], limit: pagination.limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})

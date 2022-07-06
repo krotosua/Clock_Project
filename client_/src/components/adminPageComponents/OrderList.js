@@ -2,6 +2,7 @@ import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {
     Box,
+    Button,
     CircularProgress,
     Divider,
     FormControl,
@@ -9,6 +10,7 @@ import {
     InputLabel,
     List,
     ListItem,
+    ListItemButton,
     ListItemText,
     MenuItem,
     Select,
@@ -25,19 +27,22 @@ import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
 import {STATUS_LIST} from "../../store/OrderStore";
 import {add, getHours, isPast, set, setHours} from 'date-fns'
-import {useSelector} from "react-redux";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 
 const OrderList = ({alertMessage}) => {
-    const cities = useSelector(state => state.cities)
     const [editVisible, setEditVisible] = useState(false)
+    const [openFilters, setOpenFilters] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
     const [orderToEdit, setOrderToEdit] = useState(null)
     const [ordersList, setOrdersList] = useState(null)
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
-    const [limit, setLimit] = useState(8)
+    const [limit, setLimit] = useState(10)
+    const [sorting, setSorting] = useState("time")
+    const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
     const handleChange = async (statusOrder, order) => {
         try {
@@ -52,9 +57,9 @@ const OrderList = ({alertMessage}) => {
             alertMessage("Не удалось изменить статус заказа", true)
         }
     };
-    const getOrders = async () => {
+    const getOrders = async (page, limit, sorting, ascending) => {
         try {
-            const res = await fetchAlLOrders(page, limit)
+            const res = await fetchAlLOrders(page, limit, sorting, ascending)
             if (res.status === 204) {
                 setOrdersList([])
                 return
@@ -69,8 +74,8 @@ const OrderList = ({alertMessage}) => {
     }
     const navigate = useNavigate()
     useEffect(async () => {
-        await getOrders()
-    }, [page, limit])
+        await getOrders(page, limit, sorting, ascending)
+    }, [page, limit, sorting, ascending])
 
     const removeOrder = async (id) => {
         try {
@@ -99,14 +104,36 @@ const OrderList = ({alertMessage}) => {
         setTimeToEdit(set(new Date(0, 0, 0), {hours: time.slice(0, 2)}))
         setEditVisible(true)
     }
+    const sortingList = (param) => {
+        if (sorting === param) {
+            setAscending(!ascending)
+            return
+        }
+        setAscending(true)
+        setSorting(param)
+    }
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
-            <Typography sx={{mt: 4, mb: 2}}
-                        variant="h6"
-                        component="div">
-                Заказы
-            </Typography>
-
+            <Box sx={{display: "flex", justifyContent: "space-between"}}>
+                <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
+                    Список заказов
+                </Typography>
+                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
+                    <InputLabel id="limit">Лимит</InputLabel>
+                    <Select
+                        labelId="limit"
+                        id="limit"
+                        value={limit}
+                        onChange={(e) => setLimit(e.target.value)}
+                        label="Лимит"
+                    >
+                        <MenuItem value={10}>10</MenuItem>
+                        <MenuItem value={25}>25</MenuItem>
+                        <MenuItem value={50}>50</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
+            <Button onClick={() => setOpenFilters(true)} variant="text">Добавить фильтры</Button>
             <List disablePadding>
                 <ListItem
                     key={1}
@@ -126,40 +153,91 @@ const OrderList = ({alertMessage}) => {
                         </Tooltip>
                     </Link>}
                 >
-                    <ListItemText sx={{width: 10}}
-                                  primary="ID"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Имя"
-                    />
+                    <ListItemButton
+                        selected={sorting === "id"}
+                        sx={{ml: -2, maxWidth: 70}}
+                        onClick={() => sortingList("id")}
+                    >
+                        ID
+                        {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        sx={{maxWidth: 120, ml: 5}}
+                        selected={sorting === "name"}
+                        onClick={() => sortingList("name")}
+                    >
+                        Имя
+                        {ascending ? sorting === "name" && <ExpandMoreIcon sx={{maxWidth: 40}}/> : sorting === "name" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
 
-                    <ListItemText sx={{width: 10, mr: 3}}
-                                  primary="Дата и время"
-                    />
+                    <ListItemButton
+                        selected={sorting === "time"}
+                        sx={{maxWidth: 120, ml: 2}}
+                        onClick={() => sortingList("time")}
+                    >
+                        Дата и время
+                        {ascending ? sorting === "time" && <ExpandMoreIcon/> : sorting === "time" && <ExpandLessIcon/>}
+                    </ListItemButton>
 
-                    <ListItemText sx={{width: 10}}
-                                  primary="Мастер"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Город"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Цена за час"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Время работы"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Итог"
-                    />
-                    <ListItemText sx={{width: 10, mr: 4}}
-                                  primary="Статус"
-                    />
+                    <ListItemButton
+                        selected={sorting === "masterName"}
+                        sx={{maxWidth: 100, ml: 2}}
+                        onClick={() => sortingList("masterName")}
+                    >
+                        Мастер
+                        {ascending ? sorting === "masterName" && <ExpandMoreIcon/> : sorting === "masterName" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        sx={{maxWidth: 100, mr: 4}}
+                        selected={sorting === "cityName"}
+                        onClick={() => sortingList("cityName")}
+                    >
+                        Город
+                        {ascending ? sorting === "cityName" && <ExpandMoreIcon/> : sorting === "cityName" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        sx={{maxWidth: 100}}
+                        selected={sorting === "cityPrice"}
+                        onClick={() => sortingList("cityPrice")}
+                    >
+                        Цена за час
+                        {ascending ? sorting === "cityPrice" && <ExpandMoreIcon/> : sorting === "cityPrice" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        sx={{maxWidth: 100}}
+                        selected={sorting === "date"}
+                        onClick={() => sortingList("date")}
+                    >
+                        Кол-во часов
+                        {ascending ? sorting === "date" && <ExpandMoreIcon/> : sorting === "date" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "price"}
+                        sx={{maxWidth: 100, mr: 5,}}
+                        onClick={() => sortingList("price")}
+                    >
+                        Итог
+                        {ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "status"}
+                        sx={{mr: 20, width: 100}}
+                        onClick={() => sortingList("status")}
+                    >
+                        Статус
+                        {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "name" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
                 </ListItem>
                 <Divider orientation="vertical"/>
                 {ordersList.length === 0 ? <h1>Список пуст</h1> : ordersList.map((order) => {
                     const time = new Date(order.time).toLocaleString("uk-UA")
-                    const city = cities.cities.find(city => city.id === order.cityId)
                     return (<ListItem
                         key={order.id}
                         divider
@@ -187,10 +265,10 @@ const OrderList = ({alertMessage}) => {
                         <ListItemText sx={{width: 10}}
                                       primary={order.master.name}/>
                         <ListItemText sx={{width: 10}}
-                                      primary={city.name}
+                                      primary={order.city.name}
                         />
                         <ListItemText sx={{width: 10}}
-                                      primary={city.price + " грн"}
+                                      primary={order.city.price + " грн"}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={getHours(setHours(new Date(), order.sizeClock.date.slice(0, 2))) + " ч."}/>

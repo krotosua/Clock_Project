@@ -144,7 +144,7 @@ class OrderController {
         await orderLogic.getMasterOrders(req, res, next)
     }
 
-    async getAllOrders(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void> {
+    async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void> {
         await orderLogic.getAllOrders(req, res, next)
     }
 

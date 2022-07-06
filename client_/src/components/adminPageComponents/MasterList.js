@@ -101,7 +101,7 @@ const MasterList = ({alertMessage}) => {
         try {
             await deleteMaster(id)
             alertMessage('Успешно удаленно', false)
-            await getMasters()
+            await getMasters(page, limit, sorting, ascending)
         } catch (e) {
             alertMessage('Не удалось удалить, так как у мастера есть еще заказы', true)
         }
@@ -194,7 +194,7 @@ const MasterList = ({alertMessage}) => {
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "name"}
-                        sx={{maxWidth: 100,}}
+                        sx={{maxWidth: 100, mr: 5}}
                         onClick={() => sortingList("name")}>
                         Имя мастера
                         {ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
@@ -210,10 +210,10 @@ const MasterList = ({alertMessage}) => {
                             <ExpandLessIcon/>}
                     </ListItemButton>
 
-                    <ListItemText sx={{minWidth: 100}}
+                    <ListItemText sx={{minWidth: 100, ml: 6}}
                                   primary="Город(а)"
                     />
-                    <ListItemText sx={{minWidth: 100}}
+                    <ListItemText sx={{minWidth: 100, mr: -8}}
                                   primary="Комментарии"
                     />
                     <ListItemButton
@@ -247,7 +247,7 @@ const MasterList = ({alertMessage}) => {
                                 <ListItemText sx={{width: 10}}
                                               primary={master.user.id}/>
 
-                                <ListItemText sx={{width: 10, textAlign: "center"}}
+                                <ListItemText sx={{width: 10,}}
                                               primary={master.name}/>
 
                                 <ListItemText sx={{width: 10}}
@@ -314,14 +314,14 @@ const MasterList = ({alertMessage}) => {
                                        alertMessage={alertMessage}
                                        nameToEdit={nameToEdit}
                                        ratingToEdit={ratingToEdit}
-                                       getMasters={() => getMasters(page)}
+                                       getMasters={() => getMasters(page, limit, sorting, ascending)}
                                        cityChosen={cityToEdit}/> : null}
             {openReview ? <ReviewModal open={openReview}
                                        masterId={masterId}
                                        onClose={() => setOpenReview(false)}/> : null}
 
             {createVisible ? <CreateMaster open={createVisible}
-                                           getMasters={() => getMasters(page)}
+                                           getMasters={() => getMasters(page, limit, sorting, ascending)}
                                            alertMessage={alertMessage}
                                            onClose={() => setCreateVisible(false)}/> : null}
         </Box>
