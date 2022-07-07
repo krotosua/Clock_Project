@@ -3,6 +3,8 @@ import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
+    ButtonGroup,
+    Checkbox,
     CircularProgress,
     Divider,
     FormControl,
@@ -13,7 +15,9 @@ import {
     ListItemButton,
     ListItemText,
     MenuItem,
+    OutlinedInput,
     Select,
+    TextField,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -29,8 +33,22 @@ import {STATUS_LIST} from "../../store/OrderStore";
 import {add, getHours, isPast, set, setHours} from 'date-fns'
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import {fetchCities} from "../../http/cityAPI";
+import {fetchMasters} from "../../http/masterAPI";
+import {DateRangePicker, LocalizationProvider} from "@mui/lab";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import ruLocale from "date-fns/locale/ru";
 
-
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
 const OrderList = ({alertMessage}) => {
     const [editVisible, setEditVisible] = useState(false)
     const [openFilters, setOpenFilters] = useState(false)
@@ -44,6 +62,13 @@ const OrderList = ({alertMessage}) => {
     const [sorting, setSorting] = useState("time")
     const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [filters, setFilters] = useState({})
+    const [cityChacked, setCityChacked] = useState([]);
+    const [masterChecked, setMasterChecked] = useState([]);
+    const [citiesList, setCitiesList] = useState([])
+    const [mastersList, setMastersList] = useState([])
+    const [value, setValue] = React.useState([null, null]);
+    const [status, setStatus] = useState(0)
     const handleChange = async (statusOrder, order) => {
         try {
             const changeInfo = {
@@ -57,9 +82,9 @@ const OrderList = ({alertMessage}) => {
             alertMessage("Не удалось изменить статус заказа", true)
         }
     };
-    const getOrders = async (page, limit, sorting, ascending) => {
+    const getOrders = async (page, limit, sorting, ascending, filters) => {
         try {
-            const res = await fetchAlLOrders(page, limit, sorting, ascending)
+            const res = await fetchAlLOrders(page, limit, sorting, ascending, filters)
             if (res.status === 204) {
                 setOrdersList([])
                 return
@@ -74,9 +99,30 @@ const OrderList = ({alertMessage}) => {
     }
     const navigate = useNavigate()
     useEffect(async () => {
-        await getOrders(page, limit, sorting, ascending)
-    }, [page, limit, sorting, ascending])
-
+        await getOrders(page, limit, sorting, ascending, filters)
+    }, [page, limit, sorting, ascending, filters])
+    useEffect(async () => {
+        try {
+            const res = await fetchCities(null, null)
+            if (res.status === 204) {
+                setCitiesList([])
+                return
+            }
+            setCitiesList(res.data.rows)
+        } catch (e) {
+            setCitiesList([])
+        }
+        try {
+            const res = await fetchMasters(null, null, null)
+            if (res.status === 204) {
+                setMastersList([])
+                return
+            }
+            setMastersList(res.data.rows)
+        } catch (e) {
+            setMastersList([])
+        }
+    }, [])
     const removeOrder = async (id) => {
         try {
             await deleteOrder(id)
@@ -112,6 +158,19 @@ const OrderList = ({alertMessage}) => {
         setAscending(true)
         setSorting(param)
     }
+    const createFilter = async () => {
+        const filter = {
+            cityId: cityChacked.map(city => city.id),
+        }
+        setLoading(true)
+        setFilters(filter)
+    };
+    const multipleChange = (event, setter) => {
+        const {target: {value}} = event
+        setter(
+            typeof value === 'string' ? value.split(',') : value,
+        );
+    };
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
@@ -133,7 +192,104 @@ const OrderList = ({alertMessage}) => {
                     </Select>
                 </FormControl>
             </Box>
-            <Button onClick={() => setOpenFilters(true)} variant="text">Добавить фильтры</Button>
+            {openFilters && <Box sx={{display: "flex", justifyContent: "space-evenly"}}>
+                <Typography>
+                    Выберите фильтр:
+                </Typography>
+                <FormControl sx={{m: 1, width: 300}}>
+                    <InputLabel size={"small"} id="city-multiple-checkbox">Выберите город(а) работы
+                        мастера</InputLabel>
+                    <Select
+                        size={"small"}
+                        labelId="city-multiple-checkbox"
+                        id="city-multiple-checkbox"
+                        multiple
+                        value={cityChacked}
+                        onChange={(e) => multipleChange(e, setCityChacked)}
+                        input={<OutlinedInput label="Выберите город(а) работы мастера"/>}
+                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {citiesList.map((city, index) => (
+                            <MenuItem key={index} value={city}>
+                                <Checkbox checked={cityChacked.indexOf(city) > -1}/>
+                                <ListItemText primary={city.name}/>
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl sx={{m: 1, width: 300}}>
+                    <InputLabel size={"small"} id="master-multiple-checkbox">Выберите город(а) работы
+                        мастера</InputLabel>
+                    <Select
+                        size={"small"}
+                        labelId="master-multiple-checkbox"
+                        id="master-multiple-checkbox"
+                        multiple
+                        value={masterChecked}
+                        onChange={(e) => multipleChange(e, setMasterChecked)}
+                        input={<OutlinedInput label="Выберите город(а) работы мастера"/>}
+                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {mastersList.map((master, index) => (
+                            <MenuItem key={index} value={master}>
+                                <Checkbox checked={masterChecked.indexOf(master) > -1}/>
+                                <ListItemText primary={master.name}/>
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl sx={{maxWidth: 100}} size="small">
+                    <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
+                    <Select
+                        size={"small"}
+                        labelId="status"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                        label="Статус"
+                    >
+                        <MenuItem value={0}>None</MenuItem>
+                        <MenuItem value={STATUS_LIST.WAITING}>Ожидание</MenuItem>
+                        <MenuItem value={STATUS_LIST.REJECTED}>Отказ</MenuItem>
+                        <MenuItem value={STATUS_LIST.ACCEPTED}>Подтвержден</MenuItem>
+                        <MenuItem value={STATUS_LIST.DONE}>Выполнен</MenuItem>
+                    </Select>
+                </FormControl>
+                <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    locale={ruLocale}
+                    localeText={{start: 'Начальная дата', end: 'Конец дата'}}
+                >
+                    <DateRangePicker
+                        mask='__.__.____'
+                        value={value}
+                        onChange={(newValue) => {
+                            setValue(newValue);
+                        }}
+                        renderInput={(startProps, endProps) => (
+                            <React.Fragment>
+                                <TextField {...startProps} />
+                                <Box sx={{mx: 2}}> to </Box>
+                                <TextField {...endProps} />
+                            </React.Fragment>
+                        )}
+                    />
+                </LocalizationProvider>
+                <ButtonGroup
+                    sx={{mt: -2}}
+                    orientation="vertical"
+                    aria-label="vertical contained button group"
+                    variant="contained"
+                >
+                    <Button sx={{mb: 1}} color={"error"} key="one">Сбросить фильтр</Button>
+                    <Button color={"success"} onClick={() => createFilter()} key="two">Подтвердить фильтр</Button>
+                </ButtonGroup>
+
+            </Box>
+            } <Divider/>
+            {<Button onClick={() => setOpenFilters(!openFilters)}
+                     variant="text">{!openFilters ? "Добавить фильтрацию" : "Убрать фильтрацию"}</Button>}
             <List disablePadding>
                 <ListItem
                     key={1}
