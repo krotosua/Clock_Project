@@ -29,17 +29,31 @@ class MasterLogic {
         try {
             let {limit, page}: Pagination = req.query;
             const sorting: string = req.query.sorting ?? "name"
-            const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
-            const {cityId, rating} = req.query.filters ? JSON.parse(req.query.filters) : {cityId: null, rating: null}
+            const directionUp: "DESC" | "ASC" = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const {
+                cityIDes,
+                rating
+            }: { cityIDes: [] | null, rating: [number, number] | null } = req.query.filters ? JSON.parse(req.query.filters) : {
+                cityIDes: null,
+                rating: null
+            }
             page = page || 1;
             limit = limit || 12;
             const offset = page * limit - limit;
-            let masters: GetRowsDB<Master> = await Master.findAndCountAll({
+            const masterIdes: Master[] | null = cityIDes ? await Master.findAll({
+                include: [{
+                    model: City,
+                    attributes: ["id"],
+                    where: {id: cityIDes}
+                }]
+            }) : null
+            const masters: GetRowsDB<Master> = await Master.findAndCountAll({
                 distinct: true,
                 order: [[sorting, directionUp],
                     [City, "name", 'ASC']
                 ],
                 where: {
+                    id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
                     rating: {[Op.between]: rating ?? [0, 5]},
                 },
                 attributes: ['name', "rating", "id", "isActivated"],
@@ -48,7 +62,6 @@ class MasterLogic {
                     through: {
                         attributes: []
                     },
-                    where: {id: cityId ?? {[Op.ne]: 0}}
                 }, {model: User}], limit, offset
             })
             if (!masters.count) {

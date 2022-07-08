@@ -9,7 +9,7 @@ const masterRouter = Router()
 
 masterRouter.post("/",
     body("name").not().isEmpty().isString().trim().escape(),
-    body("rating").not().isEmpty().not().isString().isInt({gt: -1, lt: 6}),
+    body("rating").not().isEmpty().isNumeric(),
     body("cityId").not().isEmpty().isArray(),
     checkRole(ROLES.ADMIN),
     masterController.create)

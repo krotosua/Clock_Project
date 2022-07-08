@@ -35,8 +35,8 @@ class SizeLogic {
             const pagination: Pagination = req.query
             pagination.page = pagination.page ?? null;
             pagination.limit = pagination.limit ?? null;
-            const sorting: string = req.query.sorting ?? "name"
-            const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const sorting: string = req.query.sorting ?? "date"
+            const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
             const offset = pagination.page * pagination.limit - pagination.limit
             const sizes: GetRowsDB<SizeClock> = await SizeClock.findAndCountAll({
                 order: [[sorting, directionUp]],

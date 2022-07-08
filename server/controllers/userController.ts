@@ -30,6 +30,10 @@ class UserController {
         await userLogic.getAll(req, res, next)
     }
 
+    async getAllCustomers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        await userLogic.getAllCustomers(req, res, next)
+    }
+
     async deleteOne(req: Request, res: Response, next: NextFunction): Promise<void> {
         await userLogic.deleteOne(req, res, next)
     }

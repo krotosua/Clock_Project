@@ -10,6 +10,16 @@ export type CreateOrderDTO = {
     price: number;
     changedMaster?: boolean
 }
+export type forGetOrders = {
+    cityIDes: [] | null,
+    masterIDes: [] | null,
+    userIDes?: [] | null
+    sizeIDes?: [] | null
+    time: Date | null,
+    status: STATUS | null,
+    minPrice: string | null,
+    maxPrice: string | null
+}
 
 export enum STATUS {
     WAITING = "WAITING",

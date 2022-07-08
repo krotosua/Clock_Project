@@ -27,7 +27,7 @@ import {set} from 'date-fns'
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-const SizeList = ({alertMessage, getValue}) => {
+const SizeList = ({alertMessage}) => {
     const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
@@ -38,7 +38,7 @@ const SizeList = ({alertMessage, getValue}) => {
     const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
     const [sorting, setSorting] = useState("date")
-    const [ascending, setAscending] = useState(true)
+    const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
     const getSizes = async (page, limit, sorting, ascending) => {
         try {
@@ -90,30 +90,17 @@ const SizeList = ({alertMessage, getValue}) => {
         setSorting(param)
     }
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Размеры часов
                 </Typography>
-                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
-                    <InputLabel id="limit">Лимит</InputLabel>
-                    <Select
-                        labelId="limit"
-                        id="limit"
-                        value={limit}
-                        onChange={(e) => setLimit(e.target.value)}
-                        label="Лимит"
-                    >
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={25}>25</MenuItem>
-                        <MenuItem value={50}>50</MenuItem>
-                    </Select>
-                </FormControl>
             </Box>
             <List disablePadding>
                 <ListItem
                     key={1}
                     divider
+                    sx={{height: 60}}
                     secondaryAction={<Tooltip title={'Добавить размер часов'}
                                               placement="top"
                                               arrow>
@@ -128,25 +115,27 @@ const SizeList = ({alertMessage, getValue}) => {
                 >
                     <ListItemButton
                         selected={sorting === "id"}
+                        sx={{maxWidth: 150, position: "absolute", left: 10}}
                         onClick={() => sortingList("id")}
                     >
                         <ListItemText primary="ID"/>
-                        {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                        {!ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "name"}
-                        sx={{width: 100}}
+                        sx={{maxWidth: 150, position: "absolute", left: 360}}
                         onClick={() => sortingList("name")}
                     >
                         Название часов
-                        {ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
+                        {!ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "date"}
+                        sx={{maxWidth: 150, position: "absolute", right: 260}}
                         onClick={() => sortingList("date")}
                     >
                         Количество часов
-                        {ascending ? sorting === "date" && <ExpandMoreIcon/> : sorting === "date" && <ExpandLessIcon/>}
+                        {!ascending ? sorting === "date" && <ExpandMoreIcon/> : sorting === "date" && <ExpandLessIcon/>}
                     </ListItemButton>
                 </ListItem>
                 <Divider orientation="vertical"/>
@@ -219,6 +208,20 @@ const SizeList = ({alertMessage, getValue}) => {
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+                <InputLabel id="limit">Лимит</InputLabel>
+                <Select
+                    labelId="limit"
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    label="Лимит"
+                >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     </Box>);
 }

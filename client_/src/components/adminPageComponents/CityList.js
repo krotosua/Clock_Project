@@ -36,7 +36,7 @@ const CityList = ({alertMessage}) => {
     const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
     const [sorting, setSorting] = useState("name")
-    const [ascending, setAscending] = useState(true)
+    const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
 
     const getCities = async (page, limit, sorting, ascending) => {
@@ -90,25 +90,12 @@ const CityList = ({alertMessage}) => {
     }
 
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Города
                 </Typography>
-                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
-                    <InputLabel id="limit">Лимит</InputLabel>
-                    <Select
-                        labelId="limit"
-                        id="limit"
-                        value={limit}
-                        onChange={(e) => setLimit(e.target.value)}
-                        label="Лимит"
-                    >
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={25}>25</MenuItem>
-                        <MenuItem value={50}>50</MenuItem>
-                    </Select>
-                </FormControl>
+
             </Box>
             <List disablePadding>
                 <ListItem
@@ -129,10 +116,11 @@ const CityList = ({alertMessage}) => {
 
                     <ListItemButton
                         selected={sorting === "id"}
+                        sx={{ml: -2}}
                         onClick={() => sortingList("id")}
                     >
                         <ListItemText primary="ID"/>
-                        {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                        {!ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
                     </ListItemButton>
 
                     <ListItemButton
@@ -140,14 +128,14 @@ const CityList = ({alertMessage}) => {
                         onClick={() => sortingList("name")}
                     >
                         <ListItemText primary="Название города"/>
-                        {ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
+                        {!ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "price"}
                         onClick={() => sortingList("price")}
                     >
                         <ListItemText primary="Цена за час"/>
-                        {ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
+                        {!ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
                             <ExpandLessIcon/>}
                     </ListItemButton>
                 </ListItem>
@@ -214,6 +202,20 @@ const CityList = ({alertMessage}) => {
         </Box>
         <Box style={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+                <InputLabel id="limit">Лимит</InputLabel>
+                <Select
+                    labelId="limit"
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    label="Лимит"
+                >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
 
     </Box>);

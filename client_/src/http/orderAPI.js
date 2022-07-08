@@ -4,15 +4,15 @@ export const createOrder = async (body) => {
     return await $host.post('api/orders/', body)
 }
 
-export const fetchAlLOrders = async (page, limit, sorting, ascending) => {
-    return await $authHost.get('api/orders/', {params: {page, limit, sorting, ascending}})
+export const fetchAlLOrders = async (page, limit, sorting, ascending, filters) => {
+    return await $authHost.get('api/orders/', {params: {page, limit, sorting, ascending, filters}})
 
 }
-export const fetchCustomerOrders = async (id, page, limit) => {
-    return await $authHost.get('api/orders/' + id, {params: {page, limit}})
+export const fetchCustomerOrders = async (id, page, limit, sorting, ascending, filters) => {
+    return await $authHost.get('api/orders/' + id, {params: {page, limit, sorting, ascending, filters}})
 }
-export const fetchMasterOrders = async (id, page, limit = 8) => {
-    return await $authHost.get('api/orders/master/' + id, {params: {page, limit}})
+export const fetchMasterOrders = async (id, page, limit, sorting, ascending, filters) => {
+    return await $authHost.get('api/orders/master/' + id, {params: {page, limit, sorting, ascending, filters}})
 }
 
 

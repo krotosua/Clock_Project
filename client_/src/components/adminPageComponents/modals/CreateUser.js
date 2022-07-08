@@ -12,7 +12,7 @@ import {
     OutlinedInput,
     TextField
 } from "@mui/material";
-import SelectorMasterCity from "./SelectorMasterCity";
+import SelectorMultipleCity from "./SelectorMultipleCity";
 import {registrationFromAdmin} from "../../../http/userAPI";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
@@ -199,7 +199,7 @@ const CreateUser = (({open, onClose, alertMessage, getUsers}) => {
                                 </FormControl>
                                 {getValues("isMaster") ?
                                     <Box>
-                                        <SelectorMasterCity/>
+                                        <SelectorMultipleCity/>
                                     </Box>
                                     : null}
 

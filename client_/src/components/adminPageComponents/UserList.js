@@ -104,27 +104,14 @@ const UserList = ({alertMessage}) => {
         setSorting(param)
     }
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
             <List subheader={<Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Пользователи
                 </Typography>
-                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
-                    <InputLabel id="limit">Лимит</InputLabel>
-                    <Select
-                        labelId="limit"
-                        id="limit"
-                        value={limit}
-                        onChange={(e) => setLimit(e.target.value)}
-                        label="Лимит"
-                    >
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={25}>25</MenuItem>
-                        <MenuItem value={50}>50</MenuItem>
-                    </Select>
-                </FormControl>
             </Box>}>
                 <ListItem
+                    sx={{height: 60, mb: 1}}
                     secondaryAction={<Tooltip title={'Добавить пользователя'}
                                               placement="top"
                                               arrow>
@@ -138,14 +125,14 @@ const UserList = ({alertMessage}) => {
                     </Tooltip>}>
                     <ListItemButton
                         selected={sorting === "id"}
-                        sx={{ml: -2, maxWidth: 100}}
+                        sx={{maxWidth: 150, position: "absolute", left: 0}}
                         onClick={() => sortingList("id")}>
                         ID пользователя
                         {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "email"}
-                        sx={{width: 100, ml: 10}}
+                        sx={{maxWidth: 100, position: "absolute", left: 270}}
                         onClick={() => sortingList("email")}>
                         Email
                         {ascending ? sorting === "email" && <ExpandMoreIcon/> : sorting === "email" &&
@@ -153,21 +140,21 @@ const UserList = ({alertMessage}) => {
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "role"}
-                        sx={{maxWidth: 100, ml: 8}}
+                        sx={{maxWidth: 100, position: "absolute", right: 430}}
                         onClick={() => sortingList("role")}>
                         Роль
                         {ascending ? sorting === "role" && <ExpandMoreIcon/> : sorting === "role" && <ExpandLessIcon/>}
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "isActivated"}
-                        sx={{ml: 10, width: 120}}
+                        sx={{maxWidth: 100, position: "absolute", right: 200}}
                         onClick={() => sortingList("isActivated")}>
                         Статус
                         {ascending ? sorting === "isActivated" && <ExpandMoreIcon/> : sorting === "isActivated" &&
                             <ExpandLessIcon/>}
                     </ListItemButton>
                 </ListItem>
-                <Divider orientation="vertical"/>
+                <Divider orientation="horizontal"/>
 
                 {usersList.length === 0 ? <h1>Список пуст</h1> : usersList.map((user, index) => {
                     return (<ListItem
@@ -246,6 +233,20 @@ const UserList = ({alertMessage}) => {
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+                <InputLabel id="limit">Лимит</InputLabel>
+                <Select
+                    labelId="limit"
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    label="Лимит"
+                >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     </Box>);
 }

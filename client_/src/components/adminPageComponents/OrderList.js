@@ -3,7 +3,6 @@ import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
-    ButtonGroup,
     Checkbox,
     CircularProgress,
     Divider,
@@ -33,11 +32,12 @@ import {STATUS_LIST} from "../../store/OrderStore";
 import {add, getHours, isPast, set, setHours} from 'date-fns'
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import {fetchCities} from "../../http/cityAPI";
 import {fetchMasters} from "../../http/masterAPI";
 import {DateRangePicker, LocalizationProvider} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
+import {FormProvider, useForm} from "react-hook-form";
+import SelectorMultipleCity from "./modals/SelectorMultipleCity";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -49,11 +49,33 @@ const MenuProps = {
         },
     },
 };
+const defaultValues = {
+    status: "",
+    time: null,
+    cityId: null,
+    masterId: null,
+    forFilter: true,
+    minPrice: "",
+    maxPrice: ""
+}
 const OrderList = ({alertMessage}) => {
+    const {
+        register,
+        handleSubmit,
+        trigger,
+        setValue,
+        getValues,
+        reset,
+        watch,
+        formState: {errors, dirtyFields}
+    } = useForm({
+        defaultValues
+    });
+    const status = watch("status", 0)
     const [editVisible, setEditVisible] = useState(false)
-    const [openFilters, setOpenFilters] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
+    const [date, setDate] = useState([null, null]);
     const [orderToEdit, setOrderToEdit] = useState(null)
     const [ordersList, setOrdersList] = useState(null)
     const [page, setPage] = useState(1)
@@ -62,13 +84,10 @@ const OrderList = ({alertMessage}) => {
     const [sorting, setSorting] = useState("time")
     const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [filters, setFilters] = useState({})
-    const [cityChacked, setCityChacked] = useState([]);
-    const [masterChecked, setMasterChecked] = useState([]);
-    const [citiesList, setCitiesList] = useState([])
+    const [filters, setFilters] = useState(null)
+    const [masterChosen, setMasterChosen] = useState([]);
     const [mastersList, setMastersList] = useState([])
-    const [value, setValue] = React.useState([null, null]);
-    const [status, setStatus] = useState(0)
+    const [maxOrderPrice, setMaxOrderPrice] = useState(null)
     const handleChange = async (statusOrder, order) => {
         try {
             const changeInfo = {
@@ -91,6 +110,7 @@ const OrderList = ({alertMessage}) => {
             }
             setOrdersList(res.data.rows)
             setTotalCount(res.data.count)
+
         } catch (e) {
             setOrdersList([])
         } finally {
@@ -103,36 +123,28 @@ const OrderList = ({alertMessage}) => {
     }, [page, limit, sorting, ascending, filters])
     useEffect(async () => {
         try {
-            const res = await fetchCities(null, null)
-            if (res.status === 204) {
-                setCitiesList([])
-                return
-            }
-            setCitiesList(res.data.rows)
-        } catch (e) {
-            setCitiesList([])
-        }
-        try {
             const res = await fetchMasters(null, null, null)
             if (res.status === 204) {
                 setMastersList([])
                 return
             }
             setMastersList(res.data.rows)
+
         } catch (e) {
             setMastersList([])
         }
+        setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
     }, [])
     const removeOrder = async (id) => {
         try {
             await deleteOrder(id)
             alertMessage('Успешно удаленно', false)
-            await getOrders(page, limit)
+            await getOrders(page, limit, sorting, ascending, filters)
         } catch (e) {
             alertMessage('Не удалось удалить', true)
         }
     }
-    if (loading) {
+    if (loading && !getValues("forFilter")) {
         return (
             <Box sx={{
                 display: "flex",
@@ -158,313 +170,356 @@ const OrderList = ({alertMessage}) => {
         setAscending(true)
         setSorting(param)
     }
-    const createFilter = async () => {
+    const createFilter = async ({status, masterList, date, cityList, minPrice, maxPrice}) => {
         const filter = {
-            cityId: cityChacked.map(city => city.id),
+            cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
+            masterIDes: masterList.length !== 0 ? masterList.map(master => master.id) : null,
+            time: date || null,
+            status: status === "" ? null : status,
+            minPrice: minPrice === "" ? null : minPrice,
+            maxPrice: maxPrice === "" ? maxOrderPrice : maxPrice
         }
         setLoading(true)
         setFilters(filter)
+    };
+    const resetFilter = async () => {
+        reset()
+        setMasterChosen([])
+        setDate([null, null])
+        setValue("reset", true)
+        setFilters({})
     };
     const multipleChange = (event, setter) => {
         const {target: {value}} = event
         setter(
             typeof value === 'string' ? value.split(',') : value,
         );
+        setValue("masterList", typeof value === 'string' ? value.split(',') : value,)
     };
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Список заказов
                 </Typography>
-                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
-                    <InputLabel id="limit">Лимит</InputLabel>
-                    <Select
-                        labelId="limit"
-                        id="limit"
-                        value={limit}
-                        onChange={(e) => setLimit(e.target.value)}
-                        label="Лимит"
-                    >
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={25}>25</MenuItem>
-                        <MenuItem value={50}>50</MenuItem>
-                    </Select>
-                </FormControl>
             </Box>
-            {openFilters && <Box sx={{display: "flex", justifyContent: "space-evenly"}}>
-                <Typography>
-                    Выберите фильтр:
-                </Typography>
-                <FormControl sx={{m: 1, width: 300}}>
-                    <InputLabel size={"small"} id="city-multiple-checkbox">Выберите город(а) работы
-                        мастера</InputLabel>
-                    <Select
-                        size={"small"}
-                        labelId="city-multiple-checkbox"
-                        id="city-multiple-checkbox"
-                        multiple
-                        value={cityChacked}
-                        onChange={(e) => multipleChange(e, setCityChacked)}
-                        input={<OutlinedInput label="Выберите город(а) работы мастера"/>}
-                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {citiesList.map((city, index) => (
-                            <MenuItem key={index} value={city}>
-                                <Checkbox checked={cityChacked.indexOf(city) > -1}/>
-                                <ListItemText primary={city.name}/>
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl sx={{m: 1, width: 300}}>
-                    <InputLabel size={"small"} id="master-multiple-checkbox">Выберите город(а) работы
-                        мастера</InputLabel>
-                    <Select
-                        size={"small"}
-                        labelId="master-multiple-checkbox"
-                        id="master-multiple-checkbox"
-                        multiple
-                        value={masterChecked}
-                        onChange={(e) => multipleChange(e, setMasterChecked)}
-                        input={<OutlinedInput label="Выберите город(а) работы мастера"/>}
-                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {mastersList.map((master, index) => (
-                            <MenuItem key={index} value={master}>
-                                <Checkbox checked={masterChecked.indexOf(master) > -1}/>
-                                <ListItemText primary={master.name}/>
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl sx={{maxWidth: 100}} size="small">
-                    <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
-                    <Select
-                        size={"small"}
-                        labelId="status"
-                        value={status}
-                        onChange={(event) => setStatus(event.target.value)}
-                        label="Статус"
-                    >
-                        <MenuItem value={0}>None</MenuItem>
-                        <MenuItem value={STATUS_LIST.WAITING}>Ожидание</MenuItem>
-                        <MenuItem value={STATUS_LIST.REJECTED}>Отказ</MenuItem>
-                        <MenuItem value={STATUS_LIST.ACCEPTED}>Подтвержден</MenuItem>
-                        <MenuItem value={STATUS_LIST.DONE}>Выполнен</MenuItem>
-                    </Select>
-                </FormControl>
-                <LocalizationProvider
-                    dateAdapter={AdapterDateFns}
-                    locale={ruLocale}
-                    localeText={{start: 'Начальная дата', end: 'Конец дата'}}
-                >
-                    <DateRangePicker
-                        mask='__.__.____'
-                        value={value}
-                        onChange={(newValue) => {
-                            setValue(newValue);
-                        }}
-                        renderInput={(startProps, endProps) => (
-                            <React.Fragment>
-                                <TextField {...startProps} />
-                                <Box sx={{mx: 2}}> to </Box>
-                                <TextField {...endProps} />
-                            </React.Fragment>
-                        )}
-                    />
-                </LocalizationProvider>
-                <ButtonGroup
-                    sx={{mt: -2}}
-                    orientation="vertical"
-                    aria-label="vertical contained button group"
-                    variant="contained"
-                >
-                    <Button sx={{mb: 1}} color={"error"} key="one">Сбросить фильтр</Button>
-                    <Button color={"success"} onClick={() => createFilter()} key="two">Подтвердить фильтр</Button>
-                </ButtonGroup>
 
-            </Box>
-            } <Divider/>
-            {<Button onClick={() => setOpenFilters(!openFilters)}
-                     variant="text">{!openFilters ? "Добавить фильтрацию" : "Убрать фильтрацию"}</Button>}
-            <List disablePadding>
-                <ListItem
-                    key={1}
-                    divider
-                    secondaryAction={<Link to={ORDER_ROUTE}
-                                           style={{textDecoration: 'none', color: 'white'}}>
-                        <Tooltip title={'Добавить заказ'}
-                                 placement="top"
-                                 arrow>
-                            <IconButton sx={{width: 5}}
-                                        edge="end"
-                                        aria-label="add"
-                                        onClick={() => navigate(ORDER_ROUTE)}
-                            >
-                                <AddIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    </Link>}
-                >
-                    <ListItemButton
-                        selected={sorting === "id"}
-                        sx={{ml: -2, maxWidth: 70}}
-                        onClick={() => sortingList("id")}
-                    >
-                        ID
-                        {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
-                    </ListItemButton>
-                    <ListItemButton
-                        sx={{maxWidth: 120, ml: 5}}
-                        selected={sorting === "name"}
-                        onClick={() => sortingList("name")}
-                    >
-                        Имя
-                        {ascending ? sorting === "name" && <ExpandMoreIcon sx={{maxWidth: 40}}/> : sorting === "name" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-
-                    <ListItemButton
-                        selected={sorting === "time"}
-                        sx={{maxWidth: 120, ml: 2}}
-                        onClick={() => sortingList("time")}
-                    >
-                        Дата и время
-                        {ascending ? sorting === "time" && <ExpandMoreIcon/> : sorting === "time" && <ExpandLessIcon/>}
-                    </ListItemButton>
-
-                    <ListItemButton
-                        selected={sorting === "masterName"}
-                        sx={{maxWidth: 100, ml: 2}}
-                        onClick={() => sortingList("masterName")}
-                    >
-                        Мастер
-                        {ascending ? sorting === "masterName" && <ExpandMoreIcon/> : sorting === "masterName" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-                    <ListItemButton
-                        sx={{maxWidth: 100, mr: 4}}
-                        selected={sorting === "cityName"}
-                        onClick={() => sortingList("cityName")}
-                    >
-                        Город
-                        {ascending ? sorting === "cityName" && <ExpandMoreIcon/> : sorting === "cityName" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-                    <ListItemButton
-                        sx={{maxWidth: 100}}
-                        selected={sorting === "cityPrice"}
-                        onClick={() => sortingList("cityPrice")}
-                    >
-                        Цена за час
-                        {ascending ? sorting === "cityPrice" && <ExpandMoreIcon/> : sorting === "cityPrice" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-                    <ListItemButton
-                        sx={{maxWidth: 100}}
-                        selected={sorting === "date"}
-                        onClick={() => sortingList("date")}
-                    >
-                        Кол-во часов
-                        {ascending ? sorting === "date" && <ExpandMoreIcon/> : sorting === "date" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-                    <ListItemButton
-                        selected={sorting === "price"}
-                        sx={{maxWidth: 100, mr: 5,}}
-                        onClick={() => sortingList("price")}
-                    >
-                        Итог
-                        {ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-                    <ListItemButton
-                        selected={sorting === "status"}
-                        sx={{mr: 20, width: 100}}
-                        onClick={() => sortingList("status")}
-                    >
-                        Статус
-                        {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "name" &&
-                            <ExpandLessIcon/>}
-                    </ListItemButton>
-                </ListItem>
-                <Divider orientation="vertical"/>
-                {ordersList.length === 0 ? <h1>Список пуст</h1> : ordersList.map((order) => {
-                    const time = new Date(order.time).toLocaleString("uk-UA")
-                    return (<ListItem
-                        key={order.id}
+            <FormProvider register={register} errors={errors} trigger={trigger} getValues={getValues}
+                          setValue={setValue}>
+                <form onSubmit={handleSubmit(createFilter)}>
+                    <Box>
+                        <Typography sx={{mb: 1, mt: -2}}>
+                            Выберите фильтр:
+                        </Typography>
+                        <Box sx={{display: "flex", justifyContent: "space-between", height: 110}}>
+                            <Box>
+                                <SelectorMultipleCity/>
+                                <FormControl sx={{mt: 1, width: 300}}>
+                                    <InputLabel size={"small"} id="master-multiple-checkbox">Выберите
+                                        мастера</InputLabel>
+                                    <Select
+                                        {...register("masterList",)}
+                                        size={"small"}
+                                        labelId="master-multiple-checkbox"
+                                        id="master-multiple-checkbox"
+                                        multiple
+                                        value={masterChosen}
+                                        onChange={(e) => multipleChange(e, setMasterChosen)}
+                                        input={<OutlinedInput label="Выберите мастера"/>}
+                                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
+                                        MenuProps={MenuProps}
+                                    >
+                                        {mastersList.map((master, index) => (
+                                            <MenuItem key={index} value={master}>
+                                                <Checkbox checked={masterChosen.indexOf(master) > -1}/>
+                                                <ListItemText primary={master.name}/>
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                            <Box>
+                                <Box sx={{display: "flex", justifyContent: "space-between",}}>
+                                    <FormControl sx={{minWidth: 100}} size="small">
+                                        <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
+                                        <Select
+                                            {...register("status")}
+                                            size={"small"}
+                                            labelId="status"
+                                            value={status || ""}
+                                            onChange={(event) => setValue("status", event.target.value)}
+                                            label="Статус"
+                                        >
+                                            <MenuItem value={STATUS_LIST.WAITING}>Ожидание</MenuItem>
+                                            <MenuItem value={STATUS_LIST.REJECTED}>Отказ</MenuItem>
+                                            <MenuItem value={STATUS_LIST.ACCEPTED}>Подтвержден</MenuItem>
+                                            <MenuItem value={STATUS_LIST.DONE}>Выполнен</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                    <Box sx={{display: "flex"}}>
+                                        <TextField
+                                            {...register("minPrice",)}
+                                            type={"number"}
+                                            error={!!errors.maxPrice}
+                                            label={"начальная сумма"}
+                                            sx={{width: 100}} size={"small"}
+                                            onBlur={() => trigger("maxPrice")}/>
+                                        <Box sx={{mx: 2}}>по </Box>
+                                        <TextField
+                                            {...register("maxPrice", {
+                                                validate: {
+                                                    isBigger: value => Number(value) >= Number(getValues("minPrice")) ||
+                                                        dirtyFields.minPrice && dirtyFields.maxPrice && "больше"
+                                                }
+                                            })}
+                                            type={"number"}
+                                            error={!!errors.maxPrice}
+                                            label={"конечная сумма"}
+                                            helperText={errors.maxPrice?.message}
+                                            sx={{width: 100}}
+                                            size={"small"}
+                                            onBlur={() => trigger("maxPrice")}
+                                        />
+                                    </Box>
+                                    <FormControl variant="standard" sx={{minWidth: 60}} size="small">
+                                        <InputLabel id="limit">Лимит</InputLabel>
+                                        <Select
+                                            labelId="limit"
+                                            id="limit"
+                                            value={limit}
+                                            onChange={(e) => setLimit(e.target.value)}
+                                            label="Лимит"
+                                        >
+                                            <MenuItem value={10}>10</MenuItem>
+                                            <MenuItem value={25}>25</MenuItem>
+                                            <MenuItem value={50}>50</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
+                                <LocalizationProvider
+                                    dateAdapter={AdapterDateFns}
+                                    locale={ruLocale}
+                                    localeText={{start: 'first', end: 'Конец дата'}}
+                                >
+                                    <DateRangePicker
+                                        {...register("date",)}
+                                        mask='__.__.____'
+                                        value={date}
+                                        endText={"конечная дата"}
+                                        startText={"начальная дата"}
+                                        onChange={(newValue) => {
+                                            setDate(newValue);
+                                            setValue("date", newValue)
+                                        }}
+                                        renderInput={(startProps, endProps) => (
+                                            <React.Fragment key={1}>
+                                                <TextField size={"small"} label="Начальная дата" {...startProps} />
+                                                <Box sx={{mx: 2}}> по </Box>
+                                                <TextField sx={{mt: "12px"}} size={"small"} {...endProps} />
+                                            </React.Fragment>
+                                        )}
+                                    />
+                                </LocalizationProvider>
+                            </Box>
+                            <Box
+                                sx={{width: 200, mt: 2}}>
+                                <Button size={"small"} variant="contained" sx={{mb: 1}} color={"error"}
+                                        onClick={resetFilter}>Сбросить
+                                    фильтр</Button>
+                                <Button variant="contained" size={"small"} type="submit" disabled={!!errors.maxPrice}
+                                        color={"success"} key="two">Применить
+                                    фильтр</Button>
+                            </Box>
+                        </Box>
+                    </Box>
+                    <Divider/>
+                </form>
+            </FormProvider>
+            {loading ? <Box sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: window.innerHeight - 60,
+                }}>
+                    <CircularProgress/>
+                </Box> :
+                <List disablePadding>
+                    <ListItem
+                        key={1}
                         divider
-                        secondaryAction={<Tooltip title={'Удалить заказ'}
-                                                  placement="right"
-                                                  arrow>
-                            <IconButton sx={{width: 5}}
-                                        edge="end"
-                                        aria-label="delete"
-                                        onClick={() => removeOrder(order.id)}
-                            >
-                                <DeleteIcon/>
-                            </IconButton>
-                        </Tooltip>}
-                    >
-                        <ListItemText sx={{width: 10}}
-                                      primary={order.id}
-                        />
-                        <ListItemText sx={{width: 10}}
-                                      primary={order.name}
-                        />
-                        <ListItemText sx={{width: 10, mr: 3}}
-                                      primary={time}
-                        />
-                        <ListItemText sx={{width: 10}}
-                                      primary={order.master.name}/>
-                        <ListItemText sx={{width: 10}}
-                                      primary={order.city.name}
-                        />
-                        <ListItemText sx={{width: 10}}
-                                      primary={order.city.price + " грн"}
-                        />
-                        <ListItemText sx={{width: 10}}
-                                      primary={getHours(setHours(new Date(), order.sizeClock.date.slice(0, 2))) + " ч."}/>
-                        <ListItemText sx={{width: 10}}
-                                      primary={order.price + " грн"}
-                        />
-                        <ListItemText sx={{width: 10, mr: 4}}
-                                      primary={<FormControl sx={{maxWidth: 100}} size="small">
-                                          <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
-                                          <Select
-                                              labelId="status"
-                                              value={order.status}
-                                              onChange={(event) => handleChange(event.target.value, order)}
-                                              label="Статус"
-                                          >
-                                              <MenuItem value={STATUS_LIST.WAITING}>Ожидание</MenuItem>
-                                              <MenuItem value={STATUS_LIST.REJECTED}>Отказ</MenuItem>
-                                              <MenuItem value={STATUS_LIST.ACCEPTED}>Подтвержден</MenuItem>
-                                              <MenuItem value={STATUS_LIST.DONE}>Выполнен</MenuItem>
-                                          </Select>
-                                      </FormControl>}
-                        />
-                        {isPast(new Date(order.time)) ? null :
-
-                            <Tooltip title={'Изменить заказ'}
-                                     placement="left"
+                        secondaryAction={<Link to={ORDER_ROUTE}
+                                               style={{textDecoration: 'none', color: 'white'}}>
+                            <Tooltip title={'Добавить заказ'}
+                                     placement="top"
                                      arrow>
                                 <IconButton sx={{width: 5}}
                                             edge="end"
-                                            aria-label="Edit"
-                                            onClick={() => editOrder(order, time)}
+                                            aria-label="add"
+                                            onClick={() => navigate(ORDER_ROUTE)}
                                 >
-                                    <EditIcon/>
+                                    <AddIcon/>
+                                </IconButton>
+                            </Tooltip>
+                        </Link>}
+                    >
+                        <ListItemButton
+                            selected={sorting === "id"}
+                            sx={{ml: -2, maxWidth: 70}}
+                            onClick={() => sortingList("id")}
+                        >
+                            ID
+                            {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                        </ListItemButton>
+                        <ListItemButton
+                            sx={{maxWidth: 120, ml: 5}}
+                            selected={sorting === "name"}
+                            onClick={() => sortingList("name")}
+                        >
+                            Имя
+                            {ascending ? sorting === "name" &&
+                                <ExpandMoreIcon sx={{maxWidth: 40}}/> : sorting === "name" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+
+                        <ListItemButton
+                            selected={sorting === "time"}
+                            sx={{maxWidth: 120, ml: 2}}
+                            onClick={() => sortingList("time")}
+                        >
+                            Дата и время
+                            {ascending ? sorting === "time" && <ExpandMoreIcon/> : sorting === "time" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+
+                        <ListItemButton
+                            selected={sorting === "masterName"}
+                            sx={{maxWidth: 100, ml: 2}}
+                            onClick={() => sortingList("masterName")}
+                        >
+                            Мастер
+                            {ascending ? sorting === "masterName" && <ExpandMoreIcon/> : sorting === "masterName" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+                        <ListItemButton
+                            sx={{maxWidth: 100, mr: 4}}
+                            selected={sorting === "cityName"}
+                            onClick={() => sortingList("cityName")}
+                        >
+                            Город
+                            {ascending ? sorting === "cityName" && <ExpandMoreIcon/> : sorting === "cityName" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+                        <ListItemButton
+                            sx={{maxWidth: 100}}
+                            selected={sorting === "cityPrice"}
+                            onClick={() => sortingList("cityPrice")}
+                        >
+                            Цена за час
+                            {ascending ? sorting === "cityPrice" && <ExpandMoreIcon/> : sorting === "cityPrice" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+                        <ListItemButton
+                            sx={{maxWidth: 100}}
+                            selected={sorting === "date"}
+                            onClick={() => sortingList("date")}
+                        >
+                            Кол-во часов
+                            {ascending ? sorting === "date" && <ExpandMoreIcon/> : sorting === "date" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+                        <ListItemButton
+                            selected={sorting === "price"}
+                            sx={{maxWidth: 100, mr: 5,}}
+                            onClick={() => sortingList("price")}
+                        >
+                            Итог
+                            {ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+                        <ListItemButton
+                            selected={sorting === "status"}
+                            sx={{mr: 20, width: 100}}
+                            onClick={() => sortingList("status")}
+                        >
+                            Статус
+                            {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "name" &&
+                                <ExpandLessIcon/>}
+                        </ListItemButton>
+                    </ListItem>
+                    <Divider orientation="vertical"/>
+                    {ordersList.length === 0 ? <h1>Список пуст</h1> : ordersList.map((order) => {
+                        const time = new Date(order.time).toLocaleString("uk-UA")
+                        return (<ListItem
+                            key={order.id}
+                            divider
+                            secondaryAction={<Tooltip title={'Удалить заказ'}
+                                                      placement="right"
+                                                      arrow>
+                                <IconButton sx={{width: 5}}
+                                            edge="end"
+                                            aria-label="delete"
+                                            onClick={() => removeOrder(order.id)}
+                                >
+                                    <DeleteIcon/>
                                 </IconButton>
                             </Tooltip>}
+                        >
+                            <ListItemText sx={{width: 10}}
+                                          primary={order.id}
+                            />
+                            <ListItemText sx={{width: 10}}
+                                          primary={order.name}
+                            />
+                            <ListItemText sx={{width: 10, mr: 3}}
+                                          primary={time}
+                            />
+                            <ListItemText sx={{width: 10}}
+                                          primary={order.master.name}/>
+                            <ListItemText sx={{width: 10}}
+                                          primary={order.city.name}
+                            />
+                            <ListItemText sx={{width: 10}}
+                                          primary={order.city.price + " грн"}
+                            />
+                            <ListItemText sx={{width: 10}}
+                                          primary={getHours(setHours(new Date(), order.sizeClock.date.slice(0, 2))) + " ч."}/>
+                            <ListItemText sx={{width: 10}}
+                                          primary={order.price + " грн"}
+                            />
+                            <ListItemText sx={{width: 10, mr: 4}}
+                                          primary={<FormControl sx={{maxWidth: 100}} size="small">
+                                              <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
+                                              <Select
+                                                  labelId="status"
+                                                  value={order.status}
+                                                  onChange={(event) => handleChange(event.target.value, order)}
+                                                  label="Статус"
+                                              >
+                                                  <MenuItem value={STATUS_LIST.WAITING}>Ожидание</MenuItem>
+                                                  <MenuItem value={STATUS_LIST.REJECTED}>Отказ</MenuItem>
+                                                  <MenuItem value={STATUS_LIST.ACCEPTED}>Подтвержден</MenuItem>
+                                                  <MenuItem value={STATUS_LIST.DONE}>Выполнен</MenuItem>
+                                              </Select>
+                                          </FormControl>}
+                            />
+                            {isPast(new Date(order.time)) ? null :
 
-                    </ListItem>)
-                })}
-                <Divider/>
-            </List>
+                                <Tooltip title={'Изменить заказ'}
+                                         placement="left"
+                                         arrow>
+                                    <IconButton sx={{width: 5}}
+                                                edge="end"
+                                                aria-label="Edit"
+                                                onClick={() => editOrder(order, time)}
+                                    >
+                                        <EditIcon/>
+                                    </IconButton>
+                                </Tooltip>}
+
+                        </ListItem>)
+                    })}
+                    <Divider/>
+                </List>}
 
             {editVisible ? <EditOrder
                 open={editVisible}
@@ -475,7 +530,7 @@ const OrderList = ({alertMessage}) => {
                 alertMessage={alertMessage}
                 idToEdit={idToEdit}
                 timeToEdit={timeToEdit}
-                getOrders={() => getOrders(page, limit)}
+                getOrders={() => getOrders(page, limit, sorting, ascending, filters)}
             /> : null}
 
         </Box>

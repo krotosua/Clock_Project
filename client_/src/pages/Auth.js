@@ -19,7 +19,7 @@ import {
 import {NavLink, useLocation, useNavigate} from "react-router-dom";
 import {CONGRATULATION_ROUTE, LOGIN_ROUTE,} from "../utils/consts";
 import {registration} from "../http/userAPI";
-import SelectorMasterCity from "../components/adminPageComponents/modals/SelectorMasterCity";
+import SelectorMultipleCity from "../components/adminPageComponents/modals/SelectorMultipleCity";
 import MyAlert from "../components/adminPageComponents/MyAlert";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import Login from "../components/authPageComponents/Login";
@@ -221,7 +221,7 @@ const Auth = () => {
 
                                         {isMaster &&
                                             <Box>
-                                                <SelectorMasterCity/>
+                                                <SelectorMultipleCity/>
                                             </Box>}
 
                                         <Box>

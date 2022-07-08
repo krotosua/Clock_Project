@@ -3,8 +3,6 @@ import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
-    ButtonGroup,
-    Checkbox,
     CircularProgress,
     Divider,
     FormControl,
@@ -15,7 +13,6 @@ import {
     ListItemButton,
     ListItemText,
     MenuItem,
-    OutlinedInput,
     Rating,
     Select,
     Slider,
@@ -31,10 +28,11 @@ import EditMaster from "./modals/EditMaster";
 import TablsPagination from "../TablsPagination";
 import ReviewsIcon from "@mui/icons-material/Reviews";
 import ReviewModal from "../ReviewModal";
-import {useSelector} from "react-redux";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import {fetchCities} from "../../http/cityAPI";
+import {FormProvider, useForm} from "react-hook-form";
+import SelectorMultipleCity from "./modals/SelectorMultipleCity";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -70,12 +68,25 @@ const marks = [
         label: '5',
     },
 ];
-const valuetext = (value) => {
-    return `${value}°C`;
-}
 
+const defaultValues = {
+    rating: [0, 5],
+    masterId: null,
+    forFilter: true
+}
 const MasterList = ({alertMessage}) => {
-    const cities = useSelector(state => state.cities)
+    const {
+        register,
+        handleSubmit,
+        trigger,
+        setValue,
+        getValues,
+        reset,
+        formState: {errors}
+    } = useForm({
+        defaultValues
+    });
+
     const [createVisible, setCreateVisible] = useState(false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
@@ -87,19 +98,16 @@ const MasterList = ({alertMessage}) => {
     const [masterId, setMasterId] = useState(null)
     const [mastersList, setMastersList] = useState(null)
     const [page, setPage] = useState(1)
-    const [totalCount, setTotalCount] = useState()
+    const [totalCount, setTotalCount] = useState(0)
     const [limit, setLimit] = useState(10)
     const [ascending, setAscending] = useState(true)
     const [sorting, setSorting] = useState("name")
     const [loading, setLoading] = useState(true)
     const [openCityList, setOpenCityList] = useState(null)
-    const [openFilters, setOpenFilters] = useState(false)
     const [filters, setFilters] = useState({})
-    const [cityChacked, setCityChacked] = React.useState([]);
     const [rating, setRating] = React.useState([0, 5]);
     const citiesLimit = 2
     const getMasters = async (page, limit, sorting, ascending, filters) => {
-
         try {
             const res = await fetchMasters(null, page, limit, sorting, ascending, filters)
             if (res.status === 204) {
@@ -107,6 +115,7 @@ const MasterList = ({alertMessage}) => {
                 return
             }
             setMastersList(res.data.rows)
+
             setTotalCount(res.data.count)
         } catch (e) {
             setMastersList([])
@@ -129,7 +138,7 @@ const MasterList = ({alertMessage}) => {
     useEffect(async () => {
         await getMasters(page, limit, sorting, ascending, filters)
     }, [page, limit, sorting, ascending, filters])
-    if (loading && !openFilters) {
+    if (loading && !getValues("forFilter")) {
         return (
             <Box sx={{
                 display: "flex",
@@ -185,7 +194,7 @@ const MasterList = ({alertMessage}) => {
         setNameToEdit(master.name)
         setRatingToEdit(master.rating)
         changeCity = master.cities.map(item => item.id)
-        setCityToEdit(cities.cities.filter(cities => changeCity.indexOf(cities.id) > -1))
+        setCityToEdit(citiesList.filter(cities => changeCity.indexOf(cities.id) > -1))
     }
     const getReviews = (id) => {
         setMasterId(id)
@@ -200,101 +209,71 @@ const MasterList = ({alertMessage}) => {
         setSorting(param)
     }
 
-    const cityChange = (event) => {
-        const {target: {value}} = event
-        setCityChacked(
-            typeof value === 'string' ? value.split(',') : value,
-        );
-    };
     const ratingChange = (event, newValue) => {
         setRating(newValue);
     };
-    const createFilter = async () => {
+    const createFilter = async ({cityList}) => {
         const filter = {
-            cityId: cityChacked.map(city => city.id),
+            cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
             rating: rating
         }
         setLoading(true)
         setFilters(filter)
     };
+    const resetFilter = async () => {
+        reset()
+        setValue("reset", true)
+        setRating([0, 5])
+        setFilters({})
+        setLoading(true)
+    };
 
     return (<Box sx={{position: "relative"}}>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Мастера
                 </Typography>
-                <FormControl variant="standard" sx={{m: 1, maxWidth: 60}} size="small">
-                    <InputLabel id="limit">Лимит</InputLabel>
-                    <Select
-                        labelId="limit"
-                        id="limit"
-                        value={limit}
-                        onChange={(e) => setLimit(e.target.value)}
-                        label="Лимит"
-                    >
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={25}>25</MenuItem>
-                        <MenuItem value={50}>50</MenuItem>
-                    </Select>
-                </FormControl>
             </Box>
-            {openFilters && <Box sx={{display: "flex", justifyContent: "space-evenly"}}>
-                <Typography>
-                    Выберите фильтр:
-                </Typography>
-                <FormControl sx={{m: 1, width: 300}}>
-                    <InputLabel size={"small"} id="demo-multiple-checkbox-label">Выберите город(а) работы
-                        мастера</InputLabel>
-                    <Select
-                        size={"small"}
-                        labelId="demo-multiple-checkbox-label"
-                        id="demo-multiple-checkbox"
-                        multiple
-                        value={cityChacked}
-                        onChange={cityChange}
-                        input={<OutlinedInput label="Выберите город(а) работы мастера"/>}
-                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {citiesList.map((city, index) => (
-                            <MenuItem key={index} value={city}>
-                                <Checkbox checked={cityChacked.indexOf(city) > -1}/>
-                                <ListItemText primary={city.name}/>
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <Box sx={{width: 300, mt: -2}}>
-                    <Typography id="rating-slider" gutterBottom>
-                        Рейтинг
-                    </Typography>
-                    <Slider
-                        sx={{width: 150}}
-                        min={0}
-                        max={5}
-                        getAriaLabel={() => 'Temperature range'}
-                        value={rating}
-                        onChange={ratingChange}
-                        valueLabelDisplay="auto"
-                        marks={marks}
-                        getAriaValueText={valuetext}
-                    />
-                </Box>
-                <ButtonGroup
-                    sx={{mt: -2}}
-                    orientation="vertical"
-                    aria-label="vertical contained button group"
-                    variant="contained"
-                >
-                    <Button sx={{mb: 1}} color={"error"} key="one">Сбросить фильтр</Button>
-                    <Button color={"success"} onClick={() => createFilter()} key="two">Подтвердить фильтр</Button>
-                </ButtonGroup>
+            <FormProvider register={register} errors={errors} trigger={trigger} getValues={getValues}
+                          setValue={setValue}>
+                <form onSubmit={handleSubmit(createFilter)}>
+                    <Box>
+                        <Typography sx={{mb: 1, mt: -2}} variant="h6" component="div">
+                            Выберите фильтр:
+                        </Typography>
+                        <Box sx={{display: "flex", justifyContent: "space-evenly"}}>
+                            <SelectorMultipleCity/>
+                            <Box sx={{width: 300, mt: -4}}>
+                                <Typography id="rating-slider" gutterBottom>
+                                    Рейтинг
+                                </Typography>
+                                <Slider
+                                    {...register("rating",)}
+                                    sx={{width: 150}}
+                                    min={0}
+                                    max={5}
+                                    getAriaLabel={() => 'Temperature range'}
+                                    value={rating}
+                                    onChange={ratingChange}
+                                    valueLabelDisplay="auto"
+                                    marks={marks}
+                                />
+                            </Box>
+                            <Box
+                                sx={{width: 200, mb: 2}}>
+                                <Button size={"small"} variant="contained" sx={{mb: 1}} color={"error"}
+                                        onClick={resetFilter}>Сбросить
+                                    фильтр</Button>
+                                <Button variant="contained" size={"small"} type="submit" color={"success"}>Применить
+                                    фильтр</Button>
+                            </Box>
 
-            </Box>
-            } <Divider/>
-            {<Button onClick={() => setOpenFilters(!openFilters)}
-                     variant="text">{!openFilters ? "Добавить фильтрацию" : "Убрать фильтрацию"}</Button>}
+                        </Box>
+                    </Box>
+                    <Divider/>
+                </form>
+            </FormProvider>
             {loading ? <Box sx={{
                     display: "flex",
                     justifyContent: "center",
@@ -395,9 +374,9 @@ const MasterList = ({alertMessage}) => {
                                     <ListItemText sx={{width: 10}}
                                                   primary={
                                                       <Rating name="read-only" size="small" value={master.rating}
-                                                              precision={0.2} readOnly/>}/>
+                                                              precision={0.1} readOnly/>}/>
                                     <ListItemText sx={{
-                                        width: 10,
+                                        width: 5,
                                         pl: openCityList === master ? 5 : 0,
                                         maxHeight: 150,
                                         overflowY: "auto",
@@ -407,7 +386,8 @@ const MasterList = ({alertMessage}) => {
                                                       <Box>
                                                           {openCityList === master ?
                                                               <Box>
-                                                                  {createCityList(master, true)}
+                                                                  <Box
+                                                                      sx={{width: 70}}>  {createCityList(master, true)}</Box>
                                                                   <Button
                                                                       onClick={() => setOpenCityList({})}>скрыть</Button>
                                                               </Box>
@@ -469,6 +449,20 @@ const MasterList = ({alertMessage}) => {
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1000}} size="small">
+                <InputLabel id="limit">Лимит</InputLabel>
+                <Select
+                    labelId="limit"
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    label="Лимит"
+                >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     </Box>);
 }

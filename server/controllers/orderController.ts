@@ -128,7 +128,7 @@ class OrderController {
         }
     }
 
-    async getUserOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
+    async getUserOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -136,7 +136,7 @@ class OrderController {
         await orderLogic.getUserOrders(req, res, next)
     }
 
-    async getMasterOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
+    async getMasterOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
@@ -144,7 +144,7 @@ class OrderController {
         await orderLogic.getMasterOrders(req, res, next)
     }
 
-    async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void> {
+    async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<void> {
         await orderLogic.getAllOrders(req, res, next)
     }
 

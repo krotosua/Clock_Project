@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, FormHelperText, InputAdornment, OutlinedInput, TextField} from "@mui/material";
-import SelectorMasterCity from "./SelectorMasterCity";
+import SelectorMultipleCity from "./SelectorMultipleCity";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -75,7 +75,8 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
             onClose={close}
         >
             <div>
-                <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}>
+                <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}
+                              getValues={getValues}>
                     <form onSubmit={handleSubmit(addMaster)}>
                         <Box sx={style}>
                             <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
@@ -195,9 +196,11 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
                                     <TextField
                                         {...register("rating", {
                                             validate: {
-                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть больше не меньше 0',
+                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть не меньше 0',
                                                 lessThanSix: value => parseInt(value) < 6 || 'Рейтинг должен быть не больше 5',
-                                            }
+                                            },
+                                            valueAsNumber: true,
+                                            setValueAs: (value) => parseFloat(value)
                                         })}
                                         sx={{mb: 1}}
                                         id="rating"
@@ -207,7 +210,6 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
                                         variant="outlined"
                                         defaultValue={0}
                                         name="rating"
-                                        type="number"
                                         InputProps={{
                                             inputProps: {
                                                 max: 5, min: 0
@@ -215,7 +217,7 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
                                         }}
                                         onBlur={() => trigger("rating")}
                                     />
-                                    <SelectorMasterCity/>
+                                    <SelectorMultipleCity/>
                                 </FormControl>
                                 <Box
                                     sx={{mt: 2, display: "flex", justifyContent: "space-between"}}

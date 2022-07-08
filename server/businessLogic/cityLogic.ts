@@ -27,7 +27,7 @@ class CityLogic {
         try {
             let pagination: Pagination = req.query;
             const sorting: string = req.query.sorting ?? "name"
-            const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
             pagination.page = pagination.page ?? null;
             pagination.limit = pagination.limit ?? null;
             const offset = pagination.page * pagination.limit - pagination.limit;
