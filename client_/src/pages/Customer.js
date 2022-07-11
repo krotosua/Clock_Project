@@ -71,16 +71,13 @@ const Customer = () => {
     } = useForm({
         defaultValues
     });
+    const resetLists = watch("reset", false)
     const status = watch("status", "")
     const [citiesList, setCitiesList] = useState([])
     const [ordersList, setOrdersList] = useState([])
-    const [clockList, setClockList] = useState([])
-    const [clockChosen, setClockChosen] = useState([])
     const [order, setOrder] = useState({})
     const [maxOrderPrice, setMaxOrderPrice] = useState(null)
-    const [masterChosen, setMasterChosen] = useState([]);
     const [openRating, setOpenRating] = useState(false)
-    const [mastersList, setMastersList] = useState([])
     const [date, setDate] = useState([null, null]);
     const [loading, setLoading] = useState(true)
     const [sorting, setSorting] = useState("id")
@@ -117,17 +114,6 @@ const Customer = () => {
     }, [page, limit, sorting, ascending, filters])
     useEffect(async () => {
         try {
-            const res = await fetchMasters(null, null, null)
-            if (res.status === 204) {
-                setMastersList([])
-                return
-            }
-            setMastersList(res.data.rows)
-            setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
-        } catch (e) {
-            setMastersList([])
-        }
-        try {
             const res = await fetchCities(null, null)
             if (res.status === 204) {
                 setCitiesList([])
@@ -137,22 +123,7 @@ const Customer = () => {
         } catch (e) {
             setCitiesList([])
         }
-        try {
-            const res = await fetchCities(null, null)
-            if (res.status === 204) {
-                setCitiesList([])
-                return
-            }
-            setCitiesList(res.data.rows)
-        } catch (e) {
-            setCitiesList([])
-        }
-        try {
-            const res = await fetchSize(null, null)
-            setClockList(res.data.rows)
-        } catch (e) {
-            setClockList([])
-        }
+        setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
     }, [])
     const createFilter = async ({status, masterList, date, cityList, sizeList, minPrice, maxPrice}) => {
         const filter = {
@@ -169,16 +140,9 @@ const Customer = () => {
     };
     const resetFilter = async () => {
         reset()
-        setMasterChosen([])
+        setValue("reset", !resetLists)
         setDate([null, null])
-        setValue("reset", true)
         setFilters({})
-    };
-    const multipleChange = (event, setter) => {
-        const {target: {value}} = event
-        setter(
-            typeof value === 'string' ? value.split(',') : value,
-        );
     };
     if (loading && !filters) {
         return (
@@ -213,7 +177,7 @@ const Customer = () => {
                                     <Typography sx={{mb: 1, mt: 1}}>
                                         Выберите фильтр:
                                     </Typography>
-                                    <Box sx={{display: "flex", justifyContent: "space-between"}}>
+                                    <Box sx={{display: "flex", justifyContent: "space-between", mb: 2}}>
                                         <Box sx={{minHeight: 150, width: 300}}>
                                             <SelectorMultiple name={"cityList"} fetch={fetchCities}
                                                               label={"Выберите город"} id={"cities"}/>

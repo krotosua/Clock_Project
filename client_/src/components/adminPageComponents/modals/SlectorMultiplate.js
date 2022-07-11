@@ -3,23 +3,11 @@ import {useEffect, useState} from 'react';
 import {Autocomplete, TextField} from '@mui/material';
 import {useFormContext} from "react-hook-form";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-};
-
 
 export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) {
     const [list, setList] = useState([])
     const [nameList, setNameList] = useState([])
     const {setValue, getValues} = useFormContext();
-
     useEffect(async () => {
         try {
             const res = await fetch(null, null)
@@ -33,6 +21,10 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
             setList([])
         }
     }, []);
+    useEffect(async () => {
+            setNameList([])
+        }
+        , [getValues("reset")]);
     return (
         <div>
             <Autocomplete
@@ -40,7 +32,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
                 multiple
                 limitTags={2}
                 id={id}
-                value={getValues(name) || []}
+                value={nameList}
                 options={list}
                 getOptionLabel={OptionLabel ? OptionLabel : (option) => option.name}
                 onChange={(event, newValue, reason) => {
@@ -51,6 +43,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
                 clearText={"Убрать фильтр"}
                 renderInput={(params) => (
                     <TextField
+                        fullWidth
                         {...params} label={label}
                         placeholder={label}/>
                 )}

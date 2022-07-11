@@ -141,7 +141,7 @@ class OrderLogic {
                         sorting === SORTING.USER_ID ? [User, "id", directionUp]
                             : [sorting, directionUp]],
                 where: {
-                    name: userName ? {[Op.startsWith]: userName ?? ""} : {[Op.ne]: ""},
+                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
                     masterId: masterFind.id,
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
@@ -204,7 +204,7 @@ class OrderLogic {
             const offset: number = pagination.page * pagination.limit - pagination.limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 where: {
-                    name: userName ? {[Op.startsWith]: userName ?? ""} : {[Op.ne]: ""},
+                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
                     price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}

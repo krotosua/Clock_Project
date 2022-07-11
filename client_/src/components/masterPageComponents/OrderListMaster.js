@@ -40,6 +40,7 @@ const defaultValues = {
     forFilter: true,
     minPrice: "",
     maxPrice: "",
+    reset: false
 }
 
 const OrderListMaster = ({
@@ -66,6 +67,7 @@ const OrderListMaster = ({
     } = useForm({
         defaultValues
     });
+    const resetLists = watch("reset", false)
     const status = watch("status", null)
     const [citiesList, setCitiesList] = useState([])
     const [date, setDate] = useState([null, null]);
@@ -104,6 +106,7 @@ const OrderListMaster = ({
                                     maxPrice,
                                     date,
                                     userEmailList,
+                                    watch,
                                     userName
                                 }) => {
         const filter = {
@@ -122,22 +125,22 @@ const OrderListMaster = ({
     };
     const resetFilter = async () => {
         reset()
+        setValue("reset", !resetLists)
         setDate([null, null])
-        setValue("reset", true)
         setFilters({})
     };
 
     return (
         <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
             <FormProvider register={register} errors={errors} trigger={trigger} getValues={getValues}
-                          setValue={setValue}>
+                          setValue={setValue} watch={watch}>
                 <form onSubmit={handleSubmit(createFilter)}>
                     <Box>
                         <Typography sx={{mb: 1, mt: 1}}>
                             Выберите фильтр:
                         </Typography>
                         <Box sx={{display: "flex", justifyContent: "space-between",}}>
-                            <Box sx={{minHeight: 150, width: 300}}>
+                            <Box sx={{minHeight: 150, width: 300, mb: 2}}>
                                 <SelectorMultiple name={"cityList"} fetch={fetchCities}
                                                   label={"Выберите город"} id={"cities"}/>
                                 <SelectorMultiple name={"sizeList"} fetch={fetchSize}

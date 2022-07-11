@@ -61,6 +61,7 @@ const OrderList = ({alertMessage}) => {
         defaultValues
     });
     const status = watch("status", 0)
+    const resetLists = watch("reset", false)
     const [editVisible, setEditVisible] = useState(false)
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
@@ -165,7 +166,7 @@ const OrderList = ({alertMessage}) => {
     const resetFilter = async () => {
         reset()
         setDate([null, null])
-        setValue("reset", true)
+        setValue("reset", !resetLists)
         setFilters({})
     };
     return (<Box>
@@ -183,8 +184,8 @@ const OrderList = ({alertMessage}) => {
                         <Typography sx={{mb: 1, mt: -2}}>
                             Выберите фильтр:
                         </Typography>
-                        <Box sx={{display: "flex", justifyContent: "space-between", minHeight: 120}}>
-                            <Box>
+                        <Box sx={{display: "flex", justifyContent: "space-between", minHeight: 130}}>
+                            <Box sx={{mb: 1}}>
                                 <SelectorMultiple name={"cityList"} fetch={fetchCities}
                                                   label={"Выберите город"} id={"cities"}/>
                                 <SelectorMultiple name={"masterList"} fetch={fetchMasters}

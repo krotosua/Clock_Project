@@ -11,9 +11,9 @@ const NavBar = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const logOut = () => {
-        dispatch(resetUserAction())
-        localStorage.removeItem('token')
         navigate(START_ROUTE)
+        localStorage.removeItem('token')
+        dispatch(resetUserAction())
     }
 
     return (
