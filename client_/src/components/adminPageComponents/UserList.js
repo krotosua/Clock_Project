@@ -46,6 +46,7 @@ const UserList = ({alertMessage}) => {
             const res = await fetchUsers(page, limit, sorting, ascending)
             if (res.status === 204) {
                 setUsersList([])
+                setTotalCount(0)
             }
             setUsersList(res.data.rows)
             setTotalCount(res.data.count)
@@ -104,7 +105,7 @@ const UserList = ({alertMessage}) => {
         setSorting(param)
     }
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
             <List subheader={<Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Пользователи

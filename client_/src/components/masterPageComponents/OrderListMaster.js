@@ -6,7 +6,6 @@ import {FormProvider, useForm} from "react-hook-form";
 import {
     Box,
     Button,
-    Checkbox,
     CircularProgress,
     Divider,
     FormControl,
@@ -16,12 +15,10 @@ import {
     ListItemButton,
     ListItemText,
     MenuItem,
-    OutlinedInput,
     Select,
     TextField,
     Typography
 } from "@mui/material";
-import SelectorMultipleCity from "../adminPageComponents/modals/SelectorMultipleCity";
 import {DateRangePicker, LocalizationProvider} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
@@ -30,25 +27,19 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import {fetchCustomers} from "../../http/userAPI";
 import {fetchCities} from "../../http/cityAPI";
 import {fetchSize} from "../../http/sizeAPI";
+import SelectorMultiple from "../adminPageComponents/modals/SlectorMultiplate";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-};
 const defaultValues = {
     status: "",
     time: null,
-    cityId: null,
-    masterId: null,
+    cityList: [],
+    userList: [],
+    sizeList: [],
+    userEmailList: [],
+    date: null,
     forFilter: true,
     minPrice: "",
-    maxPrice: ""
+    maxPrice: "",
 }
 
 const OrderListMaster = ({
@@ -76,25 +67,10 @@ const OrderListMaster = ({
         defaultValues
     });
     const status = watch("status", null)
-    const [clockList, setClockList] = useState([])
     const [citiesList, setCitiesList] = useState([])
-    const [customerList, setCustomerList] = useState([])
-    const [clockChosen, setClockChosen] = useState([])
-    const [userChosen, setUserChosen] = useState([]);
     const [date, setDate] = useState([null, null]);
     const [maxOrderPrice, setMaxOrderPrice] = useState(null)
     useEffect(async () => {
-        try {
-            const res = await fetchCustomers()
-            if (res.status === 204) {
-                setCustomerList([])
-                return
-            }
-            setCustomerList(res.data)
-            setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
-        } catch (e) {
-            setCustomerList([])
-        }
         try {
             const res = await fetchCities(null, null)
             if (res.status === 204) {
@@ -105,12 +81,7 @@ const OrderListMaster = ({
         } catch (e) {
             setCitiesList([])
         }
-        try {
-            const res = await fetchSize(null, null)
-            setClockList(res.data.rows)
-        } catch (e) {
-            setClockList([])
-        }
+        setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
     }, [])
     const changeStatus = async (order, status) => {
         const changeInfo = {
@@ -125,11 +96,22 @@ const OrderListMaster = ({
             alertMessage('Не удалось изменить статус заказа', true)
         }
     }
-    const createFilter = async ({status, usersList, date, cityList, sizeList, minPrice, maxPrice}) => {
+    const createFilter = async ({
+                                    cityList,
+                                    userList,
+                                    sizeList,
+                                    minPrice,
+                                    maxPrice,
+                                    date,
+                                    userEmailList,
+                                    userName
+                                }) => {
         const filter = {
             cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
-            userIDes: usersList.length !== 0 ? usersList.map(user => user.id) : null,
+            userIDes: userList.length !== 0 ? userList.map(user => user.id) : null,
             sizeIDes: sizeList.length !== 0 ? sizeList.map(size => size.id) : null,
+            userEmails: userEmailList.length !== 0 ? userEmailList.map(user => user.email) : null,
+            userName: userName.length !== 0 ? userName : null,
             time: date || null,
             status: status === "" ? null : status,
             minPrice: minPrice === "" ? null : minPrice,
@@ -140,16 +122,9 @@ const OrderListMaster = ({
     };
     const resetFilter = async () => {
         reset()
-        setUserChosen([])
         setDate([null, null])
         setValue("reset", true)
         setFilters({})
-    };
-    const multipleChange = (event, setter) => {
-        const {target: {value}} = event
-        setter(
-            typeof value === 'string' ? value.split(',') : value,
-        );
     };
 
     return (
@@ -162,54 +137,14 @@ const OrderListMaster = ({
                             Выберите фильтр:
                         </Typography>
                         <Box sx={{display: "flex", justifyContent: "space-between",}}>
-                            <Box sx={{height: 150, width: 300}}>
-                                <SelectorMultipleCity/>
-                                <FormControl sx={{mt: 1, width: 300}}>
-                                    <InputLabel size={"small"} id="master-multiple-checkbox">Выберите
-                                        ID пользователя</InputLabel>
-                                    <Select
-                                        {...register("usersList",)}
-                                        size={"small"}
-                                        labelId="master-multiple-checkbox"
-                                        id="master-multiple-checkbox"
-                                        multiple
-                                        value={userChosen}
-                                        onChange={(e) => multipleChange(e, setUserChosen)}
-                                        input={<OutlinedInput label="Выберите ID пользователя"/>}
-                                        renderValue={(selected) => selected.map(sels => sels.id).join(', ')}
-                                        MenuProps={MenuProps}
-                                    >
-                                        {customerList.map((user, index) => (
-                                            <MenuItem key={index} value={user}>
-                                                <Checkbox checked={userChosen.indexOf(user) > -1}/>
-                                                <ListItemText primary={user.id}/>
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                                <FormControl sx={{mt: 1, width: 300}}>
-                                    <InputLabel size={"small"} id="master-multiple-checkbox">Выберите тип
-                                        услуги</InputLabel>
-                                    <Select
-                                        {...register("sizeList",)}
-                                        size={"small"}
-                                        labelId="master-multiple-checkbox"
-                                        id="master-multiple-checkbox"
-                                        multiple
-                                        value={clockChosen}
-                                        onChange={(e) => multipleChange(e, setClockChosen)}
-                                        input={<OutlinedInput label="Выберите тип услуги"/>}
-                                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                                        MenuProps={MenuProps}
-                                    >
-                                        {clockList.map((clock, index) => (
-                                            <MenuItem key={index} value={clock}>
-                                                <Checkbox checked={clockChosen.indexOf(clock) > -1}/>
-                                                <ListItemText primary={clock.name}/>
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                            <Box sx={{minHeight: 150, width: 300}}>
+                                <SelectorMultiple name={"cityList"} fetch={fetchCities}
+                                                  label={"Выберите город"} id={"cities"}/>
+                                <SelectorMultiple name={"sizeList"} fetch={fetchSize}
+                                                  label={"Выберите часы"} id={"sizes"}/>
+                                <SelectorMultiple name={"userList"} fetch={fetchCustomers}
+                                                  label={"Выберите ID пользователя"} id={"user"}
+                                                  OptionLabel={(option) => (option.id).toString()}/>
                             </Box>
                             <Box>
                                 <Box sx={{display: "flex", justifyContent: "space-between",}}>
@@ -293,6 +228,21 @@ const OrderListMaster = ({
                                         )}
                                     />
                                 </LocalizationProvider>
+                                <Box sx={{display: "flex", justifyContent: "space-between",}}>
+                                    <Box>
+                                        <SelectorMultiple name={"userEmailList"} fetch={fetchCustomers}
+                                                          label={"Выберите Email пользователя"} id={"userEmail"}
+                                                          OptionLabel={(option) => option.email}/>
+                                    </Box>
+                                    <TextField
+                                        {...register("userName",)}
+                                        size={"small"}
+                                        sx={{ml: 1, mt: 1}}
+                                        id="userName"
+                                        label={`По имени`}
+                                        variant="outlined"
+                                    />
+                                </Box>
                             </Box>
                             <Box
                                 sx={{width: 200, mt: 2}}>

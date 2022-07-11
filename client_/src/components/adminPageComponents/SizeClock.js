@@ -45,6 +45,7 @@ const SizeList = ({alertMessage}) => {
             const res = await fetchSize(page, limit, sorting, ascending)
             if (res.status === 204) {
                 setSizesList([])
+                setTotalCount(0)
                 return
             }
             setSizesList(res.data.rows)
@@ -90,7 +91,7 @@ const SizeList = ({alertMessage}) => {
         setSorting(param)
     }
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Размеры часов

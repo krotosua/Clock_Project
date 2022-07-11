@@ -16,6 +16,7 @@ import {
     Rating,
     Select,
     Slider,
+    TextField,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -32,18 +33,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import {fetchCities} from "../../http/cityAPI";
 import {FormProvider, useForm} from "react-hook-form";
-import SelectorMultipleCity from "./modals/SelectorMultipleCity";
+import SelectorMultiple from "./modals/SlectorMultiplate";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-};
 const marks = [
     {
         value: 0,
@@ -72,7 +63,9 @@ const marks = [
 const defaultValues = {
     rating: [0, 5],
     masterId: null,
-    forFilter: true
+    forFilter: true,
+    masterName: "",
+    cityList: []
 }
 const MasterList = ({alertMessage}) => {
     const {
@@ -112,10 +105,10 @@ const MasterList = ({alertMessage}) => {
             const res = await fetchMasters(null, page, limit, sorting, ascending, filters)
             if (res.status === 204) {
                 setMastersList([])
+                setTotalCount(0)
                 return
             }
             setMastersList(res.data.rows)
-
             setTotalCount(res.data.count)
         } catch (e) {
             setMastersList([])
@@ -212,11 +205,13 @@ const MasterList = ({alertMessage}) => {
     const ratingChange = (event, newValue) => {
         setRating(newValue);
     };
-    const createFilter = async ({cityList}) => {
+    const createFilter = async ({cityList, masterName}) => {
         const filter = {
             cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
-            rating: rating
+            rating: rating,
+            masterName: masterName !== "" ? masterName : null,
         }
+        setPage(1)
         setLoading(true)
         setFilters(filter)
     };
@@ -229,7 +224,7 @@ const MasterList = ({alertMessage}) => {
     };
 
     return (<Box sx={{position: "relative"}}>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Мастера
@@ -238,12 +233,23 @@ const MasterList = ({alertMessage}) => {
             <FormProvider register={register} errors={errors} trigger={trigger} getValues={getValues}
                           setValue={setValue}>
                 <form onSubmit={handleSubmit(createFilter)}>
-                    <Box>
+                    <Box sx={{minHeight: 150}}>
                         <Typography sx={{mb: 1, mt: -2}} variant="h6" component="div">
                             Выберите фильтр:
                         </Typography>
                         <Box sx={{display: "flex", justifyContent: "space-evenly"}}>
-                            <SelectorMultipleCity/>
+                            <Box>
+                                <SelectorMultiple name={"cityList"} fetch={fetchCities}
+                                                  label={"Выберите город"} id={"cities"}/>
+                                <TextField
+                                    {...register("masterName",)}
+                                    size={"small"}
+                                    sx={{mt: 1}}
+                                    id="masterName"
+                                    label={`По имени`}
+                                    variant="outlined"
+                                />
+                            </Box>
                             <Box sx={{width: 300, mt: -4}}>
                                 <Typography id="rating-slider" gutterBottom>
                                     Рейтинг

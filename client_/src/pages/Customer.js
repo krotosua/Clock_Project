@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {
     Box,
     Button,
-    Checkbox,
     CircularProgress,
     Divider,
     Fab,
@@ -13,7 +12,6 @@ import {
     ListItemButton,
     ListItemText,
     MenuItem,
-    OutlinedInput,
     Rating,
     Select,
     TextField,
@@ -28,7 +26,6 @@ import MyAlert from "../components/adminPageComponents/MyAlert";
 import {fetchCustomerOrders} from "../http/orderAPI";
 import {FormProvider, useForm} from "react-hook-form";
 import {fetchMasters} from "../http/masterAPI";
-import SelectorMultipleCity from "../components/adminPageComponents/modals/SelectorMultipleCity";
 import {STATUS_LIST} from "../store/OrderStore";
 import {DateRangePicker, LocalizationProvider} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
@@ -38,6 +35,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import MasterRating from "../components/customerPageComponents/MasterRating";
 import {fetchCities} from "../http/cityAPI";
 import {fetchSize} from "../http/sizeAPI";
+import SelectorMultiple from "../components/adminPageComponents/modals/SlectorMultiplate";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -216,54 +214,13 @@ const Customer = () => {
                                         Выберите фильтр:
                                     </Typography>
                                     <Box sx={{display: "flex", justifyContent: "space-between"}}>
-                                        <Box sx={{height: 150, width: 300}}>
-                                            <SelectorMultipleCity/>
-                                            <FormControl sx={{mt: 1, width: 300}}>
-                                                <InputLabel size={"small"} id="master-multiple-checkbox">Выберите
-                                                    мастера</InputLabel>
-                                                <Select
-                                                    {...register("masterList",)}
-                                                    size={"small"}
-                                                    labelId="master-multiple-checkbox"
-                                                    id="master-multiple-checkbox"
-                                                    multiple
-                                                    value={masterChosen}
-                                                    onChange={(e) => multipleChange(e, setMasterChosen)}
-                                                    input={<OutlinedInput label="Выберите мастера"/>}
-                                                    renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                                                    MenuProps={MenuProps}
-                                                >
-                                                    {mastersList.map((master, index) => (
-                                                        <MenuItem key={index} value={master}>
-                                                            <Checkbox checked={masterChosen.indexOf(master) > -1}/>
-                                                            <ListItemText primary={master.name}/>
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            <FormControl sx={{mt: 1, width: 300}}>
-                                                <InputLabel size={"small"} id="master-multiple-checkbox">Выберите тип
-                                                    услуги</InputLabel>
-                                                <Select
-                                                    {...register("sizeList",)}
-                                                    size={"small"}
-                                                    labelId="master-multiple-checkbox"
-                                                    id="master-multiple-checkbox"
-                                                    multiple
-                                                    value={clockChosen}
-                                                    onChange={(e) => multipleChange(e, setClockChosen)}
-                                                    input={<OutlinedInput label="Выберите тип услуги"/>}
-                                                    renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                                                    MenuProps={MenuProps}
-                                                >
-                                                    {clockList.map((clock, index) => (
-                                                        <MenuItem key={index} value={clock}>
-                                                            <Checkbox checked={clockChosen.indexOf(clock) > -1}/>
-                                                            <ListItemText primary={clock.name}/>
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                        <Box sx={{minHeight: 150, width: 300}}>
+                                            <SelectorMultiple name={"cityList"} fetch={fetchCities}
+                                                              label={"Выберите город"} id={"cities"}/>
+                                            <SelectorMultiple name={"masterList"} fetch={fetchMasters}
+                                                              label={"Выберите мастера"} id={"masters"}/>
+                                            <SelectorMultiple name={"sizeList"} fetch={fetchSize}
+                                                              label={"Выберите часы"} id={"sizes"}/>
                                         </Box>
                                         <Box>
                                             <Box sx={{display: "flex", justifyContent: "space-between",}}>

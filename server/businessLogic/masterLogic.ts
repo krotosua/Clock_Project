@@ -4,7 +4,7 @@ import {Op} from "sequelize";
 import sizeLogic from "./sizeLogic"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
-import {CreateMasterDTO, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
+import {CreateMasterDTO, forGetMasters, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
 import {CreateRatingDTO} from "../dto/rating.dto";
 import {addHours} from 'date-fns'
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
@@ -32,10 +32,12 @@ class MasterLogic {
             const directionUp: "DESC" | "ASC" = req.query.ascending === "true" ? 'ASC' : 'DESC'
             const {
                 cityIDes,
-                rating
-            }: { cityIDes: [] | null, rating: [number, number] | null } = req.query.filters ? JSON.parse(req.query.filters) : {
+                rating,
+                masterName
+            }: forGetMasters = req.query.filters ? JSON.parse(req.query.filters) : {
                 cityIDes: null,
-                rating: null
+                rating: null,
+                masterName: null
             }
             page = page || 1;
             limit = limit || 12;
@@ -53,6 +55,7 @@ class MasterLogic {
                     [City, "name", 'ASC']
                 ],
                 where: {
+                    name: masterName ? {[Op.startsWith]: masterName ?? ""} : {[Op.ne]: ""},
                     id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
                     rating: {[Op.between]: rating ?? [0, 5]},
                 },

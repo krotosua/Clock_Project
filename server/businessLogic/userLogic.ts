@@ -246,7 +246,7 @@ class UserLogic {
             const users: User[] | null = await User.findAll(
                 {
                     where: {role: ROLES.CUSTOMER},
-                    attributes: ["id"],
+                    attributes: ["id", "email"],
                 })
             if (!users) {
                 return res.status(204).json({message: "List is empty"});

@@ -10,7 +10,11 @@ export type CreateMasterDTO = {
     userId: number
     cityId: (number | City)[]
 }
-
+export type forGetMasters = {
+    cityIDes: [] | null,
+    rating: [number, number] | null,
+    masterName: string | null
+}
 export type GetMasterDTO = Pagination & { time: Date }
 
 

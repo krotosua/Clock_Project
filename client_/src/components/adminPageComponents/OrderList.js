@@ -3,7 +3,6 @@ import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
-    Checkbox,
     CircularProgress,
     Divider,
     FormControl,
@@ -14,11 +13,10 @@ import {
     ListItemButton,
     ListItemText,
     MenuItem,
-    OutlinedInput,
     Select,
     TextField,
     Tooltip,
-    Typography,
+    Typography
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -37,23 +35,14 @@ import {DateRangePicker, LocalizationProvider} from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ruLocale from "date-fns/locale/ru";
 import {FormProvider, useForm} from "react-hook-form";
-import SelectorMultipleCity from "./modals/SelectorMultipleCity";
+import SelectorMultiple from "./modals/SlectorMultiplate";
+import {fetchCities} from "../../http/cityAPI";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-};
 const defaultValues = {
     status: "",
     time: null,
-    cityId: null,
-    masterId: null,
+    cityList: [],
+    masterList: [],
     forFilter: true,
     minPrice: "",
     maxPrice: ""
@@ -85,8 +74,6 @@ const OrderList = ({alertMessage}) => {
     const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
     const [filters, setFilters] = useState(null)
-    const [masterChosen, setMasterChosen] = useState([]);
-    const [mastersList, setMastersList] = useState([])
     const [maxOrderPrice, setMaxOrderPrice] = useState(null)
     const handleChange = async (statusOrder, order) => {
         try {
@@ -106,11 +93,11 @@ const OrderList = ({alertMessage}) => {
             const res = await fetchAlLOrders(page, limit, sorting, ascending, filters)
             if (res.status === 204) {
                 setOrdersList([])
+                setTotalCount(0)
                 return
             }
             setOrdersList(res.data.rows)
             setTotalCount(res.data.count)
-
         } catch (e) {
             setOrdersList([])
         } finally {
@@ -122,18 +109,9 @@ const OrderList = ({alertMessage}) => {
         await getOrders(page, limit, sorting, ascending, filters)
     }, [page, limit, sorting, ascending, filters])
     useEffect(async () => {
-        try {
-            const res = await fetchMasters(null, null, null)
-            if (res.status === 204) {
-                setMastersList([])
-                return
-            }
-            setMastersList(res.data.rows)
-
-        } catch (e) {
-            setMastersList([])
+        if (ordersList) {
+            setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
         }
-        setMaxOrderPrice(Math.max(...ordersList.map(order => order.price)))
     }, [])
     const removeOrder = async (id) => {
         try {
@@ -170,76 +148,58 @@ const OrderList = ({alertMessage}) => {
         setAscending(true)
         setSorting(param)
     }
-    const createFilter = async ({status, masterList, date, cityList, minPrice, maxPrice}) => {
+    const createFilter = async ({status, masterList, userName, date, cityList, minPrice, maxPrice}) => {
         const filter = {
             cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
             masterIDes: masterList.length !== 0 ? masterList.map(master => master.id) : null,
             time: date || null,
             status: status === "" ? null : status,
             minPrice: minPrice === "" ? null : minPrice,
-            maxPrice: maxPrice === "" ? maxOrderPrice : maxPrice
+            maxPrice: maxPrice === "" ? maxOrderPrice : maxPrice,
+            userName: userName.length !== 0 ? userName : null,
         }
+        setPage(1)
         setLoading(true)
         setFilters(filter)
     };
     const resetFilter = async () => {
         reset()
-        setMasterChosen([])
         setDate([null, null])
         setValue("reset", true)
         setFilters({})
     };
-    const multipleChange = (event, setter) => {
-        const {target: {value}} = event
-        setter(
-            typeof value === 'string' ? value.split(',') : value,
-        );
-        setValue("masterList", typeof value === 'string' ? value.split(',') : value,)
-    };
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Список заказов
                 </Typography>
             </Box>
 
-            <FormProvider register={register} errors={errors} trigger={trigger} getValues={getValues}
+            <FormProvider register={register} errors={errors} watch={watch} trigger={trigger} getValues={getValues}
                           setValue={setValue}>
                 <form onSubmit={handleSubmit(createFilter)}>
                     <Box>
                         <Typography sx={{mb: 1, mt: -2}}>
                             Выберите фильтр:
                         </Typography>
-                        <Box sx={{display: "flex", justifyContent: "space-between", height: 110}}>
+                        <Box sx={{display: "flex", justifyContent: "space-between", minHeight: 120}}>
                             <Box>
-                                <SelectorMultipleCity/>
-                                <FormControl sx={{mt: 1, width: 300}}>
-                                    <InputLabel size={"small"} id="master-multiple-checkbox">Выберите
-                                        мастера</InputLabel>
-                                    <Select
-                                        {...register("masterList",)}
-                                        size={"small"}
-                                        labelId="master-multiple-checkbox"
-                                        id="master-multiple-checkbox"
-                                        multiple
-                                        value={masterChosen}
-                                        onChange={(e) => multipleChange(e, setMasterChosen)}
-                                        input={<OutlinedInput label="Выберите мастера"/>}
-                                        renderValue={(selected) => selected.map(sels => sels.name).join(', ')}
-                                        MenuProps={MenuProps}
-                                    >
-                                        {mastersList.map((master, index) => (
-                                            <MenuItem key={index} value={master}>
-                                                <Checkbox checked={masterChosen.indexOf(master) > -1}/>
-                                                <ListItemText primary={master.name}/>
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                <SelectorMultiple name={"cityList"} fetch={fetchCities}
+                                                  label={"Выберите город"} id={"cities"}/>
+                                <SelectorMultiple name={"masterList"} fetch={fetchMasters}
+                                                  label={"Выберите мастера"} id={"masters"}/>
+                                <TextField
+                                    {...register("userName",)}
+                                    size={"small"}
+                                    sx={{my: 1, width: 300}}
+                                    id="userName"
+                                    label={`По имени`}
+                                    variant="outlined"
+                                />
                             </Box>
                             <Box>
-                                <Box sx={{display: "flex", justifyContent: "space-between",}}>
+                                <Box sx={{display: "flex", justifyContent: "space-between"}}>
                                     <FormControl sx={{minWidth: 100}} size="small">
                                         <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
                                         <Select

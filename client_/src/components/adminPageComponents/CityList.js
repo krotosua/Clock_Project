@@ -44,6 +44,7 @@ const CityList = ({alertMessage}) => {
             const res = await fetchCities(page, limit, sorting, ascending)
             if (res.status === 204) {
                 setCitiesList([])
+                setTotalCount(0)
                 return
             }
             setTotalCount(res.data.count)
@@ -90,7 +91,7 @@ const CityList = ({alertMessage}) => {
     }
 
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "680px"}}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 135}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Города

@@ -7,11 +7,12 @@ import {
     forGetOrders,
     ResultOrderDTO,
     SendMassageDTO,
+    SORTING,
     STATUS,
     statusList,
     UpdateMasterDTO
 } from "../dto/order.dto";
-import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
+import {DIRECTION, GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 
@@ -34,7 +35,7 @@ class OrderLogic {
             const userId: number = req.params.userId
             const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
-            const directionUp: string = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const {
@@ -55,9 +56,9 @@ class OrderLogic {
                 }
             const offset: number = pagination.page * pagination.limit - pagination.limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
-                order: [sorting === "masterName" ? [Master, "name", directionUp]
-                    : sorting === "sizeName" ? [SizeClock, "name", directionUp] :
-                        sorting === "cityName" ? [City, "name", directionUp]
+                order: [sorting === SORTING.MASTER_NAME ? [Master, "name", directionUp]
+                    : sorting === SORTING.SIZE_NAME ? [SizeClock, "name", directionUp] :
+                        sorting === SORTING.CITY_NAME ? [City, "name", directionUp]
                             : [sorting, directionUp]],
                 where: {
                     userId: userId,
@@ -104,7 +105,7 @@ class OrderLogic {
             const userId: number = req.params.userId
             const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
-            const directionUp: string = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const {
@@ -114,6 +115,8 @@ class OrderLogic {
                 time,
                 status,
                 minPrice,
+                userEmails,
+                userName,
                 maxPrice
             }: forGetOrders = req.query.filters ? JSON.parse(req.query.filters)
                 : {
@@ -121,24 +124,24 @@ class OrderLogic {
                     userIDes: null,
                     sizeIDes: null,
                     time: null,
-                    status: null, minPrice: null, maxPrice: null
+                    status: null, minPrice: null, maxPrice: null, userEmails: null,
+                    userName: null
                 }
             const offset: number = pagination.page * pagination.limit - pagination.limit
             const masterFind: Master | null = await Master.findOne({
                 where: {userId: userId},
                 attributes: ['id', "isActivated"]
             })
-
             if (masterFind === null || !masterFind.isActivated) {
                 return next(ApiError.forbidden("Not activated"))
             }
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
-                order: [sorting === "masterName" ? [Master, "name", directionUp]
-                    : sorting === "sizeName" ? [SizeClock, "name", directionUp] :
-                        sorting === "cityName" ? [City, "name", directionUp] :
-                            sorting === "userId" ? [User, "id", directionUp]
-                                : [sorting, directionUp]],
+                order: [sorting === SORTING.SIZE_NAME ? [SizeClock, "name", directionUp] :
+                    sorting === SORTING.CITY_NAME ? [City, "name", directionUp] :
+                        sorting === SORTING.USER_ID ? [User, "id", directionUp]
+                            : [sorting, directionUp]],
                 where: {
+                    name: userName ? {[Op.startsWith]: userName ?? ""} : {[Op.ne]: ""},
                     masterId: masterFind.id,
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
@@ -161,6 +164,7 @@ class OrderLogic {
                 }, {
                     model: User,
                     where: {
+                        email: userEmails ?? {[Op.ne]: ""},
                         id: userIDes ?? {[Op.ne]: 0}
                     },
                     attributes: ["id"],
@@ -179,35 +183,37 @@ class OrderLogic {
         try {
             const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
-            const directionUp: string = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const direction: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
             const {
                 cityIDes,
                 masterIDes,
                 time,
                 status,
                 minPrice,
-                maxPrice
+                maxPrice,
+                userName
             }: forGetOrders = req.query.filters ? JSON.parse(req.query.filters)
                 : {
                     cityIDes: null,
                     masterIDes: null,
                     time: null,
-                    status: null, minPrice: null, maxPrice: null
+                    status: null, minPrice: null, maxPrice: null, userName: null
                 }
             pagination.page = pagination.page || 1
             pagination.limit = pagination.limit || 12
             const offset: number = pagination.page * pagination.limit - pagination.limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 where: {
+                    name: userName ? {[Op.startsWith]: userName ?? ""} : {[Op.ne]: ""},
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
                     price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
                 },
-                order: [sorting === "masterName" ? [Master, "name", directionUp]
-                    : sorting === "date" ? [SizeClock, sorting, directionUp] :
-                        sorting === "cityName" ? [City, "name", directionUp] :
-                            sorting === "cityPrice" ? [City, "price", directionUp]
-                                : [sorting, directionUp]],
+                order: [sorting === SORTING.MASTER_NAME ? [Master, "name", direction]
+                    : sorting === SORTING.DATE ? [SizeClock, sorting, direction] :
+                        sorting === SORTING.CITY_NAME ? [City, "name", direction] :
+                            sorting === SORTING.CITY_PRICE ? [City, "price", direction]
+                                : [sorting, direction]],
                 include: [{
                     model: Master,
                     where: {
