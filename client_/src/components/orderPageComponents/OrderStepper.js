@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
 import {fetchMastersForOrder} from "../../http/masterAPI";
-import {createOrder, payPalChangeOrder} from "../../http/orderAPI";
+import {createOrder} from "../../http/orderAPI";
 import {checkEmail} from "../../http/userAPI";
 import {CUSTOMER_ORDER_ROUTE, START_ROUTE} from "../../utils/consts";
 import SelectorSize from "./SelectorSize";
@@ -41,7 +41,7 @@ import TablsPagination from "../TablsPagination";
 import {Controller, FormProvider, useForm} from "react-hook-form";
 import PopupState, {bindPopover, bindTrigger} from 'material-ui-popup-state';
 import jwt_decode from "jwt-decode";
-import {PayPalButtons, PayPalScriptProvider} from "@paypal/react-paypal-js";
+import ReactPayPal from "./PayPal";
 
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
@@ -699,56 +699,14 @@ const OrderStepper = ({alertMessage}) => {
                                         <Typography variant="h6" sx={{my: 2, textAlign: "center"}}>Детали заказа
                                             отправлены на
                                             почту</Typography>
-                                        {openPayPal ? <Box>
-                                                <span>Можете сейчас оплатить заказ:</span>
-                                                <PayPalScriptProvider>
-                                                    <PayPalButtons
-                                                        options={{
-                                                            clientId: process.env.PRODUCTION_CLIENT_ID
-                                                        }}
-                                                        createOrder={(data, actions) => {
-                                                            return actions.order.create({
-                                                                purchase_units: [{
-                                                                    amount: {
-                                                                        value: chosenSize.date.slice(0, 2) * chosenCity.price,
-                                                                    },
-                                                                },]
-                                                            })
-                                                        }}
-                                                        onApprove={async (data, actions) => {
-                                                            return actions.order.capture().then(function () {
-                                                                payPalChangeOrder({
-                                                                    id: getValues("orderId"),
-                                                                    payPalId: data.orderID
-                                                                })
-                                                                setValue("openPayPal", false)
-                                                            })
-
-                                                        }}
-                                                        onError={() => {
-                                                            setValue("errorPayPal", true)
-                                                            alertMessage('Не удалось выполнить оплату', true)
-                                                        }}
-                                                    />
-                                                </PayPalScriptProvider>
-                                                {getValues("errorPayPal") && "Произошла ошибка при оплате"}
-                                            </Box> :
-                                            <Typography variant="h5" sx={{my: 2, textAlign: "center"}}>Заказ успешно
-                                                оплачен</Typography>}
-                                        {user.isAuth ?
-                                            <Link to={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
-                                                  style={{textDecoration: 'none', color: 'white'}}>
-                                                <Button variant="outlined"
-                                                        fullWidth
-                                                        navigate={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}>
-                                                    {openPayPal ? "Продолжить без оплаты" : "К заказам"}</Button>
-                                            </Link> :
-                                            <Link to={START_ROUTE}
-                                                  style={{textDecoration: 'none', color: 'white'}}>
-                                                <Button variant="outlined" fullWidth navigate={START_ROUTE}>На
-                                                    главную</Button>
-                                            </Link>
-                                        }
+                                        <Box>
+                                            <ReactPayPal orderId={getValues("orderId")}
+                                                         isAuth={user.isAuth}
+                                                         userLink={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
+                                                         value={chosenSize.date.slice(0, 2) * chosenCity.price}/>
+                                            {getValues("errorPayPal") && "Произошла ошибка при оплате"}
+                                        </Box>
+                                        
                                     </Box>
                                 </Box>
 

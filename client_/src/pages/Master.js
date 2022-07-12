@@ -84,7 +84,7 @@ const Master = observer(() => {
                      onClose={() => setOpen(false)}
                      message={message}
                      isError={isError}/>
-
+            
         </Box>
 
     );

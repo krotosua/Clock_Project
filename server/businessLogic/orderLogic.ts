@@ -201,9 +201,9 @@ class OrderLogic {
 
     async payPalChange(req: Request, res: Response, next: NextFunction): Promise<void | UpdateDB<Order>> {
         try {
-            const orderId: string = req.params.orderId
-            const payPalId: string = req.body.payPalId
-            const orderUpdate: UpdateDB<Order> = await Order.update({
+            const orderId: string = req.body.resource.purchase_units[0].description
+            const payPalId: string = req.body.resource.id
+            const orderUpdate = await Order.update({
                 status: STATUS.ACCEPTED,
                 payPalId: payPalId
             }, {where: {id: orderId}})

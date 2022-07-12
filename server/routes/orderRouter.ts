@@ -41,9 +41,7 @@ orderRouter.put("/:orderId",
 orderRouter.put("/statusChange/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
     orderController.statusChange)
-orderRouter.put("/payPal/:orderId",
-    param("orderId").not().isEmpty().isInt({gt: 0}),
-    body("payPalId").not().isEmpty().isString(),
+orderRouter.post("/payPal",
     orderController.payPalChange)
 
 

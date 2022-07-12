@@ -131,12 +131,13 @@ class OrderController {
         }
     }
 
-    async payPalChange(req: Request, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | UpdateDB<Order>>> {
+    async payPalChange(req: any, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | UpdateDB<Order>>> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({errors: errors.array()});
         }
         try {
+
             const order = await orderLogic.payPalChange(req, res, next)
             if (!order) {
                 next(ApiError.badRequest("Empty"))
