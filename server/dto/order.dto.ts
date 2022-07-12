@@ -10,6 +10,19 @@ export type CreateOrderDTO = {
     price: number;
     changedMaster?: boolean
 }
+export type forGetOrders = {
+    cityIDes: [] | null,
+    masterIDes: [] | null,
+    userIDes?: [] | null
+    sizeIDes?: [] | null
+    userEmails?: [] | null
+    userName?: string
+    masterName?: string | null
+    time: Date | null,
+    status: STATUS | null,
+    minPrice: string | null,
+    maxPrice: string | null,
+}
 
 export enum STATUS {
     WAITING = "WAITING",
@@ -36,6 +49,15 @@ export enum statusList {
     REJECTED = "REJECTED",
     ACCEPTED = "ACCEPTED",
     DONE = "DONE",
+}
+
+export enum SORTING {
+    MASTER_NAME = "masterName",
+    SIZE_NAME = "sizeName",
+    CITY_NAME = "cityName",
+    USER_ID = "userId",
+    DATE = "date",
+    CITY_PRICE = "cityPrice"
 }
 
 

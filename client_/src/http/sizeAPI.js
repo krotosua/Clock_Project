@@ -7,8 +7,8 @@ export const createSize = async (size) => {
 
 }
 
-export const fetchSize = async (page, limit) => {
-    return await $host.get('api/sizes/', {params: {page, limit}})
+export const fetchSize = async (page, limit, sorting, ascending) => {
+    return await $host.get('api/sizes/', {params: {page, limit, sorting, ascending}})
 
 }
 

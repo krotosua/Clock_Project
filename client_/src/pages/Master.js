@@ -5,30 +5,30 @@ import {useParams} from "react-router-dom";
 import {observer} from "mobx-react-lite";
 import TablsPagination from "../components/TablsPagination";
 import MyAlert from "../components/adminPageComponents/MyAlert";
-import {useDispatch, useSelector} from "react-redux";
 import {fetchMasterOrders} from "../http/orderAPI";
 
 const Master = observer(() => {
-    const orders = useSelector(state => state.orders)
-    const dispatch = useDispatch()
     const {id} = useParams()
-    const [activated, setActivated] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [open, setOpen] = useState(false)
     const [isError, setIsError] = useState(false)
     const [message, setMessage] = useState("")
-    const [loading, setLoading] = useState(true)
     const [ordersList, setOrdersList] = useState([])
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
-    const [limit, setLimit] = useState(8)
+    const [limit, setLimit] = useState(10)
+    const [ascending, setAscending] = useState(true)
+    const [sorting, setSorting] = useState("id")
+    const [filters, setFilters] = useState(null)
+    const [activated, setActivated] = useState(false)
     const alertMessage = (message, bool) => {
         setOpen(true)
         setMessage(message)
         setIsError(bool)
     }
-    const getMasterOrders = async () => {
+    const getMasterOrders = async (id, page, limit, sorting, ascending, filter) => {
         try {
-            const res = await fetchMasterOrders(id, page, limit)
+            const res = await fetchMasterOrders(id, page, limit, sorting, ascending, filter)
             setActivated(true)
             if (res.status === 204) {
                 setOrdersList([])
@@ -43,9 +43,10 @@ const Master = observer(() => {
         }
     }
     useEffect(async () => {
-        await getMasterOrders(id, page, limit)
-    }, [page, limit])
-    if (loading) {
+        await getMasterOrders(id, page, limit, sorting, ascending, filters)
+    }, [page, limit, sorting, ascending, filters])
+
+    if (loading && !filters) {
         return (
             <Box sx={{
                 display: "flex",
@@ -57,15 +58,30 @@ const Master = observer(() => {
             </Box>
         )
     }
+    const sortingList = (param) => {
+        if (sorting === param) {
+            setAscending(!ascending)
+            return
+        }
+        setAscending(true)
+        setSorting(param)
+    }
     return (
         <Box>
             {activated ?
-                <Box sx={{height: "750px", pt: 5, position: "relative"}}>
+                <Box sx={{minHeight: "750px", pt: 5, position: "relative"}}>
                     <h2>Список заказов</h2>
-                    <Box sx={{height: "650px"}}>
-                        <OrderListMaster ordersList={ordersList}
-                                         alertMessage={alertMessage}/>
-
+                    <Box sx={{minHeight: "650px"}}>
+                        <OrderListMaster sorting={sorting}
+                                         ascending={ascending}
+                                         ordersList={ordersList}
+                                         loading={loading}
+                                         limit={limit}
+                                         setLimit={(e) => setLimit(e)}
+                                         setLoading={(e) => setLoading(e)}
+                                         setFilters={(filter) => setFilters(filter)}
+                                         alertMessage={alertMessage}
+                                         sortingList={(param) => sortingList(param)}/>
                     </Box>
                     <Box style={{display: "flex", justifyContent: "center"}}>
                         <TablsPagination page={page} totalCount={totalCount} limit={limit}
@@ -84,7 +100,6 @@ const Master = observer(() => {
                      onClose={() => setOpen(false)}
                      message={message}
                      isError={isError}/>
-
         </Box>
 
     );

@@ -25,10 +25,10 @@ const MenuProps = {
 };
 
 
-export default function SelectorMasterCity({cityChosen}) {
+export default function SelectorMultipleCity({cityChosen}) {
     const [citiesList, setCitiesList] = useState([])
     const [cityName, setCityName] = React.useState([]);
-    const {register, errors, trigger, setValue} = useFormContext();
+    const {register, errors, trigger, setValue, getValues} = useFormContext();
     const handleChange = (event) => {
         const {target: {value}} = event
         setCityName(
@@ -37,6 +37,11 @@ export default function SelectorMasterCity({cityChosen}) {
         setValue("cityList", typeof value === 'string' ? value.split(',') : value,)
         trigger("cityList")
     };
+    if (getValues("reset") === true) {
+        setCityName([])
+        setValue("reset", false)
+    }
+
     useEffect(async () => {
         try {
             const res = await fetchCities(null, null)
@@ -54,17 +59,18 @@ export default function SelectorMasterCity({cityChosen}) {
     }, []);
     return (
         <div>
-            <FormControl error={Boolean(errors.cityList)} sx={{width: 300}}>
+            <FormControl size={getValues("forFilter") && "small"} error={Boolean(errors.cityList)} sx={{width: 300}}>
                 <InputLabel
                     id="multiple-cities">
                     Выберите город(а) работы мастера
                 </InputLabel>
                 <Select
                     {...register("cityList", {
-                        required: "Укажите город(a)",
+                        required: getValues("forFilter") ? null : "Укажите город(a)",
                     })}
                     labelId="multiple-cities"
                     id="multiple-cities"
+                    size={getValues("forFilter") && "small"}
                     multiple
                     value={cityName}
                     onChange={handleChange}

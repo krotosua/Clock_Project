@@ -33,7 +33,7 @@ class MasterController {
     }
 
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<void> {
         await masterLogic.getAll(req, res, next)
     }
 

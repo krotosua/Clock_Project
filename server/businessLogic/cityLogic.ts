@@ -23,14 +23,16 @@ class CityLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<City[]> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<Response<City[]> | void> {
         try {
             let pagination: Pagination = req.query;
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
             pagination.page = pagination.page ?? null;
             pagination.limit = pagination.limit ?? null;
             const offset = pagination.page * pagination.limit - pagination.limit;
             const cities: GetRowsDB<City> = await City.findAndCountAll({
-                order: [['name', 'ASC']],
+                order: [[sorting, directionUp]],
                 limit: pagination.limit, offset
             })
             if (!cities.count) {

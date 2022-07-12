@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {FormControl, TextField} from "@mui/material";
 import {updateMaster} from "../../../http/masterAPI";
-import SelectorMasterCity from "./SelectorMasterCity";
+import SelectorMultipleCity from "./SelectorMultipleCity";
 import {FormProvider, useForm} from "react-hook-form";
 
 
@@ -53,11 +53,12 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
             onClose={close}
         >
             <div>
-                <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}>
+                <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}
+                              getValues={getValues}>
                     <form onSubmit={handleSubmit(changeMaster)}>
                         <Box sx={style}>
                             <Typography align="center" id="modal-modal-title" variant="h6" component="h2">
-                                Добавить мастера
+                                Изменить параметры мастера
                             </Typography>
                             <Box sx={{display: "flex", flexDirection: "column"}}>
                                 <FormControl>
@@ -79,9 +80,11 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                     <TextField
                                         {...register("rating", {
                                             validate: {
-                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть больше не меньше 0',
+                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть не меньше 0',
                                                 lessThanSix: value => parseInt(value) < 6 || 'Рейтинг должен быть не больше 5',
-                                            }
+                                            },
+                                            valueAsNumber: true,
+                                            setValueAs: (value) => parseFloat(value)
                                         })}
                                         sx={{mb: 1}}
                                         id="rating"
@@ -91,7 +94,6 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                         variant="outlined"
                                         defaultValue={ratingToEdit}
                                         name="rating"
-                                        type="number"
                                         InputProps={{
                                             inputProps: {
                                                 max: 5, min: 0
@@ -99,7 +101,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                         }}
                                         onBlur={() => trigger("rating")}
                                     />
-                                    <SelectorMasterCity cityChosen={cityChosen}/>
+                                    <SelectorMultipleCity cityChosen={cityChosen}/>
                                 </FormControl>
                                 <Box
                                     sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
@@ -108,7 +110,7 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                             variant="outlined"
                                             type="submit"
                                             disabled={Object.keys(errors).length !== 0}>
-                                        Добавить
+                                        изменить
                                     </Button>
                                     <Button color="error" sx={{flexGrow: 1, ml: 2}} variant="outlined"
                                             onClick={close}> Закрыть</Button>

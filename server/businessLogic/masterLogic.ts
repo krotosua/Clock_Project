@@ -4,7 +4,7 @@ import {Op} from "sequelize";
 import sizeLogic from "./sizeLogic"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
-import {CreateMasterDTO, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
+import {CreateMasterDTO, forGetMasters, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
 import {CreateRatingDTO} from "../dto/rating.dto";
 import {addHours} from 'date-fns'
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
@@ -25,21 +25,46 @@ class MasterLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
         try {
             let {limit, page}: Pagination = req.query;
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp: "DESC" | "ASC" = req.query.ascending === "true" ? 'ASC' : 'DESC'
+            const {
+                cityIDes,
+                rating,
+                masterName
+            }: forGetMasters = req.query.filters ? JSON.parse(req.query.filters) : {
+                cityIDes: null,
+                rating: null,
+                masterName: null
+            }
             page = page || 1;
             limit = limit || 12;
             const offset = page * limit - limit;
-            let masters: GetRowsDB<Master> = await Master.findAndCountAll({
+            const masterIdes: Master[] | null = cityIDes ? await Master.findAll({
+                include: [{
+                    model: City,
+                    attributes: ["id"],
+                    where: {id: cityIDes}
+                }]
+            }) : null
+            const masters: GetRowsDB<Master> = await Master.findAndCountAll({
                 distinct: true,
-                order: [['rating', 'DESC']],
+                order: [[sorting, directionUp],
+                    [City, "name", 'ASC']
+                ],
+                where: {
+                    name: masterName ? {[Op.substring]: masterName ?? ""} : {[Op.ne]: ""},
+                    id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
+                    rating: {[Op.between]: rating ?? [0, 5]},
+                },
                 attributes: ['name', "rating", "id", "isActivated"],
                 include: [{
-                    model: City, through: {
+                    model: City,
+                    through: {
                         attributes: []
                     },
-
                 }, {model: User}], limit, offset
             })
             if (!masters.count) {
@@ -73,7 +98,6 @@ class MasterLogic {
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master>;
             const orders = await Order.findAll({
-
                 where: {
                     [not]: [{
                         [or]: [{

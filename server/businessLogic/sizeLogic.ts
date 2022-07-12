@@ -30,14 +30,16 @@ class SizeLogic {
     }
 
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<SizeClock> | { message: string }> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<SizeClock> | { message: string }> | void> {
         try {
             const pagination: Pagination = req.query
             pagination.page = pagination.page ?? null;
             pagination.limit = pagination.limit ?? null;
+            const sorting: string = req.query.sorting ?? "date"
+            const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
             const offset = pagination.page * pagination.limit - pagination.limit
             const sizes: GetRowsDB<SizeClock> = await SizeClock.findAndCountAll({
-                order: [['date', 'ASC']],
+                order: [[sorting, directionUp]],
                 limit: pagination.limit, offset
             })
             if (!sizes.count) {
