@@ -6,8 +6,8 @@ export const createCity = async (city) => {
 
 }
 
-export const fetchCities = async (page, limit, sorting, ascending) => {
-    return await $host.get('api/cities/', {params: {page, limit, sorting, ascending}})
+export const fetchCities = async (page, limit, sorting, ascending, inputValue) => {
+    return await $host.get('api/cities/', {params: {page, limit, sorting, ascending, name: inputValue}})
 
 }
 
