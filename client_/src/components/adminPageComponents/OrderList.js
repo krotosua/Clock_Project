@@ -22,7 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import TablsPagination from "../TablsPagination";
-import {deleteOrder, fetchAlLOrders, statusChangeOrder} from "../../http/orderAPI";
+import {deleteOrder, downloadFile, fetchAlLOrders, statusChangeOrder} from "../../http/orderAPI";
 import {ORDER_ROUTE} from "../../utils/consts";
 import {Link, useNavigate} from "react-router-dom";
 import EditOrder from "./modals/EditOrder";
@@ -37,6 +37,7 @@ import ruLocale from "date-fns/locale/ru";
 import {FormProvider, useForm} from "react-hook-form";
 import SelectorMultiple from "./modals/SlectorMultiplate";
 import {fetchCities} from "../../http/cityAPI";
+import GetAppSharpIcon from '@mui/icons-material/GetAppSharp';
 
 const defaultValues = {
     status: "",
@@ -169,6 +170,14 @@ const OrderList = ({alertMessage}) => {
         setValue("reset", !resetLists)
         setFilters({})
     };
+    const exportExel = async () => {
+        try {
+            await downloadFile(sorting, ascending, filters)
+
+        } catch (e) {
+            console.log(e)
+        }
+    }
     return (<Box>
         <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
             <Box sx={{display: "flex", justifyContent: "space-between"}}>
@@ -308,20 +317,33 @@ const OrderList = ({alertMessage}) => {
                     <ListItem
                         key={1}
                         divider
-                        secondaryAction={<Link to={ORDER_ROUTE}
-                                               style={{textDecoration: 'none', color: 'white'}}>
-                            <Tooltip title={'Добавить заказ'}
-                                     placement="top"
-                                     arrow>
-                                <IconButton sx={{width: 5}}
-                                            edge="end"
-                                            aria-label="add"
-                                            onClick={() => navigate(ORDER_ROUTE)}
-                                >
-                                    <AddIcon/>
-                                </IconButton>
-                            </Tooltip>
-                        </Link>}
+                        secondaryAction={
+                            <Box>
+                                <Tooltip title={'Скачать таблицу'}
+                                         placement="top"
+                                         arrow>
+                                    <IconButton sx={{mr: 2}}
+                                                edge="end"
+                                                aria-label="add"
+                                                onClick={() => exportExel()}
+                                    >
+                                        <GetAppSharpIcon/>
+                                    </IconButton>
+                                </Tooltip>
+                                <Link to={ORDER_ROUTE}
+                                      style={{textDecoration: 'none', color: 'white'}}>
+                                    <Tooltip title={'Добавить заказ'}
+                                             placement="top"
+                                             arrow>
+                                        <IconButton sx={{width: 5}}
+                                                    edge="end"
+                                                    aria-label="add"
+                                                    onClick={() => navigate(ORDER_ROUTE)}
+                                        >
+                                            <AddIcon/>
+                                        </IconButton>
+                                    </Tooltip>
+                                </Link></Box>}
                     >
                         <ListItemButton
                             selected={sorting === "id"}

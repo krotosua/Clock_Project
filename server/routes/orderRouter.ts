@@ -5,6 +5,7 @@ import {body, param} from 'express-validator';
 import {ROLES} from "../dto/global";
 
 const orderRouter = Router()
+orderRouter.get('/exportOrder/', orderController.exportToExcel)
 
 
 orderRouter.post("/",
@@ -46,7 +47,6 @@ orderRouter.put("/statusChange/:orderId",
 orderRouter.delete("/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
     checkRole(ROLES.ADMIN),
-
     orderController.deleteOne)
 
 export default orderRouter
