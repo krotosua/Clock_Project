@@ -1,22 +1,24 @@
 import * as React from 'react';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Autocomplete, CircularProgress, TextField} from '@mui/material';
 import {useFormContext} from "react-hook-form";
-
+import debounce from 'lodash.debounce'
 
 export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) {
     const [open, setOpen] = useState(false);
     const [options, setOptions] = useState([])
     const [inputValue, setInputValue] = React.useState("");
+    const [changeValue, setChangeValue] = useState('');
     const {setValue, getValues} = useFormContext();
-    const loading = open && options.length === 0;
+    const [loading, setLoading] = useState(false)
+    const debouncedSave = useCallback(
+        debounce(nextValue => setChangeValue(nextValue), 1000),
+        [],
+    );
     useEffect(async () => {
-        let timer
-        timer = setTimeout(() => console.log("hi"), 2000)
-        clearTimeout(timer)
+        setLoading(true)
         try {
-
-            const res = await fetch(null, null, null, null, inputValue)
+            const res = await fetch(1, 10, id === "email" ? id : null, null, changeValue)
             if (res.status === 204) {
                 setOptions([])
                 return
@@ -25,24 +27,11 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
 
         } catch (e) {
             setOptions([])
+        } finally {
+            setLoading(false)
         }
-    }, [inputValue]);
-    useEffect(async () => {
-        if (!loading) {
-            return undefined;
-        }
-        try {
-            const res = await fetch(null, null)
-            if (res.status === 204) {
-                setOptions([])
-                return
-            }
-            !!OptionLabel ? setOptions(res.data) : setOptions(res.data.rows)
+    }, [changeValue]);
 
-        } catch (e) {
-            setOptions([])
-        }
-    }, [open]);
     return (
         <div>
             <Autocomplete
@@ -69,6 +58,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
                 inputValue={inputValue}
                 onInputChange={(event, newInputValue) => {
                     setInputValue(newInputValue);
+                    debouncedSave(newInputValue)
                 }}
                 renderInput={(params) => (
                     <TextField
@@ -79,7 +69,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
                             ...params.InputProps,
                             endAdornment: (
                                 <React.Fragment>
-                                    {loading ? <CircularProgress color="inherit" size={20}/> : null}
+                                    {loading ? <CircularProgress color="inherit" size={10} sx={{mr: 6}}/> : null}
                                     {params.InputProps.endAdornment}
                                 </React.Fragment>
                             ),

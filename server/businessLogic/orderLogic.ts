@@ -36,8 +36,8 @@ class OrderLogic {
             const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
             const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
+            pagination.page = pagination.page ?? null
+            pagination.limit = pagination.limit ?? null
             const {
                 cityIDes,
                 masterIDes,
@@ -106,8 +106,8 @@ class OrderLogic {
             const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
             const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
+            pagination.page = pagination.page ?? null
+            pagination.limit = pagination.limit ?? null
             const {
                 cityIDes,
                 userIDes,
@@ -128,10 +128,12 @@ class OrderLogic {
                     userName: null
                 }
             const offset: number = pagination.page * pagination.limit - pagination.limit
+            console.log(userId)
             const masterFind: Master | null = await Master.findOne({
                 where: {userId: userId},
                 attributes: ['id', "isActivated"]
             })
+            console.log(masterFind)
             if (masterFind === null || !masterFind.isActivated) {
                 return next(ApiError.forbidden("Not activated"))
             }
@@ -141,7 +143,7 @@ class OrderLogic {
                         sorting === SORTING.USER_ID ? [User, "id", directionUp]
                             : [sorting, directionUp]],
                 where: {
-                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
+                    name: userName ? {[Op.or]: [{[Op.substring]: userName}, {[Op.iRegexp]: userName}]} : {[Op.ne]: ""},
                     masterId: masterFind.id,
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
@@ -199,8 +201,8 @@ class OrderLogic {
                     time: null,
                     status: null, minPrice: null, maxPrice: null, userName: null
                 }
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
+            pagination.page = pagination.page ?? null
+            pagination.limit = pagination.limit ?? null
             const offset: number = pagination.page * pagination.limit - pagination.limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 where: {

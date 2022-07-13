@@ -35,12 +35,11 @@ class CityLogic {
             const offset = pagination.page * pagination.limit - pagination.limit;
             const cities: GetRowsDB<City> = await City.findAndCountAll({
                 where: {
-                    name: name ? {[Op.substring]: name} : {[Op.ne]: ""},
+                    name: name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : {[Op.ne]: ""},
                 },
                 order: [[sorting, directionUp]],
                 limit: pagination.limit, offset
             })
-            console.log(cities)
             if (!cities.count) {
                 return res.status(204).json({message: "List is empty"});
             }

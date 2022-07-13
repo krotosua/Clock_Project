@@ -3,6 +3,7 @@ import {Order, SizeClock, SizeClockInput} from '../models/models'
 import ApiError from '../error/ApiError'
 import {CreateSizeClockDTO} from "../dto/sizeClock.dto";
 import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
+import {Op} from "sequelize";
 
 
 class SizeLogic {
@@ -30,15 +31,19 @@ class SizeLogic {
     }
 
 
-    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<SizeClock> | { message: string }> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, name: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<SizeClock> | { message: string }> | void> {
         try {
             const pagination: Pagination = req.query
             pagination.page = pagination.page ?? null;
             pagination.limit = pagination.limit ?? null;
+            const name = req.query.name === "" ? null : req.query.name
             const sorting: string = req.query.sorting ?? "date"
             const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
             const offset = pagination.page * pagination.limit - pagination.limit
             const sizes: GetRowsDB<SizeClock> = await SizeClock.findAndCountAll({
+                where: {
+                    name: name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : {[Op.ne]: ""},
+                },
                 order: [[sorting, directionUp]],
                 limit: pagination.limit, offset
             })

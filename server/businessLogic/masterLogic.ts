@@ -25,10 +25,11 @@ class MasterLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string, name: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
         try {
             let {limit, page}: Pagination = req.query;
             const sorting: string = req.query.sorting ?? "name"
+            const name = req.query.name === "" ? null : req.query.name
             const directionUp: "DESC" | "ASC" = req.query.ascending === "true" ? 'ASC' : 'DESC'
             const {
                 cityIDes,
@@ -39,8 +40,8 @@ class MasterLogic {
                 rating: null,
                 masterName: null
             }
-            page = page || 1;
-            limit = limit || 12;
+            page = page ?? null;
+            limit = limit ?? null;
             const offset = page * limit - limit;
             const masterIdes: Master[] | null = cityIDes ? await Master.findAll({
                 include: [{
@@ -55,7 +56,7 @@ class MasterLogic {
                     [City, "name", 'ASC']
                 ],
                 where: {
-                    name: masterName ? {[Op.substring]: masterName ?? ""} : {[Op.ne]: ""},
+                    name: masterName ? {[Op.substring]: masterName ?? ""} : name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : {[Op.ne]: ""},
                     id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
                     rating: {[Op.between]: rating ?? [0, 5]},
                 },
