@@ -1,6 +1,6 @@
 node_modules
 .idea
-./server/adminreg.js
+server/service/ngrok.exe
 ./server/dist
 idea/Clock_Project.iml
 .idea/modules.xml

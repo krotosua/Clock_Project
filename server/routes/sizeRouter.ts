@@ -6,22 +6,22 @@ import {ROLES} from "../dto/global";
 
 const sizeRouter = express.Router()
 
-sizeRouter.post("/",
+sizeRouter.post("/", checkRole(ROLES.ADMIN),
     body("name").not().isEmpty().isString().trim().escape(),
     body("date").not().isEmpty().isString(),
-    checkRole(ROLES.ADMIN), sizeController.create)
+    sizeController.create)
 
 sizeRouter.get('/', sizeController.getAll)
 
-sizeRouter.put('/:sizeId',
+sizeRouter.put('/:sizeId', checkRole(ROLES.ADMIN),
     param("sizeId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),
     body("date").not().isEmpty().isString(),
-    checkRole(ROLES.ADMIN), sizeController.update)
+    sizeController.update)
 
-sizeRouter.delete('/:sizeId',
+sizeRouter.delete('/:sizeId', checkRole(ROLES.ADMIN),
     param("sizeId").not().isEmpty().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN), sizeController.deleteOne)
+    sizeController.deleteOne)
 
 
 export default sizeRouter

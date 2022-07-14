@@ -30,18 +30,18 @@ userRouter.get('/checkEmail/',
     body('email').isEmail(),
     userController.checkEmail)
 
-userRouter.put('/activate/:userId',
+userRouter.put('/activate/:userId', checkRole(ROLES.ADMIN),
     param("userId").not().isEmpty().isInt({gt: 0}),
     body("isActivated").not().isEmpty().isBoolean(),
-    checkRole(ROLES.ADMIN), userController.activateAdmin)
+    userController.activateAdmin)
 
 userRouter.get('/activate/:link', userController.activate)
 
 userRouter.get("/", checkRole(ROLES.ADMIN), userController.getAll)
 
-userRouter.put('/:userId',
+userRouter.put('/:userId', checkRole(ROLES.ADMIN),
     param("userId").not().isEmpty().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN), userController.updateUser)
+    userController.updateUser)
 
 userRouter.delete('/:userId', checkRole(ROLES.ADMIN),
     param("userId").not().isEmpty().isInt({gt: 0}),

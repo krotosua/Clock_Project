@@ -199,16 +199,32 @@ class OrderLogic {
         }
     }
 
-    async payPalChange(req: Request, res: Response, next: NextFunction): Promise<void | UpdateDB<Order>> {
+    async payPalChange(req: Request, res: Response, next: NextFunction): Promise<Order | [number, Order[]] | void> {
         try {
-            const orderId: string = req.body.resource.purchase_units[0].description
-            const payPalId: string = req.body.resource.id
-            const orderUpdate = await Order.update({
-                status: STATUS.ACCEPTED,
-                payPalId: payPalId
-            }, {where: {id: orderId}})
-
-            return orderUpdate
+            if (req.body.event_type === "CHECKOUT.ORDER.APPROVED") {
+                const orderId: string = req.body.resource.purchase_units[0].description
+                const payPalId: string = req.body.resource.id
+                const orderUpdate: [number, Order[]] = await Order.update({
+                    payPalId: payPalId
+                }, {where: {id: orderId}})
+                return orderUpdate
+            } else if (req.body.event_type === "PAYMENT.CAPTURE.COMPLETED") {
+                const payPalId: string = req.body.resource.supplementary_data.related_ids.order_id
+                const orderUpdate: Order | null = await Order.findOne(
+                    {where: {payPalId: payPalId}}
+                )
+                if (!orderUpdate) {
+                    next(ApiError.badRequest("Error event"))
+                    return
+                }
+                await orderUpdate.update({
+                    status: STATUS.ACCEPTED
+                })
+                return orderUpdate
+            } else {
+                next(ApiError.badRequest("Error event"))
+                return
+            }
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return

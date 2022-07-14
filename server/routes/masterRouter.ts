@@ -7,11 +7,10 @@ import {ROLES} from "../dto/global";
 const masterRouter = Router()
 
 
-masterRouter.post("/",
+masterRouter.post("/", checkRole(ROLES.ADMIN),
     body("name").not().isEmpty().isString().trim().escape(),
     body("rating").not().isEmpty().not().isString().isInt({gt: -1, lt: 6}),
     body("cityId").not().isEmpty().isArray(),
-    checkRole(ROLES.ADMIN),
     masterController.create)
 
 masterRouter.get('/', masterController.getAll)
@@ -22,17 +21,17 @@ masterRouter.get('/:cityId',
     masterController.getMastersForOrder)
 
 masterRouter.put('/:masterId',
-
     param("masterId").not().isEmpty().isInt({gt: 0}),
+    checkRole(ROLES.ADMIN),
     body("name").not().isEmpty().isString().trim().escape(),
     body("rating").not().isEmpty().not().isString().isFloat({gt: -1, lt: 6}),
     body("cityId").not().isEmpty().isArray(),
-    checkRole(ROLES.ADMIN), masterController.update)
+    masterController.update)
 
-masterRouter.put('/activate/:masterId',
+masterRouter.put('/activate/:masterId', checkRole(ROLES.ADMIN),
     param("masterId").not().isEmpty().isInt({gt: 0}),
     body("isActivated").not().isEmpty().isBoolean(),
-    checkRole(ROLES.ADMIN), masterController.activate)
+    masterController.activate)
 
 masterRouter.put('/rating/:uuid',
     param("uuid").isUUID(4),
@@ -46,9 +45,9 @@ masterRouter.get('/rating/link/:uuid',
     param("uuid").isUUID(4),
     masterController.checkLink)
 
-masterRouter.delete('/:masterId',
+masterRouter.delete('/:masterId', checkRole(ROLES.ADMIN),
     param("masterId").not().isEmpty().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN), masterController.deleteOne)
+    masterController.deleteOne)
 
 
 export default masterRouter
