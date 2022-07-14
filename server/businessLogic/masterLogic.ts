@@ -55,7 +55,7 @@ class MasterLogic {
                     [City, "name", 'ASC']
                 ],
                 where: {
-                    name: masterName ? {[Op.substring]: masterName ?? ""} : name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : {[Op.ne]: ""},
+                    name: masterName ? {[Op.or]: [{[Op.substring]: masterName}, {[Op.iRegexp]: masterName}]} : {[Op.ne]: ""},
                     id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
                     rating: {[Op.between]: rating ?? [0, 5]},
                 },

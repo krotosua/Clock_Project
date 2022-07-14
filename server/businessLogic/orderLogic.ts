@@ -201,7 +201,7 @@ class OrderLogic {
             const offset: number = page * limit - limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 where: {
-                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
+                    name: userName ? {[Op.or]: [{[Op.substring]: userName}, {[Op.iRegexp]: userName}]} : {[Op.ne]: ""},
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
                     price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
