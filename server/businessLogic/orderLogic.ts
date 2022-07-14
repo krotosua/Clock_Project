@@ -250,7 +250,6 @@ class OrderLogic {
         try {
             const sorting: string = req.query.sorting ?? "name"
             const direction: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
-            console.log(req.query.filters)
             const {
                 cityIDes,
                 masterIDes,
@@ -319,19 +318,12 @@ class OrderLogic {
             const headings = [
                 ["id", "name", "startDate", "endDate", "masterName", "cityName", "priceForHour", "timeSize", "Total", "status"]
             ];
-
-            const ws = await XLSX.utils.json_to_sheet(rightOrders, {
-                // @ts-ignore
-                origin: 'A2',
-                skipHeader: true
-            });
+            const ws = await XLSX.utils.json_to_sheet(rightOrders, {});
             const wb = XLSX.utils.book_new()
             XLSX.utils.sheet_add_aoa(ws, headings);
             XLSX.utils.book_append_sheet(wb, ws, 'Orders')
-            XLSX.writeFile(wb, 'xlsx/orders.xlsx',)
-            res.attachment('orders.xlsx');
-            const path = `${process.cwd()}\\xlsx\\orders.xlsx`
-            return res.download(path, "orders");
+            const buffer = XLSX.write(wb, {bookType: 'xlsx', type: 'buffer'});
+            return res.send(buffer);
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return

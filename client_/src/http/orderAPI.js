@@ -22,7 +22,7 @@ export async function downloadFile(sorting, ascending, filters) {
         const downloadUrl = window.URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = downloadUrl
-        link.download = "ordersList"
+        link.download = "ordersList.xlsx"
         document.body.appendChild(link)
         link.click()
         link.remove()
