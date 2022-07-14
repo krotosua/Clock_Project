@@ -234,7 +234,7 @@ const OrderListMaster = ({
                                 <Box sx={{display: "flex", justifyContent: "space-between",}}>
                                     <Box>
                                         <SelectorMultiple name={"userEmailList"} fetch={fetchCustomers}
-                                                          label={"Выберите Email пользователя"} id={"userEmail"}
+                                                          label={"Выберите Email пользователя"} id={"email"}
                                                           OptionLabel={(option) => option.email}/>
                                     </Box>
                                     <TextField

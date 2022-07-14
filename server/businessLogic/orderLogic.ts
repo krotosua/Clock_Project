@@ -12,7 +12,7 @@ import {
     statusList,
     UpdateMasterDTO
 } from "../dto/order.dto";
-import {DIRECTION, GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
+import {DIRECTION, GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 
@@ -33,11 +33,10 @@ class OrderLogic {
     async getUserOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
         try {
             const userId: number = req.params.userId
-            const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
             const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
             const {
                 cityIDes,
                 masterIDes,
@@ -54,7 +53,7 @@ class OrderLogic {
                     time: null,
                     status: null, minPrice: null, maxPrice: null
                 }
-            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const offset: number = page * limit - limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 order: [sorting === SORTING.MASTER_NAME ? [Master, "name", directionUp]
                     : sorting === SORTING.SIZE_NAME ? [SizeClock, "name", directionUp] :
@@ -88,7 +87,7 @@ class OrderLogic {
                         where: {
                             id: cityIDes ?? {[Op.ne]: 0}
                         }
-                    }], limit: pagination.limit, offset
+                    }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -103,11 +102,10 @@ class OrderLogic {
     async getMasterOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
             const userId: number = req.params.userId
-            const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
             const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
             const {
                 cityIDes,
                 userIDes,
@@ -127,7 +125,7 @@ class OrderLogic {
                     status: null, minPrice: null, maxPrice: null, userEmails: null,
                     userName: null
                 }
-            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const offset: number = page * limit - limit
             const masterFind: Master | null = await Master.findOne({
                 where: {userId: userId},
                 attributes: ['id', "isActivated"]
@@ -141,7 +139,7 @@ class OrderLogic {
                         sorting === SORTING.USER_ID ? [User, "id", directionUp]
                             : [sorting, directionUp]],
                 where: {
-                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
+                    name: userName ? {[Op.or]: [{[Op.substring]: userName}, {[Op.iRegexp]: userName}]} : {[Op.ne]: ""},
                     masterId: masterFind.id,
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
@@ -168,7 +166,7 @@ class OrderLogic {
                         id: userIDes ?? {[Op.ne]: 0}
                     },
                     attributes: ["id"],
-                }], limit: pagination.limit, offset
+                }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -181,7 +179,6 @@ class OrderLogic {
 
     async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
-            const pagination: Pagination = req.query
             const sorting: string = req.query.sorting ?? "name"
             const direction: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
             const {
@@ -199,12 +196,12 @@ class OrderLogic {
                     time: null,
                     status: null, minPrice: null, maxPrice: null, userName: null
                 }
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
-            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
+            const offset: number = page * limit - limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
                 where: {
-                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
+                    name: userName ? {[Op.or]: [{[Op.substring]: userName}, {[Op.iRegexp]: userName}]} : {[Op.ne]: ""},
                     status: status ?? Object.keys(STATUS),
                     time: time ? {[between]: time} : {[Op.ne]: 0},
                     price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
@@ -232,7 +229,7 @@ class OrderLogic {
                         where: {
                             id: cityIDes ?? {[Op.ne]: 0}
                         }
-                    }], limit: pagination.limit, offset
+                    }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})

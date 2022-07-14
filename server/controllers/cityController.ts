@@ -13,7 +13,7 @@ class CityController {
         await cityLogic.create(req, res, next)
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, name: string }>, res: Response, next: NextFunction): Promise<void> {
         await cityLogic.getAll(req, res, next)
 
     }

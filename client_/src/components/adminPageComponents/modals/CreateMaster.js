@@ -196,8 +196,8 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
                                     <TextField
                                         {...register("rating", {
                                             validate: {
-                                                positive: value => parseInt(value) >= 0 || 'Рейтинг должен быть не меньше 0',
-                                                lessThanSix: value => parseInt(value) < 6 || 'Рейтинг должен быть не больше 5',
+                                                positive: value => parseInt(value) >= 0 || 'Введите число не меньше 0',
+                                                lessThanSix: value => parseInt(value) < 6 || 'Введите число не больше 5',
                                             },
                                             valueAsNumber: true,
                                             setValueAs: (value) => parseFloat(value)
@@ -205,15 +205,17 @@ const CreateMaster = ({open, onClose, alertMessage, getMasters}) => {
                                         sx={{mb: 1}}
                                         id="rating"
                                         error={Boolean(errors.rating)}
+                                        type={"number"}
                                         helperText={errors.rating?.message}
                                         label={`Укажите рейтинг от 0 до 5`}
                                         variant="outlined"
                                         defaultValue={0}
                                         name="rating"
-                                        InputProps={{
-                                            inputProps: {
-                                                max: 5, min: 0
-                                            }
+                                        inputProps={{
+                                            step: 0.1,
+                                            min: 0,
+                                            max: 5,
+                                            type: 'number',
                                         }}
                                         onBlur={() => trigger("rating")}
                                     />

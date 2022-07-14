@@ -28,8 +28,8 @@ export const checkEmail = async (email) => {
 export const fetchUsers = async (page, limit, sorting, ascending) => {
     return await $authHost.get('api/users/', {params: {page, limit, sorting, ascending}})
 }
-export const fetchCustomers = async () => {
-    return await $authHost.get('api/users/customers/')
+export const fetchCustomers = async (page, limit, sorting, ascending, inputValue) => {
+    return await $authHost.get('api/users/customers/', {params: {page, limit, sorting, email: inputValue}})
 }
 export const deleteUser = async (id) => {
     await $authHost.delete('api/users/' + id,)

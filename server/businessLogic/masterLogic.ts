@@ -4,10 +4,10 @@ import {Op} from "sequelize";
 import sizeLogic from "./sizeLogic"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
-import {CreateMasterDTO, forGetMasters, GetMasterDTO, UpdateMasterDTO} from "../dto/master.dto";
+import {CreateMasterDTO, forGetMasters, UpdateMasterDTO} from "../dto/master.dto";
 import {CreateRatingDTO} from "../dto/rating.dto";
 import {addHours} from 'date-fns'
-import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
+import {GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 
 
 const {and, lt, lte, not, is, or, gt, gte, notIn} = Op;
@@ -25,10 +25,12 @@ class MasterLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string, name: string }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Master> | { message: string }> | void> {
         try {
-            let {limit, page}: Pagination = req.query;
+            const page = req.query.page ?? 1
+            const limit = req.query.limit ?? 10
             const sorting: string = req.query.sorting ?? "name"
+            const name = req.query.name === "" ? null : req.query.name
             const directionUp: "DESC" | "ASC" = req.query.ascending === "true" ? 'ASC' : 'DESC'
             const {
                 cityIDes,
@@ -39,8 +41,6 @@ class MasterLogic {
                 rating: null,
                 masterName: null
             }
-            page = page || 1;
-            limit = limit || 12;
             const offset = page * limit - limit;
             const masterIdes: Master[] | null = cityIDes ? await Master.findAll({
                 include: [{
@@ -55,7 +55,7 @@ class MasterLogic {
                     [City, "name", 'ASC']
                 ],
                 where: {
-                    name: masterName ? {[Op.substring]: masterName ?? ""} : {[Op.ne]: ""},
+                    name: masterName ? {[Op.or]: [{[Op.substring]: masterName}, {[Op.iRegexp]: masterName}]} : {[Op.ne]: ""},
                     id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
                     rating: {[Op.between]: rating ?? [0, 5]},
                 },
@@ -81,11 +81,9 @@ class MasterLogic {
                              res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Master> | { message: string }>> {
         try {
             const cityId: string = req.params.cityId;
-            let {
-                time,
-                limit,
-                page
-            }: GetMasterDTO = req.query;
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
+            let time: Date = req.query.time;
             const sizeClock: number = req.query.sizeClock;
             const clock: void | SizeClock = await sizeLogic.CheckClock(next, sizeClock);
             if (clock === undefined) {
@@ -93,8 +91,6 @@ class MasterLogic {
             }
             const endTime = addHours(new Date(time), Number(clock.date.slice(0, 2)))
             time = new Date(time)
-            page = page || 1;
-            limit = limit || 12;
             const offset = page * limit - limit;
             let masters: GetRowsDB<Master>;
             const orders = await Order.findAll({
