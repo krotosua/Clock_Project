@@ -49,6 +49,7 @@ class CityLogic {
         }
     }
 
+
     async checkMasterCityId(id: number[]): Promise<boolean> {
         const cityCheck: City[] = await City.findAll({where: {id}})
         if (cityCheck.length !== id.length || cityCheck.length === 0) {

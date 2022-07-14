@@ -149,6 +149,11 @@ class OrderController {
     }
 
 
+    async exportToExcel(req: ReqQuery<{ sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction) {
+        await orderLogic.exportToExcel(req, res, next)
+    }
+
+
     async deleteOne(req: Request, res: Response, next: NextFunction): Promise<Response<Result<ValidationError>> | void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

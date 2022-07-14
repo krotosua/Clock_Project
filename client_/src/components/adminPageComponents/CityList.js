@@ -96,7 +96,6 @@ const CityList = ({alertMessage}) => {
                 <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
                     Города
                 </Typography>
-
             </Box>
             <List disablePadding>
                 <ListItem

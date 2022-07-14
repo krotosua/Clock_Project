@@ -15,6 +15,7 @@ import {
 import {DIRECTION, GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
+import XLSX from "xlsx";
 
 const {between, gte} = Op;
 
@@ -235,6 +236,91 @@ class OrderLogic {
                 return res.status(204).json({message: "List is empty"})
             }
             return res.status(200).json(orders)
+        } catch (e) {
+            next(ApiError.badRequest((e as Error).message))
+            return
+        }
+
+    }
+
+    async exportToExcel(req: ReqQuery<{ sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction) {
+        try {
+            const sorting: string = req.query.sorting ?? "name"
+            const direction: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
+            const {
+                cityIDes,
+                masterIDes,
+                time,
+                status,
+                minPrice,
+                maxPrice,
+                userName
+            }: forGetOrders = req.query.filters !== "null" ? JSON.parse(req.query.filters)
+                : {
+                    cityIDes: null,
+                    masterIDes: null,
+                    time: null,
+                    status: null, minPrice: null, maxPrice: null, userName: null
+                }
+            const orders: Order[] = await Order.findAll({
+                where: {
+                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
+                    status: status ?? Object.keys(STATUS),
+                    time: time ? {[between]: time} : {[Op.ne]: 0},
+                    price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
+                },
+                order: [sorting === SORTING.MASTER_NAME ? [Master, "name", direction]
+                    : sorting === SORTING.DATE ? [SizeClock, sorting, direction] :
+                        sorting === SORTING.CITY_NAME ? [City, "name", direction] :
+                            sorting === SORTING.CITY_PRICE ? [City, "price", direction]
+                                : [sorting, direction]],
+                include: [{
+                    model: Master,
+                    attributes: ["name"],
+                    where: {
+                        id: masterIDes ?? {[Op.ne]: 0}
+                    }
+                }, {
+                    model: SizeClock,
+                    attributes: ['date'],
+
+                },
+                    {
+                        model: City,
+                        attributes: ["price", "name"],
+                        where: {
+                            id: cityIDes ?? {[Op.ne]: 0}
+                        }
+                    }],
+                attributes: ["id", "name", "time", "endTime", "status", "price"],
+                raw: true
+            })
+            if (!orders) {
+                return res.status(204).json({message: "List is empty"})
+            }
+
+            const rightOrders = orders.map((order: any) => ({
+                id: order.id,
+                name: order.name,
+                startTime: new Date(order.time).toLocaleString(),
+                endTime: new Date(order.endTime).toLocaleString(),
+                masterName: order['master.name'],
+                cityName: order['city.name'],
+                priceForHour: order['city.price'],
+                time: order['sizeClock.date'],
+                totalPrice: order.price,
+                status: order.status
+            }))
+
+            const headings = [
+                ["id", "name", "startDate", "endDate", "masterName", "cityName", "priceForHour", "timeSize", "Total", "status"]
+            ];
+            const ws = await XLSX.utils.json_to_sheet(rightOrders, {});
+            const wb = XLSX.utils.book_new()
+            XLSX.utils.sheet_add_aoa(ws, headings);
+            XLSX.utils.book_append_sheet(wb, ws, 'Orders')
+            const buffer = XLSX.write(wb, {bookType: 'xlsx', type: 'buffer'});
+            return res.send(buffer);
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return
