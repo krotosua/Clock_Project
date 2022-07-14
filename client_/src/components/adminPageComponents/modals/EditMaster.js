@@ -94,10 +94,11 @@ const EditMaster = (({open, onClose, idToEdit, alertMessage, nameToEdit, ratingT
                                         variant="outlined"
                                         defaultValue={ratingToEdit}
                                         name="rating"
-                                        InputProps={{
-                                            inputProps: {
-                                                max: 5, min: 0
-                                            }
+                                        inputProps={{
+                                            step: 0.1,
+                                            min: 0,
+                                            max: 5,
+                                            type: 'number',
                                         }}
                                         onBlur={() => trigger("rating")}
                                     />

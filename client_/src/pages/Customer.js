@@ -54,7 +54,11 @@ const defaultValues = {
     masterId: null,
     forFilter: true,
     minPrice: "",
-    maxPrice: ""
+    maxPrice: "",
+    cityList: [],
+    masterList: [],
+    sizeList: [],
+
 }
 const Customer = () => {
     const navigate = useNavigate()

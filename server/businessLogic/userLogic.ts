@@ -9,7 +9,7 @@ import masterController from "../controllers/masterController"
 import sequelize from "../db"
 import {NextFunction, Request, Response} from "express";
 import {CreateUserDTO, GetOrCreateUserDTO, LoginDTO, UpdateUserDTO} from "../dto/user.dto";
-import {GetRowsDB, Pagination, ReqQuery, ROLES, UpdateDB} from "../dto/global";
+import {GetRowsDB, ReqQuery, ROLES, UpdateDB} from "../dto/global";
 import {Op} from "sequelize";
 
 
@@ -218,19 +218,18 @@ class UserLogic {
 
     async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<User> | { message: string }>> {
         try {
-            let pagination: Pagination = req.query;
-            pagination.page = pagination.page ?? null;
-            pagination.limit = pagination.limit ?? null;
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
             const sorting: string = req.query.sorting ?? "id"
             const directionUp = req.query.ascending === "true" ? 'ASC' : 'DESC'
-            const offset: number = pagination.page * pagination.limit - pagination.limit;
+            const offset: number = page * limit - limit;
             const users: GetRowsDB<User> = await User.findAndCountAll(
                 {
                     order: [[sorting, directionUp]],
                     attributes: ["email", "id", "role", "isActivated"],
                     include: [{
                         model: Master
-                    }], limit: pagination.limit, offset
+                    }], limit, offset
                 })
 
             if (!users.count) {
@@ -245,12 +244,11 @@ class UserLogic {
 
     async getAllCustomers(req: ReqQuery<{ page: number, limit: number, sorting: string, id: string, email: string }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<User> | { message: string }>> {
         try {
-            let pagination: Pagination = req.query;
-            pagination.page = pagination.page ?? null;
-            pagination.limit = pagination.limit ?? null;
-            console.log(req.query)
+
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
             const sorting: string = req.query.sorting ?? "id"
-            const offset: number = pagination.page * pagination.limit - pagination.limit;
+            const offset: number = page * limit - limit;
             const email = req.query.email ?? null
             const users: User[] | null = await User.findAll(
                 {
@@ -259,7 +257,7 @@ class UserLogic {
                         email: email ? {[Op.or]: [{[Op.substring]: email}, {[Op.iRegexp]: email}]} : {[Op.ne]: ""},
                         role: ROLES.CUSTOMER
                     },
-                    attributes: ["id", "email"], limit: pagination.limit, offset
+                    attributes: ["id", "email"], limit, offset
                 })
 
             if (!users) {
