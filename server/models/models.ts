@@ -273,7 +273,7 @@ User.init({
             type: DataTypes.STRING,
         },
         isActivated: {type: DataTypes.BOOLEAN, defaultValue: false},
-        role: {type: DataTypes.ENUM(ROLES.CUSTOMER, ROLES.MASTER, ROLES.ADMIN), defaultValue: ROLES.CUSTOMER},
+        role: {type: DataTypes.ENUM(ROLES.ADMIN, ROLES.CUSTOMER, ROLES.MASTER), defaultValue: ROLES.CUSTOMER},
         activationLink: {type: DataTypes.STRING}
     },
     {
@@ -418,6 +418,9 @@ Rating.belongsTo(Master, {
 
 Master.belongsToMany(City, {through: CitiesMasters, foreignKey: 'cityId'})
 City.belongsToMany(Master, {through: CitiesMasters, foreignKey: 'masterId'})
+
+City.hasMany(Order, {foreignKey: 'cityId'})
+Order.belongsTo(City, {foreignKey: 'cityId'})
 
 User.hasOne(Rating, {
     foreignKey: 'userId'

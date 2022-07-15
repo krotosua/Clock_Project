@@ -5,6 +5,7 @@ import {body, param} from 'express-validator';
 import {ROLES} from "../dto/global";
 
 const orderRouter = Router()
+orderRouter.get('/exportOrder/', orderController.exportToExcel)
 
 
 orderRouter.post("/",

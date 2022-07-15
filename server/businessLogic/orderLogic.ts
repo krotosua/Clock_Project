@@ -1,10 +1,23 @@
-import {Master, Order, Rating, SizeClock, User} from '../models/models'
+import {City, Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
-import {CreateOrderDTO, ResultOrderDTO, SendMassageDTO, STATUS, statusList, UpdateMasterDTO} from "../dto/order.dto";
-import {GetRowsDB, Pagination, ReqQuery, UpdateDB} from "../dto/global";
+import {
+    CreateOrderDTO,
+    forGetOrders,
+    ResultOrderDTO,
+    SendMassageDTO,
+    SORTING,
+    STATUS,
+    statusList,
+    UpdateMasterDTO
+} from "../dto/order.dto";
+import {DIRECTION, GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
+import {Op} from "sequelize";
+import XLSX from "xlsx";
+
+const {between, gte} = Op;
 
 class OrderLogic {
     async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {
@@ -29,28 +42,64 @@ class OrderLogic {
         })
     }
 
-    async getUserOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
+    async getUserOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
         try {
             const userId: number = req.params.userId
-            const pagination: Pagination = req.query
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
-            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
+            const {
+                cityIDes,
+                masterIDes,
+                sizeIDes,
+                time,
+                status,
+                minPrice,
+                maxPrice
+            }: forGetOrders = req.query.filters ? JSON.parse(req.query.filters)
+                : {
+                    cityIDes: null,
+                    masterIDes: null,
+                    sizeIDes: null,
+                    time: null,
+                    status: null, minPrice: null, maxPrice: null
+                }
+            const offset: number = page * limit - limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
-                order: [['id', 'DESC']],
-                where: {userId: userId},
+                order: [sorting === SORTING.MASTER_NAME ? [Master, "name", directionUp]
+                    : sorting === SORTING.SIZE_NAME ? [SizeClock, "name", directionUp] :
+                        sorting === SORTING.CITY_NAME ? [City, "name", directionUp]
+                            : [sorting, directionUp]],
+                where: {
+                    userId: userId,
+                    status: status ?? Object.keys(STATUS),
+                    time: time ? {[between]: time} : {[Op.ne]: 0},
+                    price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
+                },
                 include: [{
                     model: Master,
                     attributes: ['name'],
+                    where: {
+                        id: masterIDes ?? {[Op.ne]: 0}
+                    }
                 }, {
                     model: SizeClock,
-                    attributes: ['name'],
+                    where: {
+                        id: sizeIDes ?? {[Op.ne]: 0}
+                    },
+                    attributes: ['name']
                 },
                     {
                         model: Rating,
                         attributes: ["rating"],
-
-                    }], limit: pagination.limit, offset
+                    },
+                    {
+                        model: City,
+                        where: {
+                            id: cityIDes ?? {[Op.ne]: 0}
+                        }
+                    }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -62,34 +111,74 @@ class OrderLogic {
         }
     }
 
-    async getMasterOrders(req: ReqQuery<{ page: number, limit: number }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
+    async getMasterOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
             const userId: number = req.params.userId
-            const pagination: Pagination = req.query
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
-            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
+            const {
+                cityIDes,
+                userIDes,
+                sizeIDes,
+                time,
+                status,
+                minPrice,
+                userEmails,
+                userName,
+                maxPrice
+            }: forGetOrders = req.query.filters ? JSON.parse(req.query.filters)
+                : {
+                    cityIDes: null,
+                    userIDes: null,
+                    sizeIDes: null,
+                    time: null,
+                    status: null, minPrice: null, maxPrice: null, userEmails: null,
+                    userName: null
+                }
+            const offset: number = page * limit - limit
             const masterFind: Master | null = await Master.findOne({
                 where: {userId: userId},
                 attributes: ['id', "isActivated"]
             })
-
             if (masterFind === null || !masterFind.isActivated) {
                 return next(ApiError.forbidden("Not activated"))
             }
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
-                order: [['id', 'DESC']],
+                order: [sorting === SORTING.SIZE_NAME ? [SizeClock, "name", directionUp] :
+                    sorting === SORTING.CITY_NAME ? [City, "name", directionUp] :
+                        sorting === SORTING.USER_ID ? [User, "id", directionUp]
+                            : [sorting, directionUp]],
                 where: {
+                    name: userName ? {[Op.or]: [{[Op.substring]: userName}, {[Op.iRegexp]: userName}]} : {[Op.ne]: ""},
                     masterId: masterFind.id,
+                    status: status ?? Object.keys(STATUS),
+                    time: time ? {[between]: time} : {[Op.ne]: 0},
+                    price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
                 },
                 include: [{
                     model: Master,
                     attributes: ['name'],
                 }, {
                     model: SizeClock,
-                    attributes: ['name'],
-
-                }], limit: pagination.limit, offset
+                    where: {
+                        id: sizeIDes ?? {[Op.ne]: 0}
+                    },
+                    attributes: ['name']
+                }, {
+                    model: City,
+                    where: {
+                        id: cityIDes ?? {[Op.ne]: 0}
+                    },
+                }, {
+                    model: User,
+                    where: {
+                        email: userEmails ?? {[Op.ne]: ""},
+                        id: userIDes ?? {[Op.ne]: 0}
+                    },
+                    attributes: ["id"],
+                }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
@@ -100,16 +189,45 @@ class OrderLogic {
         }
     }
 
-    async getAllOrders(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
+    async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
         try {
-            const pagination: Pagination = req.query
-            pagination.page = pagination.page || 1
-            pagination.limit = pagination.limit || 12
-            const offset: number = pagination.page * pagination.limit - pagination.limit
+            const sorting: string = req.query.sorting ?? "name"
+            const direction: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
+            const {
+                cityIDes,
+                masterIDes,
+                time,
+                status,
+                minPrice,
+                maxPrice,
+                userName
+            }: forGetOrders = req.query.filters ? JSON.parse(req.query.filters)
+                : {
+                    cityIDes: null,
+                    masterIDes: null,
+                    time: null,
+                    status: null, minPrice: null, maxPrice: null, userName: null
+                }
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
+            const offset: number = page * limit - limit
             const orders: GetRowsDB<Order> = await Order.findAndCountAll({
-                order: [['id', 'DESC']],
+                where: {
+                    name: userName ? {[Op.or]: [{[Op.substring]: userName}, {[Op.iRegexp]: userName}]} : {[Op.ne]: ""},
+                    status: status ?? Object.keys(STATUS),
+                    time: time ? {[between]: time} : {[Op.ne]: 0},
+                    price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
+                },
+                order: [sorting === SORTING.MASTER_NAME ? [Master, "name", direction]
+                    : sorting === SORTING.DATE ? [SizeClock, sorting, direction] :
+                        sorting === SORTING.CITY_NAME ? [City, "name", direction] :
+                            sorting === SORTING.CITY_PRICE ? [City, "price", direction]
+                                : [sorting, direction]],
                 include: [{
                     model: Master,
+                    where: {
+                        id: masterIDes ?? {[Op.ne]: 0}
+                    }
                 }, {
                     model: SizeClock,
                     attributes: ['date'],
@@ -117,13 +235,103 @@ class OrderLogic {
                 }, {
                     model: User,
                     attributes: ['email'],
-
-                }], limit: pagination.limit, offset
+                },
+                    {
+                        model: City,
+                        where: {
+                            id: cityIDes ?? {[Op.ne]: 0}
+                        }
+                    }], limit, offset
             })
             if (!orders.count) {
                 return res.status(204).json({message: "List is empty"})
             }
             return res.status(200).json(orders)
+        } catch (e) {
+            next(ApiError.badRequest((e as Error).message))
+            return
+        }
+
+    }
+
+    async exportToExcel(req: ReqQuery<{ sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction) {
+        try {
+            const sorting: string = req.query.sorting ?? "name"
+            const direction: string = req.query.ascending === "true" ? DIRECTION.DOWN : DIRECTION.UP
+            const {
+                cityIDes,
+                masterIDes,
+                time,
+                status,
+                minPrice,
+                maxPrice,
+                userName
+            }: forGetOrders = req.query.filters !== "null" ? JSON.parse(req.query.filters)
+                : {
+                    cityIDes: null,
+                    masterIDes: null,
+                    time: null,
+                    status: null, minPrice: null, maxPrice: null, userName: null
+                }
+            const orders: Order[] = await Order.findAll({
+                where: {
+                    name: userName ? {[Op.substring]: userName ?? ""} : {[Op.ne]: ""},
+                    status: status ?? Object.keys(STATUS),
+                    time: time ? {[between]: time} : {[Op.ne]: 0},
+                    price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
+                },
+                order: [sorting === SORTING.MASTER_NAME ? [Master, "name", direction]
+                    : sorting === SORTING.DATE ? [SizeClock, sorting, direction] :
+                        sorting === SORTING.CITY_NAME ? [City, "name", direction] :
+                            sorting === SORTING.CITY_PRICE ? [City, "price", direction]
+                                : [sorting, direction]],
+                include: [{
+                    model: Master,
+                    attributes: ["name"],
+                    where: {
+                        id: masterIDes ?? {[Op.ne]: 0}
+                    }
+                }, {
+                    model: SizeClock,
+                    attributes: ['date'],
+
+                },
+                    {
+                        model: City,
+                        attributes: ["price", "name"],
+                        where: {
+                            id: cityIDes ?? {[Op.ne]: 0}
+                        }
+                    }],
+                attributes: ["id", "name", "time", "endTime", "status", "price"],
+                raw: true
+            })
+            if (!orders) {
+                return res.status(204).json({message: "List is empty"})
+            }
+
+            const rightOrders = orders.map((order: any) => ({
+                id: order.id,
+                name: order.name,
+                startTime: new Date(order.time).toLocaleString(),
+                endTime: new Date(order.endTime).toLocaleString(),
+                masterName: order['master.name'],
+                cityName: order['city.name'],
+                priceForHour: order['city.price'],
+                time: order['sizeClock.date'],
+                totalPrice: order.price,
+                status: order.status
+            }))
+
+            const headings = [
+                ["id", "name", "startDate", "endDate", "masterName", "cityName", "priceForHour", "timeSize", "Total", "status"]
+            ];
+            const ws = await XLSX.utils.json_to_sheet(rightOrders, {});
+            const wb = XLSX.utils.book_new()
+            XLSX.utils.sheet_add_aoa(ws, headings);
+            XLSX.utils.book_append_sheet(wb, ws, 'Orders')
+            const buffer = XLSX.write(wb, {bookType: 'xlsx', type: 'buffer'});
+            return res.send(buffer);
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return

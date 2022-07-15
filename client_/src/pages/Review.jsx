@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import {Link, useNavigate, useParams} from "react-router-dom";
 import Box from "@mui/material/Box";
 import {checkLink, ratingMaster} from "../http/masterAPI";
-import {Button, Rating, TextField, Typography} from "@mui/material";
+import {Button, CircularProgress, Rating, TextField, Typography} from "@mui/material";
 import {START_ROUTE} from "../utils/consts";
 import StarIcon from "@mui/icons-material/Star";
 
@@ -41,7 +41,7 @@ const Review = () => {
     const [wrongLink, setWrongLink] = useState(false)
     const [rating, setRating] = useState(0);
     const [hoverRatingLabels, setHoverRatingLabels] = useState(null);
-
+    const [loading, setLoading] = useState(true)
     const [review, setReview] = useState("")
     const sendRating = async () => {
         const post = {
@@ -64,8 +64,22 @@ const Review = () => {
         } catch (e) {
             setWrongLink(true)
             setOpen(false)
+        } finally {
+            setLoading(false)
         }
     }, [])
+    if (loading) {
+        return (
+            <Box sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: window.innerHeight - 60,
+            }}>
+                <CircularProgress/>
+            </Box>
+        )
+    }
     return (
         <Box sx={{
             display: "flex",

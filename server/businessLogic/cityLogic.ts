@@ -3,7 +3,8 @@ import ApiError from '../error/ApiError';
 import {Result, ValidationError, validationResult} from "express-validator";
 import {NextFunction, Request, Response} from "express";
 import {CreateCityDTO, UpdateCityDTO} from "../dto/city.dto";
-import {GetRowsDB, Pagination, ReqQuery} from "../dto/global";
+import {GetRowsDB, ReqQuery} from "../dto/global";
+import {Op} from "sequelize";
 
 
 class CityLogic {
@@ -23,15 +24,20 @@ class CityLogic {
         }
     }
 
-    async getAll(req: ReqQuery<{ page: number, limit: number }>, res: Response, next: NextFunction): Promise<Response<City[]> | void> {
+    async getAll(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, name: string }>, res: Response, next: NextFunction): Promise<Response<City[]> | void> {
         try {
-            let pagination: Pagination = req.query;
-            pagination.page = pagination.page ?? null;
-            pagination.limit = pagination.limit ?? null;
-            const offset = pagination.page * pagination.limit - pagination.limit;
+            const sorting: string = req.query.sorting ?? "name"
+            const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
+            const name = req.query.name === "" ? null : req.query.name
+            const page = req.query.page ?? 1;
+            const limit = req.query.limit ?? 10;
+            const offset = page * limit - limit;
             const cities: GetRowsDB<City> = await City.findAndCountAll({
-                order: [['name', 'ASC']],
-                limit: pagination.limit, offset
+                where: {
+                    name: name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : {[Op.ne]: ""},
+                },
+                order: [[sorting, directionUp]],
+                limit, offset
             })
             if (!cities.count) {
                 return res.status(204).json({message: "List is empty"});
@@ -42,6 +48,7 @@ class CityLogic {
             return
         }
     }
+
 
     async checkMasterCityId(id: number[]): Promise<boolean> {
         const cityCheck: City[] = await City.findAll({where: {id}})

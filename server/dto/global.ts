@@ -12,6 +12,12 @@ export type Pagination = {
     page: number;
 }
 
+export enum DIRECTION {
+    DOWN = 'ASC',
+    UP = 'DESC',
+    MASTER = "MASTER"
+}
+
 export enum ROLES {
     ADMIN = "ADMIN",
     CUSTOMER = "CUSTOMER",

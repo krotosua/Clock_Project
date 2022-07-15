@@ -39,7 +39,7 @@ module.exports = {
                     type: Sequelize.STRING,
                 },
                 isActivated: {type: Sequelize.BOOLEAN, defaultValue: false},
-                role: {type: Sequelize.ENUM(ROLES.CUSTOMER, ROLES.MASTER, ROLES.ADMIN), defaultValue: ROLES.CUSTOMER},
+                role: {type: Sequelize.ENUM(ROLES.ADMIN, ROLES.CUSTOMER, ROLES.MASTER), defaultValue: ROLES.CUSTOMER},
                 activationLink: {type: Sequelize.STRING}
             },
             {

@@ -5,10 +5,15 @@ import {
     Button,
     CircularProgress,
     Divider,
+    FormControl,
     IconButton,
+    InputLabel,
     List,
     ListItem,
+    ListItemButton,
     ListItemText,
+    MenuItem,
+    Select,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -20,6 +25,8 @@ import {activateUser, deleteUser, fetchUsers} from "../../http/userAPI";
 import EditUser from "./modals/EditUser";
 import CreateUser from "./modals/CreateUser";
 import {ROLE_LIST} from "../../store/UserStore";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 
 const UserList = ({alertMessage}) => {
@@ -30,13 +37,16 @@ const UserList = ({alertMessage}) => {
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
+    const [ascending, setAscending] = useState(true)
+    const [sorting, setSorting] = useState("id")
     const [loading, setLoading] = useState(true)
 
-    const getUsers = async () => {
+    const getUsers = async (page, limit, sorting, ascending) => {
         try {
-            const res = await fetchUsers(page, limit)
+            const res = await fetchUsers(page, limit, sorting, ascending)
             if (res.status === 204) {
                 setUsersList([])
+                setTotalCount(0)
             }
             setUsersList(res.data.rows)
             setTotalCount(res.data.count)
@@ -48,8 +58,8 @@ const UserList = ({alertMessage}) => {
     }
 
     useEffect(async () => {
-        await getUsers()
-    }, [page, limit])
+        await getUsers(page, limit, sorting, ascending)
+    }, [page, limit, sorting, ascending])
 
     const changeActiveted = async (user) => {
         const changeInfo = {
@@ -68,7 +78,7 @@ const UserList = ({alertMessage}) => {
     const removeUser = async (id) => {
         try {
             await deleteUser(id)
-            await getUsers()
+            await getUsers(page, limit, sorting, ascending)
             alertMessage('Успешно удаленно', false)
         } catch (e) {
             alertMessage('Не удалось удалить, так как у пользователя остались заказы', true)
@@ -86,13 +96,23 @@ const UserList = ({alertMessage}) => {
             </Box>
         )
     }
+    const sortingList = (param) => {
+        if (sorting === param) {
+            setAscending(!ascending)
+            return
+        }
+        setAscending(true)
+        setSorting(param)
+    }
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
-            <List subheader={<Typography sx={{mt: 4, mb: 2,}}
-                                         variant="h6" component="div">
-                Пользователи
-            </Typography>}>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
+            <List subheader={<Box sx={{display: "flex", justifyContent: "space-between"}}>
+                <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
+                    Пользователи
+                </Typography>
+            </Box>}>
                 <ListItem
+                    sx={{height: 60, mb: 1}}
                     secondaryAction={<Tooltip title={'Добавить пользователя'}
                                               placement="top"
                                               arrow>
@@ -104,22 +124,38 @@ const UserList = ({alertMessage}) => {
                             <AddIcon/>
                         </IconButton>
                     </Tooltip>}>
-                    <ListItemText sx={{width: "2px",}}
-                                  primary="№"
-                    /><ListItemText sx={{width: 10}}
-                                    primary="ID пользователя"
-                />
-                    <ListItemText sx={{width: "40px", pr: 10}}
-                                  primary="Email пользователя"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Роль пользователя"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Статус"
-                    />
+                    <ListItemButton
+                        selected={sorting === "id"}
+                        sx={{maxWidth: 150, position: "absolute", left: 0}}
+                        onClick={() => sortingList("id")}>
+                        ID пользователя
+                        {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "email"}
+                        sx={{maxWidth: 100, position: "absolute", left: 270}}
+                        onClick={() => sortingList("email")}>
+                        Email
+                        {ascending ? sorting === "email" && <ExpandMoreIcon/> : sorting === "email" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "role"}
+                        sx={{maxWidth: 100, position: "absolute", right: 430}}
+                        onClick={() => sortingList("role")}>
+                        Роль
+                        {ascending ? sorting === "role" && <ExpandMoreIcon/> : sorting === "role" && <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "isActivated"}
+                        sx={{maxWidth: 100, position: "absolute", right: 200}}
+                        onClick={() => sortingList("isActivated")}>
+                        Статус
+                        {ascending ? sorting === "isActivated" && <ExpandMoreIcon/> : sorting === "isActivated" &&
+                            <ExpandLessIcon/>}
+                    </ListItemButton>
                 </ListItem>
-                <Divider orientation="vertical"/>
+                <Divider orientation="horizontal"/>
 
                 {usersList.length === 0 ? <h1>Список пуст</h1> : usersList.map((user, index) => {
                     return (<ListItem
@@ -139,10 +175,6 @@ const UserList = ({alertMessage}) => {
                             >
                             </Box>}
                         >
-
-                            <ListItemText sx={{width: "2px"}}
-                                          primary={index + 1}
-                            />
                             <ListItemText sx={{width: 10, height: 20, whiteSpace: 'wrap'}}
                                           primary=
                                               {user.id}
@@ -189,12 +221,12 @@ const UserList = ({alertMessage}) => {
                     onClose={() => {
                         setEditVisible(false)
                     }}
-                    getUsers={() => getUsers(page)}
+                    getUsers={() => getUsers(page, limit, sorting, ascending)}
                     alertMessage={alertMessage}
                 /> : null}
             {createVisible ?
                 <CreateUser
-                    getUsers={() => getUsers(page)}
+                    getUsers={() => getUsers(page, limit, sorting, ascending)}
                     open={createVisible}
                     onClose={() => setCreateVisible(false)}
                     alertMessage={alertMessage}/> : null}
@@ -202,6 +234,20 @@ const UserList = ({alertMessage}) => {
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+                <InputLabel id="limit">Лимит</InputLabel>
+                <Select
+                    labelId="limit"
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    label="Лимит"
+                >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     </Box>);
 }

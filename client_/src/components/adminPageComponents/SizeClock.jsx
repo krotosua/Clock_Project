@@ -4,10 +4,15 @@ import {
     Box,
     CircularProgress,
     Divider,
+    FormControl,
     IconButton,
+    InputLabel,
     List,
     ListItem,
+    ListItemButton,
     ListItemText,
+    MenuItem,
+    Select,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -19,8 +24,10 @@ import CreateSize from "./modals/CreateSize";
 import EditSize from "./modals/EditSize";
 import TablsPagination from "../TablsPagination";
 import {set} from 'date-fns'
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-const SizeList = ({alertMessage, getValue}) => {
+const SizeList = ({alertMessage}) => {
     const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [idToEdit, setIdToEdit] = useState(null);
@@ -30,12 +37,15 @@ const SizeList = ({alertMessage, getValue}) => {
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(null)
     const [limit, setLimit] = useState(10)
+    const [sorting, setSorting] = useState("date")
+    const [ascending, setAscending] = useState(false)
     const [loading, setLoading] = useState(true)
-    const getSizes = async () => {
+    const getSizes = async (page, limit, sorting, ascending) => {
         try {
-            const res = await fetchSize(page, 10)
+            const res = await fetchSize(page, limit, sorting, ascending)
             if (res.status === 204) {
                 setSizesList([])
+                setTotalCount(0)
                 return
             }
             setSizesList(res.data.rows)
@@ -47,14 +57,14 @@ const SizeList = ({alertMessage, getValue}) => {
         }
     }
     useEffect(async () => {
-        await getSizes()
-    }, [page, limit])
+        await getSizes(page, limit, sorting, ascending)
+    }, [page, limit, sorting, ascending])
 
 
     const removeSize = async (id) => {
         try {
             await deleteSize(id)
-            await getSizes()
+            await getSizes(page, limit, sorting, ascending)
             alertMessage('Успешно удаленно', false)
         } catch (e) {
             alertMessage('Не удалось удалить', true)
@@ -72,15 +82,26 @@ const SizeList = ({alertMessage, getValue}) => {
             </Box>
         )
     }
+    const sortingList = (param) => {
+        if (sorting === param) {
+            setAscending(!ascending)
+            return
+        }
+        setAscending(true)
+        setSorting(param)
+    }
     return (<Box>
-        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: "700px"}}>
-            <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
-                Размеры часов
-            </Typography>
+        <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: document.documentElement.clientHeight - 130}}>
+            <Box sx={{display: "flex", justifyContent: "space-between"}}>
+                <Typography sx={{mt: 4, mb: 2}} variant="h6" component="div">
+                    Размеры часов
+                </Typography>
+            </Box>
             <List disablePadding>
                 <ListItem
                     key={1}
                     divider
+                    sx={{height: 60}}
                     secondaryAction={<Tooltip title={'Добавить размер часов'}
                                               placement="top"
                                               arrow>
@@ -93,15 +114,30 @@ const SizeList = ({alertMessage, getValue}) => {
                         </IconButton>
                     </Tooltip>}
                 >
-                    <ListItemText sx={{width: 10}}
-                                  primary="№"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Название часов"
-                    />
-                    <ListItemText sx={{width: 10}}
-                                  primary="Количество времени"
-                    />
+                    <ListItemButton
+                        selected={sorting === "id"}
+                        sx={{maxWidth: 150, position: "absolute", left: 10}}
+                        onClick={() => sortingList("id")}
+                    >
+                        <ListItemText primary="ID"/>
+                        {!ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "name"}
+                        sx={{maxWidth: 150, position: "absolute", left: 360}}
+                        onClick={() => sortingList("name")}
+                    >
+                        Название часов
+                        {!ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" && <ExpandLessIcon/>}
+                    </ListItemButton>
+                    <ListItemButton
+                        selected={sorting === "date"}
+                        sx={{maxWidth: 150, position: "absolute", right: 260}}
+                        onClick={() => sortingList("date")}
+                    >
+                        Количество часов
+                        {!ascending ? sorting === "date" && <ExpandMoreIcon/> : sorting === "date" && <ExpandLessIcon/>}
+                    </ListItemButton>
                 </ListItem>
                 <Divider orientation="vertical"/>
 
@@ -123,8 +159,8 @@ const SizeList = ({alertMessage, getValue}) => {
                             </IconButton>
                         </Tooltip>}
                     >
-                        <ListItemText sx={{width: 10}}
-                                      primary={index + 1}
+                        <ListItemText sx={{width: 10, ml: 2}}
+                                      primary={size.id}
                         />
                         <ListItemText sx={{width: 10}}
                                       primary={size.name}
@@ -156,13 +192,13 @@ const SizeList = ({alertMessage, getValue}) => {
                 })}
             </List>
             {createVisible ? <CreateSize open={createVisible}
-                                         getSize={() => getSizes()}
+                                         getSize={() => getSizes(page, limit, sorting, ascending)}
                                          alertMessage={alertMessage}
                                          onClose={() => {
                                              setCreateVisible(false)
                                          }}/> : null}
             {editVisible ? <EditSize
-                getSize={() => getSizes()}
+                getSize={() => getSizes(page, limit, sorting, ascending)}
                 open={editVisible}
                 onClose={() => setEditVisible(false)}
                 idToEdit={idToEdit}
@@ -173,6 +209,20 @@ const SizeList = ({alertMessage, getValue}) => {
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+                <InputLabel id="limit">Лимит</InputLabel>
+                <Select
+                    labelId="limit"
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    label="Лимит"
+                >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     </Box>);
 }

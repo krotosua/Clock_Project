@@ -38,6 +38,7 @@ userRouter.put('/activate/:userId', checkRole(ROLES.ADMIN),
 userRouter.get('/activate/:link', userController.activate)
 
 userRouter.get("/", checkRole(ROLES.ADMIN), userController.getAll)
+userRouter.get("/customers/", userController.getAllCustomers)
 
 userRouter.put('/:userId', checkRole(ROLES.ADMIN),
     param("userId").not().isEmpty().isInt({gt: 0}),

@@ -420,7 +420,7 @@ const OrderStepper = ({alertMessage}) => {
                                                     disabled={Object.keys(errors).length !== 0 || !isValid}>
                                                     Дальше
                                                 </Button>
-                                                {(regCustomer === null && !user.isAuth || user.isAuth && user.userName !== name || changeName === null && user.isAuth) && isValid ?
+                                                {(regCustomer === null && !user.isAuth || user.isAuth && user.userName !== name || changeName === null && user.isAuth) && isValid && !loading ?
                                                     <Popover
                                                         {...bindPopover(popupState)}
                                                         anchorOrigin={{
@@ -431,85 +431,77 @@ const OrderStepper = ({alertMessage}) => {
                                                             vertical: 'top',
                                                             horizontal: 'center',
                                                         }}
-                                                    >
-                                                        {loading ?
+                                                    >{
+                                                        getValues("emailExists") ?
                                                             <Box sx={{
-                                                                display: "flex",
-                                                                justifyContent: "center",
-                                                                alignItems: "center",
+                                                                display: 'flex',
+                                                                flexDirection: "column",
+                                                                mb: 1
                                                             }}>
-                                                                <CircularProgress/>
-                                                            </Box> :
-                                                            getValues("emailExists") ?
+                                                                <Typography sx={{p: 2}}>
+                                                                    Прежде чем продолжить - авторизируйтесь
+                                                                </Typography>
+                                                                <Button onClick={() => {
+                                                                    setIsAuth(true)
+                                                                }}>
+                                                                    Авторизироваться
+                                                                </Button>
+                                                            </Box>
+                                                            : user.isAuth && user.userName !== name && changeName === null ?
                                                                 <Box sx={{
                                                                     display: 'flex',
                                                                     flexDirection: "column",
                                                                     mb: 1
                                                                 }}>
                                                                     <Typography sx={{p: 2}}>
-                                                                        Прежде чем продолжить - авторизируйтесь
+                                                                        Сменить Ваши персональные данные?
+                                                                    </Typography>
+                                                                    <div style={{textAlign: "center"}}>
+                                                                        {user.isAuth && user.userName !== name ?
+                                                                            <b>Имя</b> : null}</div>
+                                                                    <Button onClick={() => {
+                                                                        setChangeName(true)
+                                                                        getMasters()
+                                                                        setActiveStep((prevActiveStep) => prevActiveStep + 1)
+
+                                                                    }}>
+                                                                        Да
+                                                                    </Button>
+                                                                    <Button onClick={() => {
+                                                                        setChangeName(false)
+                                                                        getMasters()
+                                                                        setActiveStep((prevActiveStep) => prevActiveStep + 1)
+                                                                    }}>
+                                                                        Нет
+                                                                    </Button>
+                                                                </Box> :
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: "column",
+                                                                    mb: 1
+                                                                }}>
+                                                                    <Typography sx={{p: 2}}>
+                                                                        Хотите зарегестрироваться?
                                                                     </Typography>
                                                                     <Button onClick={() => {
-                                                                        setIsAuth(true)
+                                                                        setRegCustomer(true)
+                                                                        setChangeName(false)
+                                                                        getMasters()
+                                                                        setActiveStep((prevActiveStep) => prevActiveStep + 1)
                                                                     }}>
-                                                                        Авторизироваться
+                                                                        Да
                                                                     </Button>
+                                                                    <Button onClick={() => {
+                                                                        setRegCustomer(false)
+                                                                        setChangeName(false)
+                                                                        getMasters()
+                                                                        setActiveStep((prevActiveStep) => prevActiveStep + 1)
+                                                                    }}>
+                                                                        Нет
+                                                                    </Button>
+
                                                                 </Box>
-                                                                : user.isAuth && user.userName !== name && changeName === null ?
-                                                                    <Box sx={{
-                                                                        display: 'flex',
-                                                                        flexDirection: "column",
-                                                                        mb: 1
-                                                                    }}>
-                                                                        <Typography sx={{p: 2}}>
-                                                                            Сменить Ваши персональные данные?
-                                                                        </Typography>
-                                                                        <div style={{textAlign: "center"}}>
-                                                                            {user.isAuth && user.userName !== name ?
-                                                                                <b>Имя</b> : null}</div>
-                                                                        <Button onClick={() => {
-                                                                            setChangeName(true)
-                                                                            getMasters()
-                                                                            setActiveStep((prevActiveStep) => prevActiveStep + 1)
-
-                                                                        }}>
-                                                                            Да
-                                                                        </Button>
-                                                                        <Button onClick={() => {
-                                                                            setChangeName(false)
-                                                                            getMasters()
-                                                                            setActiveStep((prevActiveStep) => prevActiveStep + 1)
-                                                                        }}>
-                                                                            Нет
-                                                                        </Button>
-                                                                    </Box> :
-                                                                    <Box sx={{
-                                                                        display: 'flex',
-                                                                        flexDirection: "column",
-                                                                        mb: 1
-                                                                    }}>
-                                                                        <Typography sx={{p: 2}}>
-                                                                            Хотите зарегестрироваться?
-                                                                        </Typography>
-                                                                        <Button onClick={() => {
-                                                                            setRegCustomer(true)
-                                                                            setChangeName(false)
-                                                                            getMasters()
-                                                                            setActiveStep((prevActiveStep) => prevActiveStep + 1)
-                                                                        }}>
-                                                                            Да
-                                                                        </Button>
-                                                                        <Button onClick={() => {
-                                                                            setRegCustomer(false)
-                                                                            setChangeName(false)
-                                                                            getMasters()
-                                                                            setActiveStep((prevActiveStep) => prevActiveStep + 1)
-                                                                        }}>
-                                                                            Нет
-                                                                        </Button>
-
-                                                                    </Box>
-                                                        }
+                                                    }
                                                     </Popover> : null}
                                             </div>
                                         )}
