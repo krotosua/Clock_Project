@@ -41,6 +41,7 @@ import TablsPagination from "../TablsPagination";
 import {Controller, FormProvider, useForm} from "react-hook-form";
 import PopupState, {bindPopover, bindTrigger} from 'material-ui-popup-state';
 import jwt_decode from "jwt-decode";
+import ReactPayPal from "./PayPal";
 
 
 const steps = ["Заполните форму заказа", "Выбор мастера", "Отправка заказа"];
@@ -53,12 +54,14 @@ const OrderStepper = ({alertMessage}) => {
         trigger,
         setValue,
         setError,
+        clearErrors,
         getValues, watch, control,
         formState: {errors, isValid}
     } = useForm({
         defaultValues: {
             openTime: false,
             openDate: false,
+            openPayPal: true,
             date: new Date(),
             time: addHours(set(new Date(), {minutes: 0, seconds: 0}), 1),
             email: user?.user?.email ?? "",
@@ -70,6 +73,7 @@ const OrderStepper = ({alertMessage}) => {
     const email = watch("email")
     const date = watch("date")
     const time = watch("time")
+    const openPayPal = watch("openPayPal")
     const [activeStep, setActiveStep] = useState(0);
     const [changeName, setChangeName] = useState(null)
     const [regCustomer, setRegCustomer] = useState(null)
@@ -110,8 +114,7 @@ const OrderStepper = ({alertMessage}) => {
         }
     }
 
-    const handleNext = async (event) => {
-        const {email, name} = event
+    const handleNext = async (e, isPaid) => {
         if (user.isAuth || regCustomer !== null) {
             if (user.userName !== name && changeName === null) {
                 setValue("emailExists", false)
@@ -135,7 +138,8 @@ const OrderStepper = ({alertMessage}) => {
                     masterId: chosenMaster,
                     sizeClockId: chosenSize.id,
                     regCustomer,
-                    price: chosenSize.date.slice(0, 2) * chosenCity.price
+                    price: chosenSize.date.slice(0, 2) * chosenCity.price,
+                    isPaid: getValues("isPaid") ?? undefined
                 }
                 try {
                     const res = await createOrder(orderInfo)
@@ -145,6 +149,7 @@ const OrderStepper = ({alertMessage}) => {
                         const dataUser = jwt_decode(res.data)
                         dispatch(setUserNameAction(dataUser.name))
                     }
+                    setValue("orderId", res.data.orderId)
                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 } catch (e) {
                     alertMessage('Мастер занят', true)
@@ -308,6 +313,7 @@ const OrderStepper = ({alertMessage}) => {
                                                     onChange(newDate);
                                                     setValue("openDate", false)
                                                     setValue("openList", false)
+                                                    clearErrors("date")
                                                 }}
                                                 onError={(e) =>
                                                     setError("date", {
@@ -344,6 +350,7 @@ const OrderStepper = ({alertMessage}) => {
                                                     onChange(newValue)
                                                     setValue("openTime", false)
                                                     setValue("openList", false)
+                                                    clearErrors("time")
                                                 }}
                                                 onError={() =>
                                                     setError("time", {
@@ -504,7 +511,10 @@ const OrderStepper = ({alertMessage}) => {
                             </Box>
                         ) : activeStep === steps.length - 1 ? (
                                 <Box sx={{mt: 2}}>
-                                    <Box sx={{ml: 4}}>
+                                    <Box sx={{
+                                        mx: "auto",
+
+                                    }}>
                                         <Box sx={{mb: 1}}> Ваше имя: <b>{name}</b> </Box>
                                         <Box sx={{mb: 1}}> Ваш email:<b>{email}</b> </Box>
                                         <Box sx={{mb: 1}}>Выбранный размер часов:<b>{chosenSize.name}</b></Box>
@@ -514,8 +524,11 @@ const OrderStepper = ({alertMessage}) => {
                                             заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
                                         <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
                                         <Box> Имя мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
-                                        <Box sx={{my: 2}}>Стоимость
+                                        <Box sx={{my: 1}}>Стоимость
                                             услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ? chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b>
+                                        </Box>
+                                        <Box sx={{width: 400}}>
+
                                         </Box>
                                     </Box>
                                     <Box sx={{
@@ -576,7 +589,6 @@ const OrderStepper = ({alertMessage}) => {
                                                                       primary="Комментарии"/>
 
                                                     </ListItem>
-
                                                     <Divider orientation="vertical"/>
                                                     <RadioGroup
                                                         aria-labelledby="demo-controlled-radio-buttons-group"
@@ -673,23 +685,20 @@ const OrderStepper = ({alertMessage}) => {
                                 </Box>
                             ) : (
                                 <Box sx={{display: 'flex', justifyContent: "center", mt: 2}}>
-                                    <Box><Typography variant="h4" sx={{my: 2}}>Заказ успешно создан</Typography>
-                                        <Typography variant="h6" sx={{my: 2}}>Детали заказа отправлены на
+                                    <Box>
+                                        <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>Заказ успешно
+                                            создан</Typography>
+                                        <Typography variant="h6" sx={{my: 2, textAlign: "center"}}>Детали заказа
+                                            отправлены на
                                             почту</Typography>
-                                        {user.isAuth ?
-                                            <Link to={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
-                                                  style={{textDecoration: 'none', color: 'white'}}>
-                                                <Button variant="outlined"
-                                                        fullWidth
-                                                        navigate={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}>
-                                                    К заказам</Button>
-                                            </Link> :
-                                            <Link to={START_ROUTE}
-                                                  style={{textDecoration: 'none', color: 'white'}}>
-                                                <Button variant="outlined" fullWidth navigate={START_ROUTE}>На
-                                                    главную</Button>
-                                            </Link>
-                                        }
+                                        <Box>
+                                            <ReactPayPal orderId={getValues("orderId")}
+                                                         isAuth={user.isAuth}
+                                                         userLink={`${CUSTOMER_ORDER_ROUTE}/${user.user.id}`}
+                                                         value={chosenSize.date.slice(0, 2) * chosenCity.price}/>
+                                            {getValues("errorPayPal") && "Произошла ошибка при оплате"}
+                                        </Box>
+                                        
                                     </Box>
                                 </Box>
 

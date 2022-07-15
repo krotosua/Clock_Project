@@ -26,9 +26,20 @@ class OrderLogic {
             sizeClockId,
             masterId,
             cityId,
-            price
+            price,
+            isPaid
         }: CreateOrderDTO = req.body
-        return await Order.create({name, sizeClockId, userId, time, endTime, masterId, cityId, price})
+        return await Order.create({
+            name,
+            sizeClockId,
+            userId,
+            time,
+            endTime,
+            masterId,
+            cityId,
+            price,
+            status: isPaid ? STATUS.ACCEPTED : STATUS.WAITING
+        })
     }
 
     async getUserOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
@@ -390,6 +401,38 @@ class OrderLogic {
                 MailService.sendOrderDone(email, orderId, `${process.env.RATING_URL}/${ratingLink}`, next)
             }
             return orderUpdate
+        } catch (e) {
+            next(ApiError.badRequest((e as Error).message))
+            return
+        }
+    }
+
+    async payPalChange(req: Request, res: Response, next: NextFunction): Promise<Order | [number, Order[]] | void> {
+        try {
+            if (req.body.event_type === "CHECKOUT.ORDER.APPROVED") {
+                const orderId: string = req.body.resource.purchase_units[0].description
+                const payPalId: string = req.body.resource.id
+                const orderUpdate: [number, Order[]] = await Order.update({
+                    payPalId: payPalId
+                }, {where: {id: orderId}})
+                return orderUpdate
+            } else if (req.body.event_type === "PAYMENT.CAPTURE.COMPLETED") {
+                const payPalId: string = req.body.resource.supplementary_data.related_ids.order_id
+                const orderUpdate: Order | null = await Order.findOne(
+                    {where: {payPalId: payPalId}}
+                )
+                if (!orderUpdate) {
+                    next(ApiError.badRequest("Error event"))
+                    return
+                }
+                await orderUpdate.update({
+                    status: STATUS.ACCEPTED
+                })
+                return orderUpdate
+            } else {
+                next(ApiError.badRequest("Error event"))
+                return
+            }
         } catch (e) {
             next(ApiError.badRequest((e as Error).message))
             return

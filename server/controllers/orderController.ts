@@ -61,8 +61,11 @@ class OrderController {
                 return data
             })
             await orderLogic.sendMessage(req, next, result)
-            return res.status(201).json(result?.user.token
-                ?? result?.order)
+            return res.status(201).json(
+                {
+                    token: result?.user.token,
+                    orderId: result?.order.id
+                })
         } catch (e) {
             return next(ApiError.badRequest("Wrong request"))
         }
@@ -117,6 +120,25 @@ class OrderController {
         }
         try {
             const order = await orderLogic.statusChange(req, res, next)
+            if (!order) {
+                next(ApiError.badRequest("Empty"))
+                return
+            }
+            return res.status(201).json(order)
+        } catch (e) {
+            next(ApiError.badRequest((e as Error).message))
+            return
+        }
+    }
+
+    async payPalChange(req: any, res: Response, next: NextFunction): Promise<void | Response<Result<ValidationError> | UpdateDB<Order>>> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({errors: errors.array()});
+        }
+        try {
+
+            const order = await orderLogic.payPalChange(req, res, next)
             if (!order) {
                 next(ApiError.badRequest("Empty"))
                 return

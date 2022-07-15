@@ -28,7 +28,7 @@ orderRouter.get('/Master/:userId', checkRole(ROLES.MASTER),
 
 orderRouter.get('/', checkRole(ROLES.ADMIN), orderController.getAllOrders)
 
-orderRouter.put("/:orderId",
+orderRouter.put("/:orderId", checkRole(ROLES.ADMIN),
     param("orderId").not().isEmpty().isInt({gt: 0}),
     body("name").not().isEmpty().isString().trim().escape(),
     body("email").isEmail().isString().trim().escape(),
@@ -37,16 +37,17 @@ orderRouter.put("/:orderId",
     body("cityId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("masterId").not().isEmpty().not().isString().isInt({gt: 0}),
     body("sizeClockId").not().isEmpty().not().isString().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN), orderController.update)
+    orderController.update)
 
 orderRouter.put("/statusChange/:orderId",
     param("orderId").not().isEmpty().isInt({gt: 0}),
     orderController.statusChange)
+orderRouter.post("/payPal",
+    orderController.payPalChange)
 
 
-orderRouter.delete("/:orderId",
+orderRouter.delete("/:orderId", checkRole(ROLES.ADMIN),
     param("orderId").not().isEmpty().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN),
     orderController.deleteOne)
 
 export default orderRouter

@@ -7,20 +7,17 @@ import {ROLES} from "../dto/global";
 const cityRouter = Router()
 
 
-cityRouter.post("/",
+cityRouter.post("/", checkRole(ROLES.ADMIN),
     body("name").not().isEmpty().isString().trim().escape(),
-    checkRole(ROLES.ADMIN),
     cityController.create)
 
-cityRouter.put('/:cityId',
+cityRouter.put('/:cityId', checkRole(ROLES.ADMIN),
     body("name").not().isEmpty().isString().trim().escape(),
     param("cityId").not().isEmpty().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN),
     cityController.update)
 
-cityRouter.delete('/:cityId',
+cityRouter.delete('/:cityId', checkRole(ROLES.ADMIN),
     param("cityId").not().isEmpty().isInt({gt: 0}),
-    checkRole(ROLES.ADMIN),
     cityController.deleteOne)
 
 cityRouter.get('/', cityController.getAll)
