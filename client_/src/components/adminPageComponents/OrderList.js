@@ -38,6 +38,33 @@ import {FormProvider, useForm} from "react-hook-form";
 import SelectorMultiple from "./modals/SlectorMultiplate";
 import {fetchCities} from "../../http/cityAPI";
 import GetAppSharpIcon from '@mui/icons-material/GetAppSharp';
+import {PhotoCamera} from "@mui/icons-material";
+import PhotoList from "./modals/PhotoList";
+
+
+const STYLE_LIST = {
+    ID: {width: 60, height: 70, position: "absolute", left: 0},
+    NAME: {width: 100, height: 70, position: "absolute", left: 120},
+    TIME: {width: 100, height: 70, position: "absolute", left: 230},
+    MASTER_NAME: {width: 100, height: 70, position: "absolute", left: 350},
+    CITY_NAME: {width: 100, height: 70, position: "absolute", left: 460},
+    CITY_PRICE: {width: 80, height: 70, position: "absolute", left: 570, textAlign: "center"},
+    SIZE_TIME: {width: 80, height: 70, position: "absolute", left: 665, textAlign: "center"},
+    TOTAL_PRICE: {width: 70, height: 70, position: "absolute", left: 760},
+    STATUS: {width: 100, height: 70, position: "absolute", left: 850}
+}
+const STYLE_COMPONENT_LIST = {
+    ID: {width: 60, position: "absolute", left: 15},
+    NAME: {width: 100, position: "absolute", left: 130, wordWrap: "break-word"},
+    TIME: {width: 100, position: "absolute", left: 230, textAlign: "center"},
+    MASTER_NAME: {width: 100, position: "absolute", left: 340, textAlign: "center", wordWrap: "break-word"},
+    CITY_NAME: {width: 100, position: "absolute", left: 450, wordWrap: "break-word", textAlign: "center"},
+    CITY_PRICE: {width: 100, position: "absolute", left: 560, textAlign: "center"},
+    SIZE_TIME: {width: 70, position: "absolute", left: 665, textAlign: "center"},
+    TOTAL_PRICE: {width: 70, position: "absolute", left: 770},
+    STATUS: {width: 150, position: "absolute", left: 850},
+    PHOTO: {position: "absolute", right: 90}
+}
 
 const defaultValues = {
     status: "",
@@ -64,6 +91,8 @@ const OrderList = ({alertMessage}) => {
     const status = watch("status", 0)
     const resetLists = watch("reset", false)
     const [editVisible, setEditVisible] = useState(false)
+    const [openPhotos, setOpenPhotos] = useState(false)
+    const [photosId, setPhotosId] = useState(null)
     const [idToEdit, setIdToEdit] = useState(null);
     const [timeToEdit, setTimeToEdit] = useState(add(new Date(0, 0, 0,), {hours: 1}));
     const [date, setDate] = useState([null, null]);
@@ -234,7 +263,7 @@ const OrderList = ({alertMessage}) => {
                                             label={"начальная сумма"}
                                             sx={{width: 100}} size={"small"}
                                             onBlur={() => trigger("maxPrice")}/>
-                                        <Box sx={{mx: 2}}>по </Box>
+                                        <Box sx={{mx: 2, mt: 1}}>по </Box>
                                         <TextField
                                             {...register("maxPrice", {
                                                 validate: {
@@ -316,6 +345,7 @@ const OrderList = ({alertMessage}) => {
                 <List disablePadding>
                     <ListItem
                         key={1}
+                        sx={{minHeight: 70}}
                         divider
                         secondaryAction={
                             <Box>
@@ -335,7 +365,7 @@ const OrderList = ({alertMessage}) => {
                                     <Tooltip title={'Добавить заказ'}
                                              placement="top"
                                              arrow>
-                                        <IconButton sx={{width: 5}}
+                                        <IconButton sx={{position: "absolute", right: 0, px: 0}}
                                                     edge="end"
                                                     aria-label="add"
                                                     onClick={() => navigate(ORDER_ROUTE)}
@@ -347,14 +377,14 @@ const OrderList = ({alertMessage}) => {
                     >
                         <ListItemButton
                             selected={sorting === "id"}
-                            sx={{ml: -2, maxWidth: 70}}
+                            sx={STYLE_LIST.ID}
                             onClick={() => sortingList("id")}
                         >
                             ID
                             {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
                         </ListItemButton>
                         <ListItemButton
-                            sx={{maxWidth: 120, ml: 5}}
+                            sx={STYLE_LIST.NAME}
                             selected={sorting === "name"}
                             onClick={() => sortingList("name")}
                         >
@@ -366,7 +396,7 @@ const OrderList = ({alertMessage}) => {
 
                         <ListItemButton
                             selected={sorting === "time"}
-                            sx={{maxWidth: 120, ml: 2}}
+                            sx={STYLE_LIST.TIME}
                             onClick={() => sortingList("time")}
                         >
                             Дата и время
@@ -376,7 +406,7 @@ const OrderList = ({alertMessage}) => {
 
                         <ListItemButton
                             selected={sorting === "masterName"}
-                            sx={{maxWidth: 100, ml: 2}}
+                            sx={STYLE_LIST.MASTER_NAME}
                             onClick={() => sortingList("masterName")}
                         >
                             Мастер
@@ -384,7 +414,7 @@ const OrderList = ({alertMessage}) => {
                                 <ExpandLessIcon/>}
                         </ListItemButton>
                         <ListItemButton
-                            sx={{maxWidth: 100, mr: 4}}
+                            sx={STYLE_LIST.CITY_NAME}
                             selected={sorting === "cityName"}
                             onClick={() => sortingList("cityName")}
                         >
@@ -393,7 +423,7 @@ const OrderList = ({alertMessage}) => {
                                 <ExpandLessIcon/>}
                         </ListItemButton>
                         <ListItemButton
-                            sx={{maxWidth: 100}}
+                            sx={STYLE_LIST.CITY_PRICE}
                             selected={sorting === "cityPrice"}
                             onClick={() => sortingList("cityPrice")}
                         >
@@ -402,7 +432,7 @@ const OrderList = ({alertMessage}) => {
                                 <ExpandLessIcon/>}
                         </ListItemButton>
                         <ListItemButton
-                            sx={{maxWidth: 100}}
+                            sx={STYLE_LIST.SIZE_TIME}
                             selected={sorting === "date"}
                             onClick={() => sortingList("date")}
                         >
@@ -412,7 +442,7 @@ const OrderList = ({alertMessage}) => {
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "price"}
-                            sx={{maxWidth: 100, mr: 5,}}
+                            sx={STYLE_LIST.TOTAL_PRICE}
                             onClick={() => sortingList("price")}
                         >
                             Итог
@@ -421,11 +451,11 @@ const OrderList = ({alertMessage}) => {
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "status"}
-                            sx={{mr: 20, width: 100}}
+                            sx={STYLE_LIST.STATUS}
                             onClick={() => sortingList("status")}
                         >
                             Статус
-                            {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "name" &&
+                            {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "status" &&
                                 <ExpandLessIcon/>}
                         </ListItemButton>
                     </ListItem>
@@ -434,11 +464,12 @@ const OrderList = ({alertMessage}) => {
                         const time = new Date(order.time).toLocaleString("uk-UA")
                         return (<ListItem
                             key={order.id}
+                            sx={{minHeight: 70}}
                             divider
                             secondaryAction={<Tooltip title={'Удалить заказ'}
                                                       placement="right"
                                                       arrow>
-                                <IconButton sx={{width: 5}}
+                                <IconButton sx={{width: 10}}
                                             edge="end"
                                             aria-label="delete"
                                             onClick={() => removeOrder(order.id)}
@@ -447,29 +478,29 @@ const OrderList = ({alertMessage}) => {
                                 </IconButton>
                             </Tooltip>}
                         >
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.ID}
                                           primary={order.id}
                             />
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.NAME}
                                           primary={order.name}
                             />
-                            <ListItemText sx={{width: 10, mr: 3}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.TIME}
                                           primary={time}
                             />
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.MASTER_NAME}
                                           primary={order.master.name}/>
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.CITY_NAME}
                                           primary={order.city.name}
                             />
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.CITY_PRICE}
                                           primary={order.city.price + " грн"}
                             />
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.SIZE_TIME}
                                           primary={getHours(setHours(new Date(), order.sizeClock.date.slice(0, 2))) + " ч."}/>
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.TOTAL_PRICE}
                                           primary={order.price + " грн"}
                             />
-                            <ListItemText sx={{width: 10, mr: 4}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.STATUS}
                                           primary={<FormControl sx={{maxWidth: 100}} size="small">
                                               <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
                                               <Select
@@ -485,12 +516,22 @@ const OrderList = ({alertMessage}) => {
                                               </Select>
                                           </FormControl>}
                             />
+                            <Tooltip title={'Прикрепленные фото'}
+                                     placement="top"
+                                     arrow>
+                                <IconButton sx={STYLE_COMPONENT_LIST.PHOTO} color="primary" aria-label="upload picture"
+                                            component="label" onClick={() => {
+                                    setOpenPhotos(true)
+                                    setPhotosId(order.id)
+                                }}>
+                                    <PhotoCamera/>
+                                </IconButton>
+                            </Tooltip>
                             {isPast(new Date(order.time)) ? null :
-
                                 <Tooltip title={'Изменить заказ'}
-                                         placement="left"
+                                         placement="top"
                                          arrow>
-                                    <IconButton sx={{width: 5}}
+                                    <IconButton sx={{position: "absolute", right: 50}}
                                                 edge="end"
                                                 aria-label="Edit"
                                                 onClick={() => editOrder(order, time)}
@@ -514,6 +555,14 @@ const OrderList = ({alertMessage}) => {
                 idToEdit={idToEdit}
                 timeToEdit={timeToEdit}
                 getOrders={() => getOrders(page, limit, sorting, ascending, filters)}
+            /> : null}
+
+            {openPhotos ? <PhotoList
+                open={openPhotos}
+                onClose={() => {
+                    setOpenPhotos(false)
+                }}
+                photosId={photosId}
             /> : null}
 
         </Box>

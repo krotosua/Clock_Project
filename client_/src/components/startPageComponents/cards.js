@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box, Card, CardMedia, CardContent, Typography} from '@mui/material';
+import {Box, Card, CardContent, CardMedia, Typography} from '@mui/material';
 import smallClock from "../../assets/img/small.jpg";
 import normalClock from "../../assets/img/normal.jpg";
 import largeClock from "../../assets/img/large.jpg";
@@ -7,10 +7,10 @@ import largeClock from "../../assets/img/large.jpg";
 
 const Cards = () => {
     return (<Box sx={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', ml: 3}}>
-        <Card sx={{maxWidth: 345}}>
+        <Card sx={{maxWidth: 360}}>
             <CardMedia
                 component="img"
-                height="300"
+                height="210"
                 image={smallClock}
                 alt="clock"
             />
@@ -30,10 +30,10 @@ const Cards = () => {
             </CardContent>
         </Card>
 
-        <Card sx={{maxWidth: 345}}>
+        <Card sx={{maxWidth: 360}}>
             <CardMedia
                 component="img"
-                height="300"
+                height="210"
                 image={normalClock}
                 alt="clock"
             />
@@ -53,10 +53,10 @@ const Cards = () => {
             </CardContent>
         </Card>
 
-        <Card sx={{maxWidth: 345}}>
+        <Card sx={{maxWidth: 360}}>
             <CardMedia
                 component="img"
-                height="300"
+                height="210"
                 image={largeClock}
                 alt="clock"
             />

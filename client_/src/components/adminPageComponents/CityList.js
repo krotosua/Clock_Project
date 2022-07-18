@@ -26,6 +26,17 @@ import TablsPagination from "../TablsPagination";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
+const STYLE_LIST = {
+    ID: {width: 150, height: 70, position: "absolute", left: 0},
+    NAME: {width: 250, height: 70, position: "absolute", left: 300},
+    PRICE: {width: 200, height: 70, position: "absolute", left: 650, textAlign: "center"},
+}
+const STYLE_COMPONENT_LIST = {
+    ID: {width: 60, position: "absolute", left: 15},
+    NAME: {width: 100, position: "absolute", left: 350, wordWrap: "break-word"},
+    PRICE: {width: 100, position: "absolute", left: 690, textAlign: "center"},
+    EDIT: {position: "absolute", right: 40}
+}
 
 const CityList = ({alertMessage}) => {
     const [cityVisible, setCityVisible] = useState(false)
@@ -97,8 +108,10 @@ const CityList = ({alertMessage}) => {
                     Города
                 </Typography>
             </Box>
+            <Divider/>
             <List disablePadding>
                 <ListItem
+                    sx={{height: 70}}
                     key={1}
                     divider
                     secondaryAction={<Tooltip title={'Добавить город'}
@@ -116,15 +129,16 @@ const CityList = ({alertMessage}) => {
 
                     <ListItemButton
                         selected={sorting === "id"}
-                        sx={{ml: -2}}
+                        sx={STYLE_LIST.ID}
                         onClick={() => sortingList("id")}
                     >
-                        <ListItemText primary="ID"/>
+                        ID
                         {!ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
                     </ListItemButton>
 
                     <ListItemButton
                         selected={sorting === "name"}
+                        sx={STYLE_LIST.NAME}
                         onClick={() => sortingList("name")}
                     >
                         <ListItemText primary="Название города"/>
@@ -132,6 +146,7 @@ const CityList = ({alertMessage}) => {
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "price"}
+                        sx={STYLE_LIST.PRICE}
                         onClick={() => sortingList("price")}
                     >
                         <ListItemText primary="Цена за час"/>
@@ -142,6 +157,7 @@ const CityList = ({alertMessage}) => {
                 <Divider orientation="vertical"/>
                 {citiesList.length === 0 ? <h1>Список пуст</h1> : citiesList.map((city, index) => {
                     return (<ListItem
+                            sx={{height: 60}}
                             key={city.id}
                             divider
                             secondaryAction={<Tooltip title={'Удалить город'}
@@ -156,19 +172,19 @@ const CityList = ({alertMessage}) => {
                                 </IconButton>
                             </Tooltip>}
                         >
-                            <ListItemText sx={{width: 10,}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.ID}
                                           primary={city.id}
                             />
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.NAME}
                                           primary={city.name}
                             />
-                            <ListItemText sx={{width: 10}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.PRICE}
                                           primary={city.price + " грн"}
                             />
                             <Tooltip title={'Изменить навзвание города'}
                                      placement="left"
                                      arrow>
-                                <IconButton sx={{width: 5}}
+                                <IconButton sx={STYLE_COMPONENT_LIST.EDIT}
                                             edge="end"
                                             aria-label="Edit"
                                             onClick={() => {
@@ -202,7 +218,7 @@ const CityList = ({alertMessage}) => {
         </Box>
         <Box style={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
-            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1300}} size="small">
                 <InputLabel id="limit">Лимит</InputLabel>
                 <Select
                     labelId="limit"

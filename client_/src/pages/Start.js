@@ -26,15 +26,15 @@ const Start = () => {
             }
         }
     }, [])
-    return (
 
+    return (
         <Box sx={{display: 'flex', flexDirection: 'column'}}>
             <AboutCompany/>
             <Cards/>
             <Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>
-                    <Button fullWidth sx={{mt: 5, mb: 2}} variant="outlined" color={"warning"}
+                    <Button fullWidth sx={{mt: 2, mb: 2}} variant="outlined" color={"warning"}
                             onClick={() => navigate(ORDER_ROUTE)}>
                         Сделать заказ
                     </Button>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppBar, Button, Container, CssBaseline, Toolbar, Typography} from '@mui/material';
+import {AppBar, Button, Container, Toolbar, Typography} from '@mui/material';
 import {Link, useNavigate} from "react-router-dom";
 import {ADMIN_ROUTE, CUSTOMER_ORDER_ROUTE, LOGIN_ROUTE, MASTER_ORDER_ROUTE, START_ROUTE} from "../utils/consts";
 import {useDispatch, useSelector} from "react-redux";
@@ -18,7 +18,6 @@ const NavBar = () => {
 
     return (
         <React.Fragment>
-            <CssBaseline/>
             <AppBar color="warning" position="fixed">
                 <Container maxWidth="xl">
                     {user.isAuth && user.user.isActivated || user.userRole === "ADMIN" ?

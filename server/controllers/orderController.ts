@@ -9,9 +9,8 @@ import {Result, ValidationError, validationResult} from "express-validator";
 import {City, Order, SizeClock, User} from '../models/models'
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, UpdateMasterDTO} from "../dto/order.dto";
-import {ReqQuery, UpdateDB} from "../dto/global";
+import {GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {addHours} from "date-fns";
-
 
 class OrderController {
 
@@ -60,6 +59,9 @@ class OrderController {
                 }
                 return data
             })
+            if (req.body.photos && result) {
+                orderLogic.cloudnaryUpload(result!.order.id, req.body.photos, next)
+            }
             await orderLogic.sendMessage(req, next, result)
             return res.status(201).json(result?.user.token
                 ?? result?.order)
@@ -146,6 +148,11 @@ class OrderController {
 
     async getAllOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }>, res: Response, next: NextFunction): Promise<void> {
         await orderLogic.getAllOrders(req, res, next)
+    }
+
+
+    async getPhotos(req: Request<{ orderId: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
+        await orderLogic.getPhotos(req, res, next)
     }
 
 

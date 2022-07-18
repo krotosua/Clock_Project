@@ -1,7 +1,7 @@
 import {$authHost, $host} from "./index";
 
-export const createOrder = async (body) => {
-    return await $host.post('api/orders/', body)
+export const createOrder = async (formData) => {
+    return await $host.post('api/orders/', formData)
 }
 
 export const fetchAlLOrders = async (page, limit, sorting, ascending, filters) => {
@@ -39,5 +39,8 @@ export const updateOrder = async (order) => {
 }
 export const statusChangeOrder = async (order) => {
     return await $authHost.put('api/orders/statusChange/' + order.id, order)
+}
+export const fetchPhotos = async (orderId) => {
+    return await $authHost.get('api/orders/photos/' + orderId)
 }
 

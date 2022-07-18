@@ -17,6 +17,8 @@ import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 import XLSX from "xlsx";
 
+const cloudinary = require('../service/cloudnary')
+
 const {between, gte} = Op;
 
 class OrderLogic {
@@ -26,9 +28,10 @@ class OrderLogic {
             sizeClockId,
             masterId,
             cityId,
-            price
+            price,
+            photoLinks
         }: CreateOrderDTO = req.body
-        return await Order.create({name, sizeClockId, userId, time, endTime, masterId, cityId, price})
+        return await Order.create({name, sizeClockId, userId, time, endTime, masterId, cityId, price, photoLinks})
     }
 
     async getUserOrders(req: ReqQuery<{ page: number, limit: number, sorting: string, ascending: string, filters: string }> & Request<{ userId: number }>, res: Response, next: NextFunction): Promise<Response<GetRowsDB<Order> | { message: string }> | void> {
@@ -207,6 +210,7 @@ class OrderLogic {
                     time: time ? {[between]: time} : {[Op.ne]: 0},
                     price: !!maxPrice ? {[between]: [minPrice ?? 0, maxPrice]} : {[gte]: minPrice ?? 0}
                 },
+                attributes: {exclude: ["ratingLink", "photoLinks"]},
                 order: [sorting === SORTING.MASTER_NAME ? [Master, "name", direction]
                     : sorting === SORTING.DATE ? [SizeClock, sorting, direction] :
                         sorting === SORTING.CITY_NAME ? [City, "name", direction] :
@@ -233,6 +237,29 @@ class OrderLogic {
                     }], limit, offset
             })
             if (!orders.count) {
+                return res.status(204).json({message: "List is empty"})
+            }
+            return res.status(200).json(orders)
+        } catch (e) {
+            next(ApiError.badRequest((e as Error).message))
+            return
+        }
+
+    }
+
+    async getPhotos(req: Request<{ orderId: number }>, res: Response, next: NextFunction): Promise<void | Response<GetRowsDB<Order> | { message: string }>> {
+        try {
+            const orderId: number = +req.params.orderId
+            const orders: Order[] | null = await Order.findAll(
+                {
+                    where: {
+                        id: orderId,
+                        photoLinks: {[Op.not]: null}
+                    },
+                    attributes: ["photoLinks"]
+                }
+            )
+            if (!orders || orders.length === 0) {
                 return res.status(204).json({message: "List is empty"})
             }
             return res.status(200).json(orders)
@@ -444,6 +471,27 @@ class OrderLogic {
             return
         }
     }
+
+    async cloudnaryUpload(orderId: number, photos: Array<string>, next: NextFunction): Promise<void> {
+        try {
+            const results: Array<{ url: string }> = await Promise.all(photos.map((photo: string) => {
+                const result = cloudinary.uploader.upload(photo)
+                return result
+            }))
+
+            if (!results) {
+                return
+            }
+            const photoLinks: Array<string> = results.map(result => result.url)
+            await Order.update({
+                photoLinks,
+            }, {where: {id: orderId}})
+            return
+        } catch (e) {
+            next(ApiError.badRequest("Wrong request"))
+        }
+    }
+
 
 }
 

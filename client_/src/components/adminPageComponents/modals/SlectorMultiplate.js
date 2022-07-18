@@ -10,7 +10,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
     const [selectOptions, setSelectOptions] = useState([])
     const [inputValue, setInputValue] = React.useState("");
     const [changeValue, setChangeValue] = useState('');
-    const {setValue, getValues} = useFormContext();
+    const {setValue} = useFormContext();
     const [loading, setLoading] = useState(false)
     const debouncedSave = useCallback(
         _.debounce(nextValue => setChangeValue(nextValue), 1000),
@@ -19,7 +19,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
     useEffect(async () => {
         setLoading(true)
         try {
-            const res = id === "masters" ? await fetch(null, 1, 10, null, null, changeValue) :
+            const res = id === "masters" ? await fetch(null, 1, 10, null, null, null, changeValue) :
                 await fetch(1, 10, id === "email" ? id : null, null, changeValue)
             if (res.status === 204) {
                 setOptions([])

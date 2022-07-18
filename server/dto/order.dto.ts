@@ -9,6 +9,7 @@ export type CreateOrderDTO = {
     cityId: number;
     price: number;
     changedMaster?: boolean
+    photoLinks?: []
 }
 export type forGetOrders = {
     cityIDes: [] | null,

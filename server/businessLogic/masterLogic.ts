@@ -30,7 +30,7 @@ class MasterLogic {
             const page = req.query.page ?? 1
             const limit = req.query.limit ?? 10
             const sorting: string = req.query.sorting ?? "name"
-            const name = req.query.name === "" ? null : req.query.name
+            const name: string | null = req.query.name === "" ? null : req.query.name
             const directionUp: "DESC" | "ASC" = req.query.ascending === "true" ? 'ASC' : 'DESC'
             const {
                 cityIDes,
@@ -41,6 +41,7 @@ class MasterLogic {
                 rating: null,
                 masterName: null
             }
+
             const offset = page * limit - limit;
             const masterIdes: Master[] | null = cityIDes ? await Master.findAll({
                 include: [{
@@ -55,7 +56,9 @@ class MasterLogic {
                     [City, "name", 'ASC']
                 ],
                 where: {
-                    name: masterName ? {[Op.or]: [{[Op.substring]: masterName}, {[Op.iRegexp]: masterName}]} : {[Op.ne]: ""},
+                    name: name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : masterName ? {
+                        [Op.or]: [{[Op.substring]: masterName}, {[Op.iRegexp]: masterName}]
+                    } : {[Op.ne]: ""},
                     id: masterIdes ? {[Op.in]: masterIdes.map(master => master.id)} : {[Op.ne]: 0},
                     rating: {[Op.between]: rating ?? [0, 5]},
                 },

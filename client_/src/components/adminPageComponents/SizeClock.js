@@ -27,6 +27,19 @@ import {set} from 'date-fns'
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
+const STYLE_LIST = {
+    ID: {width: 150, height: 70, position: "absolute", left: 10},
+    NAME: {width: 150, height: 70, position: "absolute", left: 360},
+    DATE: {width: 150, height: 70, position: "absolute", right: 260},
+}
+const STYLE_COMPONENT_LIST = {
+    ID: {width: 150, position: "absolute", left: 30},
+    NAME: {width: 150, position: "absolute", left: 380, wordWrap: "break-word"},
+    DATE: {width: 150, position: "absolute", left: 670, textAlign: "center"},
+    EDIT: {position: "absolute", right: 40}
+}
+
+
 const SizeList = ({alertMessage}) => {
     const [createVisible, setCreateVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
@@ -97,11 +110,12 @@ const SizeList = ({alertMessage}) => {
                     Размеры часов
                 </Typography>
             </Box>
+            <Divider/>
             <List disablePadding>
                 <ListItem
                     key={1}
                     divider
-                    sx={{height: 60}}
+                    sx={{height: 70}}
                     secondaryAction={<Tooltip title={'Добавить размер часов'}
                                               placement="top"
                                               arrow>
@@ -116,7 +130,7 @@ const SizeList = ({alertMessage}) => {
                 >
                     <ListItemButton
                         selected={sorting === "id"}
-                        sx={{maxWidth: 150, position: "absolute", left: 10}}
+                        sx={STYLE_LIST.ID}
                         onClick={() => sortingList("id")}
                     >
                         <ListItemText primary="ID"/>
@@ -124,7 +138,7 @@ const SizeList = ({alertMessage}) => {
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "name"}
-                        sx={{maxWidth: 150, position: "absolute", left: 360}}
+                        sx={STYLE_LIST.NAME}
                         onClick={() => sortingList("name")}
                     >
                         Название часов
@@ -132,7 +146,7 @@ const SizeList = ({alertMessage}) => {
                     </ListItemButton>
                     <ListItemButton
                         selected={sorting === "date"}
-                        sx={{maxWidth: 150, position: "absolute", right: 260}}
+                        sx={STYLE_LIST.DATE}
                         onClick={() => sortingList("date")}
                     >
                         Количество часов
@@ -146,7 +160,7 @@ const SizeList = ({alertMessage}) => {
                     return (<ListItem
                         key={size.id}
                         divider
-
+                        sx={{height: 70}}
                         secondaryAction={<Tooltip title={'Удалить часы'}
                                                   placement="right"
                                                   arrow>
@@ -159,19 +173,19 @@ const SizeList = ({alertMessage}) => {
                             </IconButton>
                         </Tooltip>}
                     >
-                        <ListItemText sx={{width: 10, ml: 2}}
+                        <ListItemText sx={STYLE_COMPONENT_LIST.ID}
                                       primary={size.id}
                         />
-                        <ListItemText sx={{width: 10}}
+                        <ListItemText sx={STYLE_COMPONENT_LIST.NAME}
                                       primary={size.name}
                         />
-                        <ListItemText sx={{width: 10}}
+                        <ListItemText sx={STYLE_COMPONENT_LIST.DATE}
                                       primary={size.date}
                         />
                         <Tooltip title={'Изменить параметры часов'}
                                  placement="left"
                                  arrow>
-                            <IconButton sx={{width: 5}}
+                            <IconButton sx={STYLE_COMPONENT_LIST.EDIT}
                                         edge="end"
                                         aria-label="Edit"
                                         onClick={() => {
@@ -209,7 +223,7 @@ const SizeList = ({alertMessage}) => {
         </Box>
         <Box sx={{display: "flex", justifyContent: "center"}}>
             <TablsPagination page={page} totalCount={totalCount} limit={limit} pagesFunction={(page) => setPage(page)}/>
-            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1450}} size="small">
+            <FormControl variant="standard" sx={{m: 1, width: 60, position: "absolute", left: 1300}} size="small">
                 <InputLabel id="limit">Лимит</InputLabel>
                 <Select
                     labelId="limit"
