@@ -17,6 +17,8 @@ import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 import XLSX from "xlsx";
 
+const cron = require('node-cron');
+
 const {between, gte} = Op;
 
 class OrderLogic {
@@ -29,6 +31,11 @@ class OrderLogic {
             price,
             isPaid
         }: CreateOrderDTO = req.body
+        cron.schedule('* * * * *', () => {
+            console.log('running a task every minute');
+        }, {
+            scheldule: false,
+        });
         return await Order.create({
             name,
             sizeClockId,
