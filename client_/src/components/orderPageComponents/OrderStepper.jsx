@@ -73,7 +73,6 @@ const OrderStepper = ({alertMessage}) => {
     const email = watch("email")
     const date = watch("date")
     const time = watch("time")
-    const openPayPal = watch("openPayPal")
     const [activeStep, setActiveStep] = useState(0);
     const [changeName, setChangeName] = useState(null)
     const [regCustomer, setRegCustomer] = useState(null)
@@ -89,7 +88,6 @@ const OrderStepper = ({alertMessage}) => {
     const [page, setPage] = useState(1)
     const [totalCount, setTotalCount] = useState(null)
     const navigate = useNavigate();
-
     const getMasters = async () => {
         setLoading(true)
         try {
@@ -698,7 +696,7 @@ const OrderStepper = ({alertMessage}) => {
                                                          value={chosenSize.date.slice(0, 2) * chosenCity.price}/>
                                             {getValues("errorPayPal") && "Произошла ошибка при оплате"}
                                         </Box>
-                                        
+
                                     </Box>
                                 </Box>
 

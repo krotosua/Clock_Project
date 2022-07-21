@@ -52,6 +52,7 @@ interface MasterAttributes {
     isActivated: boolean;
     orders?: Array<Order>;
     userId?: number;
+    user?: User;
 }
 
 interface RatingAttributes {
@@ -144,6 +145,7 @@ class Master extends Model<MasterAttributes, MasterInput>
     public orders?: Array<Order>;
     declare addCities: HasManyAddAssociationsMixin<City, number>;
     declare setCities: HasManySetAssociationsMixin<City, number>;
+    declare user?: User;
 }
 
 export interface OrderInput extends Optional<OrderAttributes, 'id'> {

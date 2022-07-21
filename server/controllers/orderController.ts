@@ -11,6 +11,7 @@ import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, UpdateMasterDTO} from "../dto/order.dto";
 import {ReqQuery, UpdateDB} from "../dto/global";
 import {addHours} from "date-fns";
+import SendMailLogic from "../businessLogic/sendMailLogic";
 
 
 class OrderController {
@@ -60,7 +61,7 @@ class OrderController {
                 }
                 return data
             })
-            await orderLogic.sendMessage(req, next, result)
+            await SendMailLogic.sendMessage(req, next, result)
             return res.status(201).json(
                 {
                     token: result?.user.token,

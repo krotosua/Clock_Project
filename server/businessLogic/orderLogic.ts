@@ -2,22 +2,16 @@ import {City, Master, Order, Rating, SizeClock, User} from '../models/models'
 import ApiError from '../error/ApiError'
 import MailService from "../service/mailService"
 import {NextFunction, Request, Response} from "express";
-import {
-    CreateOrderDTO,
-    forGetOrders,
-    ResultOrderDTO,
-    SendMassageDTO,
-    SORTING,
-    STATUS,
-    statusList,
-    UpdateMasterDTO
-} from "../dto/order.dto";
+import {CreateOrderDTO, forGetOrders, SORTING, STATUS, statusList, UpdateMasterDTO} from "../dto/order.dto";
 import {DIRECTION, GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 import XLSX from "xlsx";
 
-const {between, gte} = Op;
+const cron = require('node-cron');
+
+
+const {between, gte, notIn} = Op;
 
 class OrderLogic {
     async create(req: Request, next: NextFunction, userId: number, time: Date, endTime: Date): Promise<Order> {
@@ -450,43 +444,6 @@ class OrderLogic {
         }
     }
 
-    async sendMessage(req: any, next: NextFunction, result: void | ResultOrderDTO): Promise<void> {
-        try {
-            const cityName: string = result!.city.name
-            const size: string = result!.clock.name
-            const orderNumber: number = result!.order.id
-            const {
-                name,
-                email,
-                masterId,
-                password
-            }: SendMassageDTO = req.body
-            let {time}: { time: Date | string } = req.body
-            const masterMail: Master | null = await Master.findByPk(masterId)
-            if (!masterMail) {
-                next(ApiError.badRequest("masterId is wrong"))
-                return
-            }
-            time = new Date(time).toLocaleString("uk-UA")
-            const mailInfo = {
-                name,
-                time,
-                email,
-                password,
-                size,
-                masterName: masterMail.name,
-                cityName,
-                orderNumber,
-            }
-            MailService.sendMail(mailInfo, next)
-            if (password) {
-                MailService.userInfo(mailInfo, next)
-            }
-        } catch (e) {
-            next(ApiError.badRequest((e as Error).message))
-            return
-        }
-    }
 
 }
 
