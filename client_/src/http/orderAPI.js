@@ -41,6 +41,6 @@ export const statusChangeOrder = async (order) => {
     return await $authHost.put('api/orders/statusChange/' + order.id, order)
 }
 export const fetchPhotos = async (orderId) => {
-    return await $authHost.get('api/orders/photos/' + orderId)
+    return await $authHost.get('api/orders/' + orderId + '/photos')
 }
 

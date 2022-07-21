@@ -140,9 +140,8 @@ const OrderStepper = ({alertMessage}) => {
                     price: chosenSize.date.slice(0, 2) * chosenCity.price,
                     photos: photos
                 }
-                const res = await createOrder(orderInfo)
                 try {
-
+                    const res = await createOrder(orderInfo)
                     if (changeName) {
                         dispatch(setUserNameAction(name))
                         localStorage.setItem('token', res.data)

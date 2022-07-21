@@ -4,6 +4,7 @@ import {PhotoCamera} from "@mui/icons-material";
 import ClearIcon from '@mui/icons-material/Clear';
 import Button from "@mui/material/Button";
 import {useFormContext} from "react-hook-form";
+import _ from "lodash";
 
 const PHOTO_HEIGHT = 150
 const PHOTO_WIDTH = 150
@@ -16,27 +17,33 @@ const AddPhoto = ({alertMessage}) => {
     const {watch, setValue} = useFormContext();
     const photos = watch("photos")
 
-    const uploadPhoto = (file) => {
-        if (!file) {
+
+    const uploadPhoto = async (files) => {
+        if (!files) {
             return
         }
-        if (file.type !== ALLOWED_FORMATS.JPEG && file.type !== ALLOWED_FORMATS.PNG) {
-            alertMessage("Неподходящий формат.Требуется JPEG/PNG", true)
-            return
-        }
-        if (file.size > MAX_PHOTO_SIZE) {
-            alertMessage("Фото должно весить меньше 1 мб", true)
-            return
-        }
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-            if (photos?.find(photo => photo === reader.result)) {
-                alertMessage("Данное фото уже добавленно", true)
+        const readerArr = []
+        for (let i = 0; readerArr.length + photos.length < 5 && i < files.length; i++) {
+            if (!Object.values(ALLOWED_FORMATS).includes(files[i].type)) {
+                alertMessage("Неподходящий формат.Требуется JPEG/PNG", true)
                 return
             }
-            setValue("photos", [...photos, reader.result])
-        };
+            if (files[i].size > MAX_PHOTO_SIZE) {
+                alertMessage("Фото должно весить меньше 1 мб", true)
+            } else {
+                let reader = new FileReader();
+                readerArr.push(new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(files[i]);
+                }))
+            }
+        }
+        const allLinks = await Promise.all(readerArr);
+        const validLinks = _.difference(allLinks, photos)
+        if (allLinks.length !== validLinks.length) {
+            alertMessage("Некоторые фотографии уже добавлены", true)
+        }
+        setValue("photos", [...photos, ...validLinks])
     }
     const removePhoto = (photoDelete) => {
         setValue("photos", [...photos.filter(photo => photo !== photoDelete)])
@@ -80,8 +87,8 @@ const AddPhoto = ({alertMessage}) => {
                 {photos.length < 5 ?
                     <Button sx={{ml: 2}} variant="outlined" component="label" startIcon={<PhotoCamera/>}>
                         Добавить
-                        <input hidden accept={`${Object.values(ALLOWED_FORMATS)}`} type="file"
-                               onChange={event => uploadPhoto(event.target.files[0])}/>
+                        <input hidden multiple accept={`${Object.values(ALLOWED_FORMATS)}`} type="file"
+                               onChange={event => uploadPhoto(event.target.files)}/>
                     </Button> : null}
 
             </Box>
