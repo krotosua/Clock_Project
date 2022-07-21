@@ -27,10 +27,10 @@ export default new class MailService {
             from: process.env.MAIL_USER,
             to: mailInfo.email,
             subject: `Напоминание о заказе${mailInfo.orderNumber}`,
-            text: `Напоминание о заказе${mailInfo.orderNumber}, что состоиться через час`,
+            text: `Напоминание о заказе №${mailInfo.orderNumber}, что состоиться через час`,
             html:
                 `<div>
-                <p>Напоминание о заказе${mailInfo.orderNumber}, что состоиться через час</p>
+                <p>Напоминание о заказе №${mailInfo.orderNumber}, который состоиться через час</p>
 </div>`,
         }, err => {
             if (err) {

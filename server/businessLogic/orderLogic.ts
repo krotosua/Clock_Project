@@ -16,9 +16,10 @@ import {DIRECTION, GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 import XLSX from "xlsx";
-import {getDate, getHours, getMonth} from "date-fns";
+import {getDate, getHours, getMonth, isPast, setHours} from "date-fns";
+import cron = from;
 
-const cron = require('node-cron');
+'node-cron'
 
 const {between, gte} = Op;
 
@@ -475,9 +476,14 @@ class OrderLogic {
                 next(ApiError.badRequest("masterId is wrong"))
                 return
             }
-            cron.schedule(`0 ${getHours(new Date(time))} ${getDate(new Date(time)) - 1} ${getMonth(new Date(time)) + 1} *`, () => {
+            if (isPast(setHours(new Date(time), getHours(new Date(time)) - 1))) {
                 MailService.remindMail({email: masterMail.user!.email, orderNumber}, next);
-            });
+            } else {
+                cron.schedule(`0 ${getHours(new Date(time)) - 1} ${getDate(new Date(time))} ${getMonth(new Date(time)) + 1} *`, () => {
+                    MailService.remindMail({email: masterMail.user!.email, orderNumber}, next);
+                });
+            }
+
             time = new Date(time).toLocaleString("uk-UA")
             const mailInfo = {
                 name,
