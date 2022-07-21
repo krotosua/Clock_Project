@@ -10,7 +10,8 @@ import {City, Order, SizeClock, User} from '../models/models'
 import {NextFunction, Request, Response} from "express";
 import {CreateOrderDTO, ResultOrderDTO, UpdateMasterDTO} from "../dto/order.dto";
 import {ReqQuery, UpdateDB} from "../dto/global";
-import {addHours, getHours} from "date-fns";
+import {addHours} from "date-fns";
+import SendMailLogic from "../businessLogic/sendMailLogic";
 
 
 class OrderController {
@@ -35,7 +36,6 @@ class OrderController {
                 }
                 const endTime: Date = addHours(new Date(time), Number(clock.date.slice(0, 2)))
                 time = new Date(time)
-                console.log(getHours(time))
                 const city: void | City = await cityLogic.checkCityId(cityId, next)
                 if (!city) {
                     next(ApiError.badRequest("City`s wrong"))
@@ -61,7 +61,7 @@ class OrderController {
                 }
                 return data
             })
-            await orderLogic.sendMessage(req, next, result)
+            await SendMailLogic.sendMessage(req, next, result)
             return res.status(201).json(
                 {
                     token: result?.user.token,

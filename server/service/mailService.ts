@@ -21,12 +21,11 @@ export default new class MailService {
         })
     }
 
-    remindMail(mailInfo: { email: string, orderNumber: number },
-               next: NextFunction): void {
+    remindMail(mailInfo: { email: string, orderNumber: number }): void {
         this.transporter.sendMail({
             from: process.env.MAIL_USER,
             to: mailInfo.email,
-            subject: `Напоминание о заказе${mailInfo.orderNumber}`,
+            subject: `Напоминание о заказе №${mailInfo.orderNumber}`,
             text: `Напоминание о заказе №${mailInfo.orderNumber}, что состоиться через час`,
             html:
                 `<div>
@@ -34,9 +33,9 @@ export default new class MailService {
 </div>`,
         }, err => {
             if (err) {
-                return next(ApiError.badRequest(err.message))
+                console.log(err)
+                return
             }
-
         })
 
     }

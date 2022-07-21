@@ -5,6 +5,7 @@ import router from "./routes/index"
 import errorHandler from "./middleware/ErrorHandlingMiddleware"
 import sequelizeConnection from "./db";
 import http from "http";
+import SendMailLogic from "./businessLogic/sendMailLogic";
 
 const cron = require('node-cron');
 const app: Application = express()
@@ -27,6 +28,9 @@ const start = async (): Promise<void> => {
         await sequelizeConnection.authenticate()
         cron.schedule('15,35,55 * * * *', () => {
             http.get(`${process.env.API_URL}`);
+        });
+        cron.schedule('0 0 0-23 * * *', () => {
+            SendMailLogic.remaindMessage()
         });
         app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
     } catch (e) {
