@@ -16,6 +16,7 @@ import {DIRECTION, GetRowsDB, ReqQuery, UpdateDB} from "../dto/global";
 import {v4 as uuidv4} from 'uuid';
 import {Op} from "sequelize";
 import XLSX from "xlsx";
+import {getDate, getHours, getMonth} from "date-fns";
 
 const cron = require('node-cron');
 
@@ -31,11 +32,6 @@ class OrderLogic {
             price,
             isPaid
         }: CreateOrderDTO = req.body
-        cron.schedule('* * * * *', () => {
-            console.log('running a task every minute');
-        }, {
-            scheldule: false,
-        });
         return await Order.create({
             name,
             sizeClockId,
@@ -469,11 +465,19 @@ class OrderLogic {
                 password
             }: SendMassageDTO = req.body
             let {time}: { time: Date | string } = req.body
-            const masterMail: Master | null = await Master.findByPk(masterId)
-            if (!masterMail) {
+            const masterMail: Master | null = await Master.findOne({
+                where: {
+                    id: masterId
+                },
+                include: {all: true, nested: true}
+            })
+            if (!masterMail || masterMail.user === undefined) {
                 next(ApiError.badRequest("masterId is wrong"))
                 return
             }
+            cron.schedule(`0 ${getHours(new Date(time))} ${getDate(new Date(time)) - 1} ${getMonth(new Date(time)) + 1} *`, () => {
+                MailService.remindMail({email: masterMail.user!.email, orderNumber}, next);
+            });
             time = new Date(time).toLocaleString("uk-UA")
             const mailInfo = {
                 name,
