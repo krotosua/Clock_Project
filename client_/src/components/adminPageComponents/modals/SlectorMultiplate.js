@@ -7,10 +7,9 @@ import _ from "lodash";
 export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) {
     const [open, setOpen] = useState(false);
     const [options, setOptions] = useState([])
-    const [selectOptions, setSelectOptions] = useState([])
     const [inputValue, setInputValue] = React.useState("");
     const [changeValue, setChangeValue] = useState('');
-    const {setValue} = useFormContext();
+    const {setValue, getValues} = useFormContext();
     const [loading, setLoading] = useState(false)
     const debouncedSave = useCallback(
         _.debounce(nextValue => setChangeValue(nextValue), 1000),
@@ -32,7 +31,6 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
             setLoading(false)
         }
     }, [changeValue]);
-
     return (
         <div>
             <Autocomplete
@@ -47,13 +45,12 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
                 onClose={() => {
                     setOpen(false);
                 }}
-                value={selectOptions}
+                value={getValues(name)}
                 options={options}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 getOptionLabel={OptionLabel ? OptionLabel : (option) => option.name}
                 onChange={(event, newValue, reason) => {
                     setValue(name, newValue)
-                    setSelectOptions(newValue)
                 }}
                 clearOnBlur={false}
                 clearText={"Убрать фильтр"}

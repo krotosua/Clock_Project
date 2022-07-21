@@ -329,8 +329,8 @@ class OrderLogic {
             const rightOrders = orders.map((order: any) => ({
                 id: order.id,
                 name: order.name,
-                startTime: new Date(order.time).toLocaleString(),
-                endTime: new Date(order.endTime).toLocaleString(),
+                startTime: new Date(order.time).toLocaleString('uk-UA'),
+                endTime: new Date(order.endTime).toLocaleString('uk-UA'),
                 masterName: order['master.name'],
                 cityName: order['city.name'],
                 priceForHour: order['city.price'],
