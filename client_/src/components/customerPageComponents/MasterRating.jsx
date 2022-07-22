@@ -33,7 +33,7 @@ const style = {
 const getLabelText = (rating) => {
     return `${rating} Star${rating !== 1 ? 's' : ''}, ${labels[rating]}`;
 }
-const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
+const MasterRating = ({openRating, onClose, uuid, getOrders, alertMessage}) => {
     const user = useSelector(state => state.user)
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState("")
@@ -67,7 +67,7 @@ const MasterRating = ({open, onClose, uuid, getOrders, alertMessage}) => {
     return (
         <div>
             <Modal
-                open={open}
+                open={openRating}
                 onClose={close}
             >
                 <Box sx={style}>

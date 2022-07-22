@@ -30,6 +30,7 @@ interface UserAttributes {
     customerId?: number;
     masterId?: number;
     orders?: Array<Order>;
+
 }
 
 interface CitiesMastersAttributes {
@@ -86,6 +87,7 @@ interface OrderAttributes {
     payPalId?: string | null
     user?: User;
     ratingLink?: string | null
+    photoLinks?: Array<string>
 }
 
 export interface CityInput extends Optional<CityAttributes, 'id'> {
@@ -168,6 +170,7 @@ class Order extends Model<OrderAttributes, OrderInput>
     declare ratingLink?: string | null
     declare rating: Rating | null
     declare payPalId?: string | null
+    declare photoLinks?: Array<string>
 }
 
 export interface RatingInput extends Optional<RatingAttributes, 'id'> {
@@ -372,9 +375,11 @@ Order.init({
             defaultValue: STATUS.WAITING
         },
         price: {type: DataTypes.INTEGER},
+        ratingLink: {type: DataTypes.STRING},
+        photoLinks: {type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: null},
         payPalId: {type: DataTypes.STRING, defaultValue: null},
-        ratingLink: {type: DataTypes.STRING}
     },
+
     {
         tableName: 'orders',
         modelName: 'order',

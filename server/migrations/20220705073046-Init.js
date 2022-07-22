@@ -91,25 +91,17 @@ module.exports = {
                 cityId: {
                     type: Sequelize.INTEGER,
                     onDelete: 'CASCADE',
-                    references: {
-                        model: 'cities',
-                        key: 'id',
-                        as: 'cityId',
-                    }
+                    primaryKey: true,
                 },
                 masterId: {
                     type: Sequelize.INTEGER,
                     onDelete: 'CASCADE',
-                    references: {
-                        model: 'masters',
-                        key: 'id',
-                        as: 'masterId',
-                    }
+                    primaryKey: true,
                 }
             },
             {
-                tableName: 'cities',
-                modelName: 'city',
+                tableName: 'cities_masters',
+                modelName: 'cities_masters',
                 sequelize: sequelizeConnection,
                 timestamps: false
             });

@@ -7,7 +7,6 @@ import _ from "lodash";
 export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) {
     const [open, setOpen] = useState(false);
     const [options, setOptions] = useState([])
-    const [selectOptions, setSelectOptions] = useState([])
     const [inputValue, setInputValue] = React.useState("");
     const [changeValue, setChangeValue] = useState('');
     const {setValue, getValues} = useFormContext();
@@ -19,7 +18,7 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
     useEffect(async () => {
         setLoading(true)
         try {
-            const res = id === "masters" ? await fetch(null, 1, 10, null, null, changeValue) :
+            const res = id === "masters" ? await fetch(null, 1, 10, null, null, null, changeValue) :
                 await fetch(1, 10, id === "email" ? id : null, null, changeValue)
             if (res.status === 204) {
                 setOptions([])
@@ -32,7 +31,6 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
             setLoading(false)
         }
     }, [changeValue]);
-
     return (
         <div>
             <Autocomplete
@@ -47,13 +45,12 @@ export default function SelectorMultiple({name, fetch, label, id, OptionLabel}) 
                 onClose={() => {
                     setOpen(false);
                 }}
-                value={selectOptions}
+                value={getValues(name)}
                 options={options}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 getOptionLabel={OptionLabel ? OptionLabel : (option) => option.name}
                 onChange={(event, newValue, reason) => {
                     setValue(name, newValue)
-                    setSelectOptions(newValue)
                 }}
                 clearOnBlur={false}
                 clearText={"Убрать фильтр"}

@@ -37,16 +37,32 @@ import {fetchCities} from "../http/cityAPI";
 import {fetchSize} from "../http/sizeAPI";
 import SelectorMultiple from "../components/adminPageComponents/modals/SlectorMultiplate";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-};
+const STYLE_LIST = {
+    ID: {width: 90, height: 70, position: "absolute", left: 0},
+    NAME: {width: 100, height: 70, position: "absolute", left: 110},
+    TIME: {width: 100, height: 70, position: "absolute", left: 230},
+    END_TIME: {width: 100, height: 70, position: "absolute", left: 350},
+    SIZE_NAME: {width: 100, height: 70, position: "absolute", left: 460},
+    MASTER_NAME: {width: 90, height: 70, position: "absolute", left: 555, textAlign: "center"},
+    CITY_NAME: {width: 80, height: 70, position: "absolute", left: 645, textAlign: "center"},
+    PRICE: {width: 70, height: 70, position: "absolute", left: 760},
+    STATUS: {width: 100, height: 70, position: "absolute", left: 850},
+    MARK: {maxWidth: 150, position: "absolute", right: 70}
+}
+const STYLE_COMPONENT_LIST = {
+    ID: {width: 60, position: "absolute", left: 30},
+    NAME: {width: 100, position: "absolute", left: 120, wordWrap: "break-word"},
+    TIME: {width: 100, position: "absolute", left: 220, textAlign: "center"},
+    END_TIME: {width: 100, position: "absolute", left: 340, textAlign: "center", wordWrap: "break-word"},
+    SIZE_NAME: {width: 100, position: "absolute", left: 450, wordWrap: "break-word", textAlign: "center"},
+    MASTER_NAME: {width: 100, position: "absolute", left: 550, wordWrap: "break-word", textAlign: "center"},
+    CITY_NAME: {width: 70, position: "absolute", left: 650, wordWrap: "break-word", textAlign: "center"},
+    PRICE: {width: 70, position: "absolute", left: 780},
+    STATUS: {width: 150, position: "absolute", left: 860},
+    MARK: {position: "absolute", right: 30}
+}
+
+
 const defaultValues = {
     status: "",
     time: null,
@@ -297,13 +313,13 @@ const Customer = () => {
                             </Box> :
                             <List disablePadding>
                                 <ListItem
-                                    sx={{height: 60}}
+                                    sx={{height: 70}}
                                     key={1}
                                     divider
                                 >
                                     <ListItemButton
                                         selected={sorting === "id"}
-                                        sx={{maxWidth: 100, position: "absolute", left: 0}}
+                                        sx={STYLE_LIST.ID}
                                         onClick={() => sortingList("id")}>
                                         № заказа
                                         {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" &&
@@ -311,7 +327,7 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "name"}
-                                        sx={{maxWidth: 150, position: "absolute", left: 120}}
+                                        sx={STYLE_LIST.NAME}
                                         onClick={() => sortingList("name")}>
                                         Имя
                                         {ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" &&
@@ -320,7 +336,7 @@ const Customer = () => {
 
                                     <ListItemButton
                                         selected={sorting === "time"}
-                                        sx={{maxWidth: 100, position: "absolute", left: 240}}
+                                        sx={STYLE_LIST.TIME}
                                         onClick={() => sortingList("time")}>
                                         Начало заказа
                                         {ascending ? sorting === "time" && <ExpandMoreIcon/> : sorting === "time" &&
@@ -328,7 +344,7 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "endTime"}
-                                        sx={{maxWidth: 100, position: "absolute", left: 350}}
+                                        sx={STYLE_LIST.END_TIME}
                                         onClick={() => sortingList("endTime")}>
                                         Конец заказа
                                         {ascending ? sorting === "endTime" &&
@@ -337,7 +353,7 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "sizeName"}
-                                        sx={{maxWidth: 100, position: "absolute", left: 460}}
+                                        sx={STYLE_LIST.SIZE_NAME}
                                         onClick={() => sortingList("sizeName")}>
                                         Тип услуги
                                         {ascending ? sorting === "sizeName" &&
@@ -346,7 +362,7 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "masterName"}
-                                        sx={{maxWidth: 150, position: "absolute", left: 560}}
+                                        sx={STYLE_LIST.MASTER_NAME}
                                         onClick={() => sortingList("masterName")}>
                                         Мастер
                                         {ascending ? sorting === "masterName" &&
@@ -355,7 +371,7 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "cityName"}
-                                        sx={{maxWidth: 150, position: "absolute", left: 650}}
+                                        sx={STYLE_LIST.CITY_NAME}
                                         onClick={() => sortingList("cityName")}>
                                         Город
                                         {ascending ? sorting === "cityName" &&
@@ -364,7 +380,7 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "price"}
-                                        sx={{maxWidth: 150, position: "absolute", left: 770}}
+                                        sx={STYLE_LIST.PRICE}
                                         onClick={() => sortingList("price")}>
                                         Цена
                                         {ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
@@ -372,13 +388,13 @@ const Customer = () => {
                                     </ListItemButton>
                                     <ListItemButton
                                         selected={sorting === "status"}
-                                        sx={{maxWidth: 150, position: "absolute", left: 900}}
+                                        sx={STYLE_LIST.STATUS}
                                         onClick={() => sortingList("status")}>
                                         Статус
                                         {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "status" &&
                                             <ExpandLessIcon/>}
                                     </ListItemButton>
-                                    <ListItemText sx={{maxWidth: 150, position: "absolute", right: 70}}
+                                    <ListItemText sx={STYLE_LIST.MARK}
                                                   primary="Оценка"
                                     />
 
@@ -393,37 +409,37 @@ const Customer = () => {
                                         key={order.id}
                                         divider
                                     >
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", left: 30}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.ID}
                                                       primary={order.id}
                                         />
 
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", left: 120}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.NAME}
                                                       primary={order.name}
                                         />
-                                        <ListItemText sx={{maxWidth: 100, position: "absolute", left: 240}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.TIME}
                                                       primary={time}
                                         />
-                                        <ListItemText sx={{maxWidth: 100, position: "absolute", left: 350}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.END_TIME}
                                                       primary={endTime}
                                         />
 
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", left: 470}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.SIZE_NAME}
                                                       primary={order.sizeClock.name}
-                                        /><ListItemText sx={{maxWidth: 150, position: "absolute", left: 580}}
+                                        /><ListItemText sx={STYLE_COMPONENT_LIST.MASTER_NAME}
                                                         primary={order.master.name}
                                     />
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", right: 440}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.CITY_NAME}
                                                       primary={citiesList.find(city => city.id === order.cityId)?.name}
                                         />
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", right: 340}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.PRICE}
                                                       primary={order.price}
                                         />
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", right: 160}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.STATUS}
                                                       primary={order.status === STATUS_LIST.DONE ? "Выполнен" :
                                                           order.status === STATUS_LIST.ACCEPTED ? "Подтвержден" :
                                                               order.status === STATUS_LIST.REJECTED ? "Отказ" : "Ожидание"}
                                         />
-                                        <ListItemText sx={{maxWidth: 150, position: "absolute", right: 50}}
+                                        <ListItemText sx={STYLE_COMPONENT_LIST.MARK}
                                                       primary={order.rating !== null ? <Box>
                                                               <Rating
                                                                   readOnly
@@ -439,6 +455,7 @@ const Customer = () => {
                                               <Button color="success"
                                                       size="small"
                                                       variant="outlined"
+                                                      sx={{mr: 2}}
                                                       disabled={order.status !== STATUS_LIST.DONE}
                                                       onClick={() => {
                                                           setOrder(order)

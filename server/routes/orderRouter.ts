@@ -27,6 +27,7 @@ orderRouter.get('/Master/:userId', checkRole(ROLES.MASTER),
     orderController.getMasterOrders)
 
 orderRouter.get('/', checkRole(ROLES.ADMIN), orderController.getAllOrders)
+orderRouter.get('/:orderId/photos', checkRole(ROLES.ADMIN), orderController.getPhotos)
 
 orderRouter.put("/:orderId", checkRole(ROLES.ADMIN),
     param("orderId").not().isEmpty().isInt({gt: 0}),

@@ -10,6 +10,7 @@ export type CreateOrderDTO = {
     price: number;
     changedMaster?: boolean
     isPaid?: boolean
+    photoLinks?: []
 }
 export type forGetOrders = {
     cityIDes: [] | null,

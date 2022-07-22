@@ -6,6 +6,7 @@ import {
     CircularProgress,
     Divider,
     FormControlLabel,
+    Grow,
     IconButton,
     List,
     ListItem,
@@ -41,6 +42,7 @@ import TablsPagination from "../TablsPagination";
 import {Controller, FormProvider, useForm} from "react-hook-form";
 import PopupState, {bindPopover, bindTrigger} from 'material-ui-popup-state';
 import jwt_decode from "jwt-decode";
+import AddPhoto from "./AddPhoto";
 import ReactPayPal from "./PayPal";
 
 
@@ -65,7 +67,8 @@ const OrderStepper = ({alertMessage}) => {
             date: new Date(),
             time: addHours(set(new Date(), {minutes: 0, seconds: 0}), 1),
             email: user?.user?.email ?? "",
-            name: user.userName ?? ""
+            name: user.userName ?? "",
+            photos: []
         }
     });
     const dispatch = useDispatch()
@@ -73,7 +76,6 @@ const OrderStepper = ({alertMessage}) => {
     const email = watch("email")
     const date = watch("date")
     const time = watch("time")
-    const openPayPal = watch("openPayPal")
     const [activeStep, setActiveStep] = useState(0);
     const [changeName, setChangeName] = useState(null)
     const [regCustomer, setRegCustomer] = useState(null)
@@ -114,7 +116,8 @@ const OrderStepper = ({alertMessage}) => {
         }
     }
 
-    const handleNext = async (e, isPaid) => {
+    const handleNext = async (event) => {
+        const {email, name, photos} = event
         if (user.isAuth || regCustomer !== null) {
             if (user.userName !== name && changeName === null) {
                 setValue("emailExists", false)
@@ -128,7 +131,6 @@ const OrderStepper = ({alertMessage}) => {
                 setChosenMaster(Number(chosenMaster))
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
             } else {
-
                 const orderInfo = {
                     name,
                     time: set(new Date(date), {hours: getHours(time), minutes: 0, seconds: 0}),
@@ -139,7 +141,7 @@ const OrderStepper = ({alertMessage}) => {
                     sizeClockId: chosenSize.id,
                     regCustomer,
                     price: chosenSize.date.slice(0, 2) * chosenCity.price,
-                    isPaid: getValues("isPaid") ?? undefined
+                    photos: photos,
                 }
                 try {
                     const res = await createOrder(orderInfo)
@@ -156,6 +158,8 @@ const OrderStepper = ({alertMessage}) => {
                     setActiveStep(1)
                     setLoading(true)
                     await getMasters()
+                } finally {
+                    setLoading(false)
                 }
             }
         } else {
@@ -231,7 +235,7 @@ const OrderStepper = ({alertMessage}) => {
                     })}
                 </Stepper>
                 <FormProvider register={register} errors={errors} control={control} trigger={trigger}
-                              setValue={setValue}>
+                              setValue={setValue} watch={watch}>
                     <form onSubmit={handleSubmit(handleNext)}>
                         {activeStep === 0 ? (
 
@@ -381,6 +385,7 @@ const OrderStepper = ({alertMessage}) => {
                                         required: 'Укажите время'
                                     }}
                                 />
+                                <AddPhoto alertMessage={alertMessage}/>
                                 <Box sx={{
                                     display: "flex",
                                     flexDirection: "row",
@@ -417,7 +422,7 @@ const OrderStepper = ({alertMessage}) => {
                                                 <Button
                                                     type='submit'
                                                     {...bindTrigger(popupState)}
-                                                    disabled={Object.keys(errors).length !== 0 || !isValid}>
+                                                >
                                                     Дальше
                                                 </Button>
                                                 {(regCustomer === null && !user.isAuth || user.isAuth && user.userName !== name || changeName === null && user.isAuth) && isValid && !loading ?
@@ -510,48 +515,54 @@ const OrderStepper = ({alertMessage}) => {
                                 </Box>
                             </Box>
                         ) : activeStep === steps.length - 1 ? (
-                                <Box sx={{mt: 2}}>
+                                loading ?
                                     <Box sx={{
-                                        mx: "auto",
-
-                                    }}>
-                                        <Box sx={{mb: 1}}> Ваше имя: <b>{name}</b> </Box>
-                                        <Box sx={{mb: 1}}> Ваш email:<b>{email}</b> </Box>
-                                        <Box sx={{mb: 1}}>Выбранный размер часов:<b>{chosenSize.name}</b></Box>
-                                        <Box sx={{mb: 1}}> Город где сделан
-                                            заказ: <b>{chosenCity.name}</b></Box>
-                                        <Box sx={{mb: 1}}> Дата заказа и время
-                                            заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
-                                        <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
-                                        <Box> Имя мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
-                                        <Box sx={{my: 1}}>Стоимость
-                                            услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ? chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b>
-                                        </Box>
-                                        <Box sx={{width: 400}}>
-
-                                        </Box>
-                                    </Box>
-                                    <Box sx={{
+                                        mt: 2,
                                         display: "flex",
-                                        flexDirection: "row",
-                                        justifyContent: "space-between",
-                                        pt: 2
+                                        justifyContent: "center",
+                                        flexDirection: "column",
+                                        alignItems: "center",
                                     }}>
-                                        <Button
-                                            color="inherit"
-                                            disabled={activeStep === 0}
-                                            onClick={handleBack}
-                                            sx={{mr: 1}}
-                                        >
-                                            Назад
-                                        </Button>
-                                        <Button
-                                            type={"submit"}
-                                            disabled={!chosenMaster}>
-                                            Отправить заказ
-                                        </Button>
-                                    </Box>
-                                </Box>) :
+                                        <Box>Отправка данны.Подождите...</Box>
+                                        <CircularProgress/>
+                                    </Box> :
+                                    <Box sx={{mt: 2}}>
+                                        <Box sx={{ml: 4}}>
+                                            <Box sx={{mb: 1}}> Ваше имя: <b>{name}</b> </Box>
+                                            <Box sx={{mb: 1}}> Ваш email:<b>{email}</b> </Box>
+                                            <Box sx={{mb: 1}}>Выбранный размер часов:<b>{chosenSize.name}</b></Box>
+                                            <Box sx={{mb: 1}}> Город где сделан
+                                                заказ: <b>{chosenCity.name}</b></Box>
+                                            <Box sx={{mb: 1}}> Дата заказа и время
+                                                заказа: <b>{date.toLocaleDateString("uk-UA")} </b></Box>
+                                            <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
+                                            <Box> Имя
+                                                мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
+                                            <Box sx={{my: 2}}>Стоимость
+                                                услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ? chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b>
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            justifyContent: "space-between",
+                                            pt: 2
+                                        }}>
+                                            <Button
+                                                color="inherit"
+                                                disabled={activeStep === 0}
+                                                onClick={handleBack}
+                                                sx={{mr: 1}}
+                                            >
+                                                Назад
+                                            </Button>
+                                            <Button
+                                                type={"submit"}
+                                                disabled={!chosenMaster}>
+                                                Отправить заказ
+                                            </Button>
+                                        </Box>
+                                    </Box>) :
                             ///////////////////////////////////////////////////////////////////////////////////////////////////
                             activeStep === steps.length - 2 ? (
                                 <Box sx={{mt: 2, position: "relative"}}>
@@ -570,7 +581,7 @@ const OrderStepper = ({alertMessage}) => {
                                             <Typography variant="h4" sx={{my: 2, textAlign: "center"}}>
                                                 Все мастера заняты
                                             </Typography>) : (
-                                            <Box sx={{flexGrow: 1, maxWidth: "1fr"}}>
+                                            <Box sx={{flexGrow: 1, maxWidth: "1fr", minHeight: 300}}>
                                                 <Typography sx={{my: 4,}}>
                                                     Свободные мастера
                                                 </Typography>
@@ -603,49 +614,51 @@ const OrderStepper = ({alertMessage}) => {
                                                         ) : (
                                                             freeMasters.map((master, index) => {
                                                                 return (
-                                                                    <ListItem key={master.id}
-                                                                              divider
-                                                                              style={{cursor: 'pointer'}}
-                                                                              selected={chosenMaster === master.id}
-                                                                              onClick={() => choseMaster(null, master.id)}
-                                                                              secondaryAction={
-                                                                                  <Tooltip title={'Выбрать мастера'}
-                                                                                           placement="right"
-                                                                                           arrow>
-                                                                                      <FormControlLabel
-                                                                                          value={master.id}
-                                                                                          control={<Radio/>}
-                                                                                          label=""/>
-                                                                                  </Tooltip>
-                                                                              }
-                                                                    >
-                                                                        <ListItemText
-                                                                            sx={{width: 10, textAlign: "center"}}
-                                                                            primary={index + 1}/>
-                                                                        <ListItemText
-                                                                            sx={{width: 10, textAlign: "center"}}
-                                                                            primary={master.name}/>
-                                                                        <ListItemText
-                                                                            sx={{width: 10, textAlign: "center"}}
-                                                                            primary={<Rating name="read-only"
-                                                                                             size="small"
-                                                                                             precision={0.2}
-                                                                                             value={master.rating}
-                                                                                             readOnly/>}/>
-                                                                        <ListItemText
-                                                                            sx={{width: 10, textAlign: "center"}}
-                                                                            primary={master.cities[0].name}/>
-                                                                        <ListItemText
-                                                                            sx={{width: 10, textAlign: "center"}}
-                                                                            primary={
-                                                                                <IconButton sx={{width: 5}}
-                                                                                            aria-label="Reviews"
-                                                                                            onClick={() => getReviews(master.id)}
-                                                                                >
-                                                                                    <ReviewsIcon/>
-                                                                                </IconButton>
-                                                                            }/>
-                                                                    </ListItem>
+                                                                    <Grow in={!!master} key={master.id}>
+                                                                        <ListItem
+                                                                            divider
+                                                                            style={{cursor: 'pointer'}}
+                                                                            selected={chosenMaster === master.id}
+                                                                            onClick={() => choseMaster(null, master.id)}
+                                                                            secondaryAction={
+                                                                                <Tooltip title={'Выбрать мастера'}
+                                                                                         placement="right"
+                                                                                         arrow>
+                                                                                    <FormControlLabel
+                                                                                        value={master.id}
+                                                                                        control={<Radio/>}
+                                                                                        label=""/>
+                                                                                </Tooltip>
+                                                                            }
+                                                                        >
+                                                                            <ListItemText
+                                                                                sx={{width: 10, textAlign: "center"}}
+                                                                                primary={index + 1}/>
+                                                                            <ListItemText
+                                                                                sx={{width: 10, textAlign: "center"}}
+                                                                                primary={master.name}/>
+                                                                            <ListItemText
+                                                                                sx={{width: 10, textAlign: "center"}}
+                                                                                primary={<Rating name="read-only"
+                                                                                                 size="small"
+                                                                                                 precision={0.2}
+                                                                                                 value={master.rating}
+                                                                                                 readOnly/>}/>
+                                                                            <ListItemText
+                                                                                sx={{width: 10, textAlign: "center"}}
+                                                                                primary={master.cities[0].name}/>
+                                                                            <ListItemText
+                                                                                sx={{width: 10, textAlign: "center"}}
+                                                                                primary={
+                                                                                    <IconButton sx={{width: 5}}
+                                                                                                aria-label="Reviews"
+                                                                                                onClick={() => getReviews(master.id)}
+                                                                                    >
+                                                                                        <ReviewsIcon/>
+                                                                                    </IconButton>
+                                                                                }/>
+                                                                        </ListItem>
+                                                                    </Grow>
                                                                 );
                                                             })
                                                         )}
@@ -663,7 +676,6 @@ const OrderStepper = ({alertMessage}) => {
                                                                              }}/> : ""}
                                             </Box>)
                                     }
-
                                     <Box sx={{
                                         display: "flex",
                                         flexDirection: "row",
@@ -698,7 +710,7 @@ const OrderStepper = ({alertMessage}) => {
                                                          value={chosenSize.date.slice(0, 2) * chosenCity.price}/>
                                             {getValues("errorPayPal") && "Произошла ошибка при оплате"}
                                         </Box>
-                                        
+
                                     </Box>
                                 </Box>
 
