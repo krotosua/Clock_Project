@@ -134,7 +134,7 @@ const CreateSize = ({open, onClose, alertMessage, getSize}) => {
                                     error={Boolean(errors.time)}>{errors.time?.message}</FormHelperText>
                             </FormControl>
                             <Box
-                                sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                                sx={{mt: 3, display: "flex", justifyContent: "space-between"}}
                             >
                                 <Button color="success"
                                         sx={{flexGrow: 1}}

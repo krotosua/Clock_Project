@@ -65,7 +65,7 @@ const STYLE_COMPONENT_LIST = {
 
 const defaultValues = {
     status: "",
-    time: null,
+    time: [null, null],
     cityId: null,
     masterId: null,
     forFilter: true,
@@ -150,7 +150,7 @@ const Customer = () => {
             cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
             masterIDes: masterList.length !== 0 ? masterList.map(master => master.id) : null,
             sizeIDes: sizeList.length !== 0 ? sizeList.map(size => size.id) : null,
-            time: date || null,
+            time: date.includes(null) ? null : date,
             status: status === "" ? null : status,
             minPrice: minPrice === "" ? null : minPrice,
             maxPrice: maxPrice === "" ? maxOrderPrice : maxPrice
@@ -432,7 +432,7 @@ const Customer = () => {
                                                       primary={citiesList.find(city => city.id === order.cityId)?.name}
                                         />
                                         <ListItemText sx={STYLE_COMPONENT_LIST.PRICE}
-                                                      primary={order.price}
+                                                      primary={order.price + '$'}
                                         />
                                         <ListItemText sx={STYLE_COMPONENT_LIST.STATUS}
                                                       primary={order.status === STATUS_LIST.DONE ? "Выполнен" :
@@ -470,7 +470,9 @@ const Customer = () => {
                                 })}
                                 <Divider/>
 
-                            </List>}
+                            </List>
+                        }
+
 
                         {openRating ? <MasterRating openRating={openRating}
                                                     uuid={order.ratingLink}
@@ -479,6 +481,10 @@ const Customer = () => {
                                                     onClose={() => setOpenRating(false)}
                         /> : null}
                     </Box>
+                    <Box style={{display: "flex", justifyContent: "center"}}>
+                        <TablsPagination page={page} totalCount={totalCount} limit={limit}
+                                         pagesFunction={(page) => setPage(page)}/>
+                    </Box>
                 </Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>
@@ -486,16 +492,13 @@ const Customer = () => {
                         <Fab onClick={() => navigate(ORDER_ROUTE)}
                              color="warning"
                              aria-label="add"
-                             sx={{position: 'absolute', bottom: 50, right: 50,}}>
+                             sx={{position: 'absolute', bottom: 50, right: 25,}}>
                             <AddIcon/>
                         </Fab>
                     </Tooltip>
                 </Link>
             </Box>
-            <Box style={{display: "flex", justifyContent: "center"}}>
-                <TablsPagination page={page} totalCount={totalCount} limit={limit}
-                                 pagesFunction={(page) => setPage(page)}/>
-            </Box>
+
             <MyAlert open={open}
                      onClose={() => setOpen(false)}
                      message={message}

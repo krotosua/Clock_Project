@@ -9,6 +9,7 @@ import {
     FormControl,
     FormControlLabel,
     FormHelperText,
+    Grow,
     IconButton,
     InputAdornment,
     InputLabel,
@@ -96,7 +97,8 @@ const Auth = () => {
                         <Typography align="center" variant="h5">
                             Регистрация
                         </Typography>
-                        <FormProvider register={register} errors={errors} trigger={trigger} setValue={setValue}>
+                        <FormProvider register={register} getValues={getValues} errors={errors} trigger={trigger}
+                                      setValue={setValue}>
                             <form onSubmit={handleSubmit(singIn)}>
                                 <Box
                                     sx={{
@@ -220,9 +222,11 @@ const Auth = () => {
 
 
                                         {isMaster &&
-                                            <Box>
-                                                <SelectorMultipleCity/>
-                                            </Box>}
+                                            <Grow in={isMaster}>
+                                                <Box>
+                                                    <SelectorMultipleCity/>
+                                                </Box>
+                                            </Grow>}
 
                                         <Box>
                                             <Box>

@@ -332,14 +332,14 @@ class OrderLogic {
                 endTime: new Date(order.endTime).toLocaleString('uk-UA'),
                 masterName: order['master.name'],
                 cityName: order['city.name'],
-                priceForHour: order['city.price'],
+                priceForHour: order['city.price'] + `$`,
                 time: order['sizeClock.date'],
-                totalPrice: order.price,
+                totalPrice: order.price + `$`,
                 status: order.status
             }))
 
             const headings = [
-                ["id", "name", "startDate", "endDate", "masterName", "cityName", "priceForHour", "timeSize", "Total", "status"]
+                ["id", "Имя", "Дата и время", "Конец заказа", "Мастер", "Город", "Цена за час", "Кол-во часов", "Итог", "Статус"]
             ];
             const ws = await XLSX.utils.json_to_sheet(rightOrders, {});
             const wb = XLSX.utils.book_new()

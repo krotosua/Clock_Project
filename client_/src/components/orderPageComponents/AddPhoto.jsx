@@ -51,7 +51,7 @@ const AddPhoto = ({alertMessage}) => {
     return (
         <div>
             <Typography>Можете добавить фото:</Typography>
-            <Box sx={{display: 'flex'}}>
+            <Box sx={{display: 'flex', mt: 1}}>
 
                 {photos.length !== 0 ? photos.map((photo, index) => {
 

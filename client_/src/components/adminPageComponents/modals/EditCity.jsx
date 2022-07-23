@@ -92,7 +92,7 @@ const EditCity = ({open, onClose, cityToEdit, alertMessage, getCities}) => {
                                     variant="outlined"
                                     onBlur={() => trigger("price")}
                                     InputProps={{
-                                        endAdornment: <InputAdornment position="end">Грн</InputAdornment>,
+                                        endAdornment: <InputAdornment position="end">$</InputAdornment>,
                                     }}
                                 />
                             </FormControl>

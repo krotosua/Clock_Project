@@ -36,13 +36,34 @@ const defaultValues = {
     userList: [],
     sizeList: [],
     userEmailList: [],
-    date: null,
+    date: [null, null],
     forFilter: true,
     minPrice: "",
     maxPrice: "",
     reset: false
 }
-
+const STYLE_LIST = {
+    ID: {width: 100, height: 70, position: "absolute", left: 5},
+    NAME: {width: 100, height: 70, position: "absolute", left: 105},
+    USER_ID: {width: 100, height: 70, position: "absolute", left: 210},
+    TIME: {width: 100, height: 70, position: "absolute", left: 320},
+    END_TIME: {width: 100, height: 70, position: "absolute", left: 440},
+    SIZE_NAME: {width: 90, height: 70, position: "absolute", left: 550, textAlign: "center"},
+    CITY_NAME: {width: 100, height: 70, position: "absolute", left: 650},
+    PRICE: {width: 80, height: 70, position: "absolute", left: 790},
+    STATUS: {width: 100, height: 70, position: "absolute", left: 900}
+}
+const STYLE_COMPONENT_LIST = {
+    ID: {width: 100, position: "absolute", left: 5, textAlign: "center"},
+    NAME: {width: 100, position: "absolute", left: 105, textAlign: "center", wordWrap: "break-word"},
+    USER_ID: {width: 100, position: "absolute", left: 200, textAlign: "center"},
+    TIME: {width: 100, position: "absolute", left: 320, textAlign: "center"},
+    END_TIME: {width: 100, position: "absolute", left: 440, textAlign: "center"},
+    SIZE_NAME: {width: 90, position: "absolute", left: 550, textAlign: "center", wordWrap: "break-word"},
+    CITY_NAME: {width: 100, position: "absolute", left: 640, textAlign: "center"},
+    PRICE: {width: 70, position: "absolute", left: 790, textAlign: "center", wordWrap: "break-word"},
+    STATUS: {width: 100, position: "absolute", left: 900, textAlign: "center"}
+}
 const OrderListMaster = ({
                              limit,
                              setLoading,
@@ -106,7 +127,6 @@ const OrderListMaster = ({
                                     maxPrice,
                                     date,
                                     userEmailList,
-                                    watch,
                                     userName
                                 }) => {
         const filter = {
@@ -115,7 +135,7 @@ const OrderListMaster = ({
             sizeIDes: sizeList.length !== 0 ? sizeList.map(size => size.id) : null,
             userEmails: userEmailList.length !== 0 ? userEmailList.map(user => user.email) : null,
             userName: userName.length !== 0 ? userName : null,
-            time: date || null,
+            time: date.includes(null) ? null : date,
             status: status === "" ? null : status,
             minPrice: minPrice === "" ? null : minPrice,
             maxPrice: maxPrice === "" ? maxOrderPrice : maxPrice
@@ -269,21 +289,21 @@ const OrderListMaster = ({
                 </Box> :
                 <List disablePadding>
                     <ListItem
-                        sx={{height: 60}}
+                        sx={{height: 70}}
                         key={1}
                         divider
 
                     >
                         <ListItemButton
                             selected={sorting === "id"}
-                            sx={{maxWidth: 100, position: "absolute", left: 0}}
+                            sx={STYLE_LIST.ID}
                             onClick={() => sortingList("id")}>
                             № заказа
                             {ascending ? sorting === "id" && <ExpandMoreIcon/> : sorting === "id" && <ExpandLessIcon/>}
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "name"}
-                            sx={{maxWidth: 150, position: "absolute", left: 120}}
+                            sx={STYLE_LIST.NAME}
                             onClick={() => sortingList("name")}>
                             Имя
                             {ascending ? sorting === "name" && <ExpandMoreIcon/> : sorting === "name" &&
@@ -291,7 +311,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "userId"}
-                            sx={{maxWidth: 150, position: "absolute", left: 210}}
+                            sx={STYLE_LIST.USER_ID}
                             onClick={() => sortingList("userId")}>
                             UserID
                             {ascending ? sorting === "userId" && <ExpandMoreIcon/> : sorting === "userId" &&
@@ -299,7 +319,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "time"}
-                            sx={{maxWidth: 100, position: "absolute", left: 310}}
+                            sx={STYLE_LIST.TIME}
                             onClick={() => sortingList("time")}>
                             Начало заказа
                             {ascending ? sorting === "time" && <ExpandMoreIcon/> : sorting === "time" &&
@@ -307,7 +327,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "endTime"}
-                            sx={{maxWidth: 100, position: "absolute", left: 440}}
+                            sx={STYLE_LIST.END_TIME}
                             onClick={() => sortingList("endTime")}>
                             Конец заказа
                             {ascending ? sorting === "endTime" && <ExpandMoreIcon/> : sorting === "endTime" &&
@@ -315,7 +335,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "sizeName"}
-                            sx={{maxWidth: 100, position: "absolute", left: 560}}
+                            sx={STYLE_LIST.SIZE_NAME}
                             onClick={() => sortingList("sizeName")}>
                             Тип услуги
                             {ascending ? sorting === "sizeName" && <ExpandMoreIcon/> : sorting === "sizeName" &&
@@ -323,7 +343,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "cityName"}
-                            sx={{maxWidth: 150, position: "absolute", left: 650}}
+                            sx={STYLE_LIST.CITY_NAME}
                             onClick={() => sortingList("cityName")}>
                             Город
                             {ascending ? sorting === "cityName" && <ExpandMoreIcon/> : sorting === "cityName" &&
@@ -331,7 +351,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "price"}
-                            sx={{maxWidth: 150, position: "absolute", left: 770}}
+                            sx={STYLE_LIST.PRICE}
                             onClick={() => sortingList("price")}>
                             Цена
                             {ascending ? sorting === "price" && <ExpandMoreIcon/> : sorting === "price" &&
@@ -339,7 +359,7 @@ const OrderListMaster = ({
                         </ListItemButton>
                         <ListItemButton
                             selected={sorting === "status"}
-                            sx={{maxWidth: 150, position: "absolute", left: 900}}
+                            sx={STYLE_LIST.STATUS}
                             onClick={() => sortingList("status")}>
                             Статус
                             {ascending ? sorting === "status" && <ExpandMoreIcon/> : sorting === "status" &&
@@ -356,33 +376,33 @@ const OrderListMaster = ({
                             key={order.id}
                             divider
                         >
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 30}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.ID}
                                           primary={order.id}
                             />
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 120}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.NAME}
                                           primary={order.name}
                             />
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 240}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.USER_ID}
                                           primary={order.user.id}
                             />
-                            <ListItemText sx={{maxWidth: 100, height: 50, position: "absolute", left: 320}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.TIME}
                                           primary={time}
                             />
-                            <ListItemText sx={{maxWidth: 100, height: 50, position: "absolute", left: 440}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.END_TIME}
                                           primary={endTime}
                             />
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 560}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.SIZE_NAME}
                                           primary={order.sizeClock.name}
                             />
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 665}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.CITY_NAME}
                                           primary={citiesList.find(city => city.id === order.cityId)?.name}
                             />
 
 
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 790}}
-                                          primary={order.price}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.PRICE}
+                                          primary={order.price + `$`}
                             />
-                            <ListItemText sx={{maxWidth: 150, height: 50, position: "absolute", left: 900}}
+                            <ListItemText sx={STYLE_COMPONENT_LIST.STATUS}
                                           primary={
                                               <Button color={order.status === STATUS_LIST.DONE ? "success" : "error"}
                                                       disabled={order.status !== STATUS_LIST.ACCEPTED && order.status !== STATUS_LIST.DONE}

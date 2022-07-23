@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import Cards from "../components/startPageComponents/cards"
 import AboutCompany from "../components/startPageComponents/aboutCompany";
 import {Box, Button} from "@mui/material";
@@ -13,7 +13,6 @@ import {useDispatch} from "react-redux";
 const Start = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const [checkout, setCheckOut] = useState(false);
     useEffect(async () => {
         if (localStorage.getItem('token') !== "" ||
             localStorage.getItem('token')) {
@@ -36,7 +35,7 @@ const Start = () => {
             <Box>
                 <Link to={ORDER_ROUTE}
                       style={{textDecoration: 'none', color: 'white'}}>
-                    <Button fullWidth sx={{mt: 2, mb: 2}} variant="outlined" color={"warning"}
+                    <Button fullWidth sx={{mt: 2}} variant="outlined" color={"warning"}
                             onClick={() => navigate(ORDER_ROUTE)}>
                         Сделать заказ
                     </Button>

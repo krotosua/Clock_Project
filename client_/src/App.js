@@ -9,7 +9,7 @@ import {setIsEmptySizeAction} from "./store/SizeStore";
 import {getCities} from "./asyncActions/cities";
 import {checkUser} from "./asyncActions/users";
 
-const HEIGHT_NAV_BAR = 50
+const HEIGHT_NAV_BAR = 10
 
 const App = () => {
     const dispatch = useDispatch()

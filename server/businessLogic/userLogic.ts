@@ -14,6 +14,7 @@ import {Op} from "sequelize";
 
 
 const generateJwt = (id: number, email: string, role: ROLES, isActivated?: boolean, name?: string): string => {
+    console.log("-------------------------------------------")
     return jwt.sign({id, email, role, isActivated, name}, process.env.SECRET_KEY as string, {expiresIn: '24h'})
 }
 
@@ -171,6 +172,8 @@ class UserLogic {
             if (userLogin.master !== undefined && userLogin.role === ROLES.MASTER) {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.master.name)
             } else if (userLogin.customer !== undefined && userLogin.role === ROLES.CUSTOMER) {
+                console.log(userLogin)
+                console.log(userLogin.customer)
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated, userLogin.customer.name)
             } else if (userLogin.role === ROLES.ADMIN) {
                 token = generateJwt(userLogin.id, userLogin.email, userLogin.role, userLogin.isActivated)
