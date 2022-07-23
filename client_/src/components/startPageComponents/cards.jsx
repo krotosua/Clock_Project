@@ -10,7 +10,7 @@ const Cards = () => {
         <Card sx={{maxWidth: 360}}>
             <CardMedia
                 component="img"
-                height="210"
+                height="280"
                 image={smallClock}
                 alt="clock"
             />
@@ -33,7 +33,7 @@ const Cards = () => {
         <Card sx={{maxWidth: 360}}>
             <CardMedia
                 component="img"
-                height="210"
+                height="280"
                 image={normalClock}
                 alt="clock"
             />
@@ -56,7 +56,7 @@ const Cards = () => {
         <Card sx={{maxWidth: 360}}>
             <CardMedia
                 component="img"
-                height="210"
+                height="280"
                 image={largeClock}
                 alt="clock"
             />

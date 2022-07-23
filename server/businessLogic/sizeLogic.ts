@@ -38,7 +38,7 @@ class SizeLogic {
             const name = req.query.name === "" ? null : req.query.name
             const sorting: string = req.query.sorting ?? "date"
             const directionUp = req.query.ascending === "true" ? 'DESC' : 'ASC'
-            const offset = page * limit - limit
+            const offset: number = page * limit - limit
             const sizes: GetRowsDB<SizeClock> = await SizeClock.findAndCountAll({
                 where: {
                     name: name ? {[Op.or]: [{[Op.substring]: name}, {[Op.iRegexp]: name}]} : {[Op.ne]: ""},

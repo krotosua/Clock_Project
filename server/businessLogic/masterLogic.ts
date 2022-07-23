@@ -41,8 +41,7 @@ class MasterLogic {
                 rating: null,
                 masterName: null
             }
-
-            const offset = page * limit - limit;
+            const offset: number = page * limit - limit;
             const masterIdes: Master[] | null = cityIDes ? await Master.findAll({
                 include: [{
                     model: City,
@@ -94,7 +93,7 @@ class MasterLogic {
             }
             const endTime = addHours(new Date(time), Number(clock.date.slice(0, 2)))
             time = new Date(time)
-            const offset = page * limit - limit;
+            const offset: number = page * limit - limit;
             let masters: GetRowsDB<Master>;
             const orders = await Order.findAll({
                 where: {

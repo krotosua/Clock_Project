@@ -300,7 +300,7 @@ const OrderStepper = ({alertMessage}) => {
                                 </Box>
                                 <Box sx={{my: 2}}>Стоимость
                                     услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ?
-                                        chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b></Box>
+                                        chosenSize.date.slice(0, 2) * chosenCity.price + "$" : null} </b></Box>
                                 <Controller
                                     name="date"
                                     control={control}
@@ -538,8 +538,8 @@ const OrderStepper = ({alertMessage}) => {
                                             <Box sx={{mb: 1}}> Время заказа: <b>{time.toLocaleTimeString("uk-UA")}</b></Box>
                                             <Box> Имя
                                                 мастера: <b>{freeMasters.find(item => item.id === chosenMaster).name}</b></Box>
-                                            <Box sx={{my: 2}}>Стоимость
-                                                услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ? chosenSize.date.slice(0, 2) * chosenCity.price + " грн" : null} </b>
+                                            <Box sx={{my: 1}}>Стоимость
+                                                услуги: <b>{chosenSize.id !== null && chosenCity.id !== null ? chosenSize.date.slice(0, 2) * chosenCity.price + "$" : null} </b>
                                             </Box>
                                         </Box>
                                         <Box sx={{

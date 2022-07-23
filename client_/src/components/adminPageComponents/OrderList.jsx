@@ -44,7 +44,7 @@ import PhotoList from "./modals/PhotoList";
 
 const STYLE_LIST = {
     ID: {width: 60, height: 70, position: "absolute", left: 0},
-    NAME: {width: 100, height: 70, position: "absolute", left: 120},
+    NAME: {width: 100, height: 70, position: "absolute", left: 100,},
     TIME: {width: 100, height: 70, position: "absolute", left: 230},
     MASTER_NAME: {width: 100, height: 70, position: "absolute", left: 350},
     CITY_NAME: {width: 100, height: 70, position: "absolute", left: 460},
@@ -55,13 +55,13 @@ const STYLE_LIST = {
 }
 const STYLE_COMPONENT_LIST = {
     ID: {width: 60, position: "absolute", left: 15},
-    NAME: {width: 100, position: "absolute", left: 130, wordWrap: "break-word"},
+    NAME: {width: 100, position: "absolute", left: 100, textAlign: "center", wordWrap: "break-word"},
     TIME: {width: 100, position: "absolute", left: 230, textAlign: "center"},
     MASTER_NAME: {width: 100, position: "absolute", left: 340, textAlign: "center", wordWrap: "break-word"},
     CITY_NAME: {width: 100, position: "absolute", left: 450, wordWrap: "break-word", textAlign: "center"},
     CITY_PRICE: {width: 100, position: "absolute", left: 560, textAlign: "center"},
     SIZE_TIME: {width: 70, position: "absolute", left: 665, textAlign: "center"},
-    TOTAL_PRICE: {width: 70, position: "absolute", left: 770},
+    TOTAL_PRICE: {width: 70, position: "absolute", left: 780},
     STATUS: {width: 150, position: "absolute", left: 850},
     PHOTO: {position: "absolute", right: 90}
 }
@@ -73,7 +73,8 @@ const defaultValues = {
     masterList: [],
     forFilter: true,
     minPrice: "",
-    maxPrice: ""
+    maxPrice: "",
+    date: [null, null]
 }
 const OrderList = ({alertMessage}) => {
     const {
@@ -183,7 +184,7 @@ const OrderList = ({alertMessage}) => {
         const filter = {
             cityIDes: cityList.length !== 0 ? cityList.map(city => city.id) : null,
             masterIDes: masterList.length !== 0 ? masterList.map(master => master.id) : null,
-            time: date || null,
+            time: date.includes(null) ? null : date,
             status: status === "" ? null : status,
             minPrice: minPrice === "" ? null : minPrice,
             maxPrice: maxPrice === "" ? maxOrderPrice : maxPrice,
@@ -238,7 +239,7 @@ const OrderList = ({alertMessage}) => {
                                 />
                             </Box>
                             <Box>
-                                <Box sx={{display: "flex", justifyContent: "space-between"}}>
+                                <Box sx={{display: "flex", justifyContent: "space-between", mt: 1}}>
                                     <FormControl sx={{minWidth: 100}} size="small">
                                         <InputLabel htmlFor="grouped-native-select">Статус</InputLabel>
                                         <Select
@@ -493,12 +494,12 @@ const OrderList = ({alertMessage}) => {
                                           primary={order.city.name}
                             />
                             <ListItemText sx={STYLE_COMPONENT_LIST.CITY_PRICE}
-                                          primary={order.city.price + " грн"}
+                                          primary={order.city.price + "$"}
                             />
                             <ListItemText sx={STYLE_COMPONENT_LIST.SIZE_TIME}
                                           primary={getHours(setHours(new Date(), order.sizeClock.date.slice(0, 2))) + " ч."}/>
                             <ListItemText sx={STYLE_COMPONENT_LIST.TOTAL_PRICE}
-                                          primary={order.price + " грн"}
+                                          primary={order.price + "$"}
                             />
                             <ListItemText sx={STYLE_COMPONENT_LIST.STATUS}
                                           primary={<FormControl sx={{maxWidth: 100}} size="small">

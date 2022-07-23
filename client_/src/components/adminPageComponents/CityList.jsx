@@ -179,7 +179,7 @@ const CityList = ({alertMessage}) => {
                                           primary={city.name}
                             />
                             <ListItemText sx={STYLE_COMPONENT_LIST.PRICE}
-                                          primary={city.price + " грн"}
+                                          primary={city.price + "$"}
                             />
                             <Tooltip title={'Изменить навзвание города'}
                                      placement="left"
